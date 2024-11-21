@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 169265429493933094}
   - component: {fileID: 3907660149984015611}
   m_Layer: 0
-  m_Name: Cue
-  m_TagString: Untagged
+  m_Name: CueStick
+  m_TagString: CueStick
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

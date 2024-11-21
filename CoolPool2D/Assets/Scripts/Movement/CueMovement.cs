@@ -2,28 +2,44 @@ using UnityEngine;
 
 public class CueMovement : MonoBehaviour
 {
+    public float distance = -4f; // Distance of the cue from the cue ball
+
+    private bool isBallBeingCharged = false;
+    private bool hasBallBeenShot = false;
+
+    private float distanceForCueToGoBack;
+    private float distanceToGoBackMultiplier = 0.05f;
     private BallController cueBallControllerScript;
     private Vector2 cueBallPosition;
-    public float distance = -4f; // Distance of the cue from the cue ball
 
     private void Start()
     {
         cueBallControllerScript = GameObject.Find("CueBall").GetComponent<BallController>();
         cueBallPosition = cueBallControllerScript.transform.position;
+        EventBus.Subscribe<BallHasBeenShotEvent>(OnBallHasBeenShotEvent);
+        EventBus.Subscribe<BallIsBeingChargedEvent>(OnBallBeingChargedEvent);
+        
     }
 
     private void Update()
     {
         float aimingAngle = cueBallControllerScript.aimingAngle;
 
-        Vector2 offset = getOffset(distance, aimingAngle);
-        transform.position = cueBallPosition + offset;
-        // rotate the cue to face the direction the ball is going to move in
+        if (isBallBeingCharged)
+        {
+            transform.position = cueBallPosition + getOffset(distance - (distanceForCueToGoBack * distanceToGoBackMultiplier), aimingAngle);
+        }
+        else if (hasBallBeenShot)
+        {
+            var vectorToMoveTo = cueBallPosition + getOffset(distance + (distanceForCueToGoBack * distanceToGoBackMultiplier), aimingAngle);
+            transform.position = vectorToMoveTo;
+        }
+        else
+        {
+            transform.position = cueBallPosition + getOffset(distance, aimingAngle);
+        }
+        transform.LookAt(cueBallPosition);
         transform.rotation = Quaternion.Euler(0, 0, aimingAngle * Mathf.Rad2Deg);
-
-        // move the cue left and right
-        float cueMovement = Input.GetAxis("Horizontal");
-        transform.Translate(Vector2.right * cueMovement * Time.deltaTime);
     }
 
     public Vector2 getOffset(float distance, float angle)
@@ -32,4 +48,18 @@ public class CueMovement : MonoBehaviour
         float y = distance * Mathf.Sin(angle);
         return new Vector2(x, y);
     }
-}
+    private void OnBallHasBeenShotEvent(BallHasBeenShotEvent ballHasBeenShotEvent)
+    {
+        hasBallBeenShot = true;
+        EventBus.Unsubscribe<BallHasBeenShotEvent>(OnBallHasBeenShotEvent);
+        EventBus.Unsubscribe<BallIsBeingChargedEvent>(OnBallBeingChargedEvent);
+        isBallBeingCharged = false;
+    }
+
+    private void OnBallBeingChargedEvent(BallIsBeingChargedEvent ballIsBeingChargedEvent)
+    {
+        isBallBeingCharged = true;
+        hasBallBeenShot = false;
+        distanceForCueToGoBack = ballIsBeingChargedEvent.Sender.amountOfForceToApplyToBall;
+    }
+    }

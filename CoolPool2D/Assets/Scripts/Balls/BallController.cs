@@ -27,7 +27,6 @@ public class BallController : MonoBehaviour
     private GameObject currentPowerBar;
 
     private bool hasBallJustBeenShot = false;
-    private bool isballStopped = true;    
 
     private Canvas canvas;
 
@@ -44,17 +43,34 @@ public class BallController : MonoBehaviour
 
     void Update()
     {
-        HandleShoot();
-        HandleAiming();
-        if (Input.GetKeyDown(KeyCode.R))
+        switch (LastPublishedState)
         {
-            ResetBall();
+            case GameEventTypes.BallHasBeenShot:
+                if (GetComponent<Rigidbody2D>().velocity.magnitude == 0f && !hasBallJustBeenShot)
+                {
+                    EventBus.Publish(new BallStoppedEvent() { Sender = this });
+                    LastPublishedState = GameEventTypes.BallStopped;
+                }
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    ResetBall();
+                }
+                break;
+            case GameEventTypes.BallStopped:
+                LastPublishedState = GameEventTypes.BallReadyToBeShot;
+                break;
+            case GameEventTypes.BallReadyToBeShot:
+                HandleAiming();
+                HandleShoot();
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    ResetBall();
+                }
+                break;
+            default:
+                LastPublishedState = GameEventTypes.BallReadyToBeShot;
+                break;
         }
-    }
-
-    private void ShootBall() {
-        Vector2 force = new Vector2(Mathf.Cos(aimingAngle), Mathf.Sin(aimingAngle)) * amountOfForceToApplyToBall;
-        rb.velocity = force;
     }
 
     private void HandleAiming()
@@ -97,8 +113,8 @@ public class BallController : MonoBehaviour
     {
         while (Input.GetKey(KeyCode.Space) && amountOfForceToApplyToBall < maxAmountOfBallForce)
         {
-            EventBus.Publish(new BallIsBeingChargedEvent { Sender = this });
             amountOfForceToApplyToBall += Time.deltaTime * forceMultiplier;
+            EventBus.Publish(new BallIsBeingChargedEvent { Sender = this });
             powerBarFillImage.fillAmount = amountOfForceToApplyToBall / maxAmountOfBallForce;
 
             yield return null; // Yield control back to Unity to allow other tasks to execute
@@ -109,11 +125,10 @@ public class BallController : MonoBehaviour
         Vector2 force = new Vector2(Mathf.Cos(aimingAngle), Mathf.Sin(aimingAngle)) * amountOfForceToApplyToBall;
         rb.velocity = force;
         EventBus.Publish(new BallHasBeenShotEvent { Sender = this });
-        isballStopped = false;
-        hasBallJustBeenShot = true;
 
         Destroy(currentPowerBar, 0.5f);
 
+        hasBallJustBeenShot = true;
         LastPublishedState = GameEventTypes.BallHasBeenShot;
         Invoke("SetHasBallJustBeenShotToFalse", 0.5f);
         amountOfForceToApplyToBall = 0;
