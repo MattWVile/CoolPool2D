@@ -1,13 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CueMovement : MonoBehaviour
 {
     private BallController cueBallControllerScript;
     private Vector2 cueBallPosition;
-    public float distance; // Distance of the cue from the cue ball
+    public float distance = -4f; // Distance of the cue from the cue ball
 
     private void Start()
     {
@@ -26,7 +23,7 @@ public class CueMovement : MonoBehaviour
 
         // move the cue left and right
         float cueMovement = Input.GetAxis("Horizontal");
-        transform.Translate(Vector3.right * cueMovement * Time.deltaTime);
+        transform.Translate(Vector2.right * cueMovement * Time.deltaTime);
     }
 
     public Vector2 getOffset(float distance, float angle)
