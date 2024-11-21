@@ -46,7 +46,7 @@ public class BallController : MonoBehaviour
         switch (LastPublishedState)
         {
             case GameEventTypes.BallHasBeenShot:
-                if (GetComponent<Rigidbody2D>().velocity.magnitude == 0f && !hasBallJustBeenShot)
+                if (GetComponent<Rigidbody2D>().velocity.magnitude <= 0.001f && !hasBallJustBeenShot)
                 {
                     EventBus.Publish(new BallStoppedEvent() { Sender = this });
                     LastPublishedState = GameEventTypes.BallStopped;
