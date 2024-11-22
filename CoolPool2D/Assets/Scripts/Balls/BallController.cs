@@ -62,10 +62,6 @@ public class BallController : MonoBehaviour
             case GameEventTypes.BallReadyToBeShot:
                 HandleAiming();
                 HandleShoot();
-                if (Input.GetKeyDown(KeyCode.R))
-                {
-                    ResetBall();
-                }
                 break;
             default:
                 LastPublishedState = GameEventTypes.BallReadyToBeShot;

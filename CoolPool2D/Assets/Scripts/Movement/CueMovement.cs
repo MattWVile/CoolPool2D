@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class CueMovement : MonoBehaviour
 {
@@ -18,7 +19,7 @@ public class CueMovement : MonoBehaviour
         cueBallPosition = cueBallControllerScript.transform.position;
         EventBus.Subscribe<BallHasBeenShotEvent>(OnBallHasBeenShotEvent);
         EventBus.Subscribe<BallIsBeingChargedEvent>(OnBallBeingChargedEvent);
-        
+        EventBus.Subscribe<BallStoppedEvent>(OnBallStoppedEvent);
     }
 
     private void Update()
@@ -48,18 +49,29 @@ public class CueMovement : MonoBehaviour
         float y = distance * Mathf.Sin(angle);
         return new Vector2(x, y);
     }
-    private void OnBallHasBeenShotEvent(BallHasBeenShotEvent ballHasBeenShotEvent)
-    {
-        hasBallBeenShot = true;
-        EventBus.Unsubscribe<BallHasBeenShotEvent>(OnBallHasBeenShotEvent);
-        EventBus.Unsubscribe<BallIsBeingChargedEvent>(OnBallBeingChargedEvent);
-        isBallBeingCharged = false;
-    }
-
     private void OnBallBeingChargedEvent(BallIsBeingChargedEvent ballIsBeingChargedEvent)
     {
         isBallBeingCharged = true;
         hasBallBeenShot = false;
         distanceForCueToGoBack = ballIsBeingChargedEvent.Sender.amountOfForceToApplyToBall;
     }
+    private void OnBallHasBeenShotEvent(BallHasBeenShotEvent ballHasBeenShotEvent)
+    {
+        hasBallBeenShot = true;
+        isBallBeingCharged = false;
+        StartCoroutine(DisableSpriteRendererWithDelay(0.2f));
     }
+
+    public void OnBallStoppedEvent(BallStoppedEvent ballStoppedEvent)
+    {
+        if (gameObject.GetComponent<SpriteRenderer>().enabled) return;
+        cueBallPosition = ballStoppedEvent.Sender.transform.position;
+        gameObject.GetComponent<SpriteRenderer>().enabled = true;
+    }
+
+    private IEnumerator DisableSpriteRendererWithDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        gameObject.GetComponent<SpriteRenderer>().enabled = false;
+    }
+}
