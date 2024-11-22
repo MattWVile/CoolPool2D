@@ -8,6 +8,14 @@ public class DebuggingTools : MonoBehaviour
     private bool f2Pressed = false;
     private bool f3Pressed = false;
 
+
+    void Start() {
+        EventBus.Subscribe<BallPocketedEvent>(@event =>
+            Debug.Log($"[Event] BallPocketedEvent: {@event.Ball.gameObject.name} in {@event.Pocket}"));
+        EventBus.Subscribe<BallCollidedWithRailEvent>(@event =>
+            Debug.Log($"[Event] BallCollidedWithRailEvent: {@event.Ball.gameObject.name} with {@event.Rail}"));
+    }
+
     // Update is called once per frame
     void Update()
     {
