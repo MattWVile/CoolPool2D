@@ -22,7 +22,8 @@ public class BallStoppedEvent : BaseGameEvent
 }
 public class BallHasBeenShotEvent : BaseGameEvent
 {
-    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
+    public new CueMovement Sender { get; set; } // overridden Sender to specify the sender type
+    public GameObject Target { get; set; }
 }
 public class BallIsBeingMovedEvent : BaseGameEvent
 {
