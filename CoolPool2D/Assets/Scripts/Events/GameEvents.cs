@@ -30,15 +30,10 @@ public class BallIsBeingMovedEvent : BaseGameEvent
 }
 public class BallCollidedWithRailEvent : BaseGameEvent
 {
-    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
-    public Collision Collision { get; set; } // overridden Sender to specify the sender type
+    public new RailController Sender { get; set; } // overridden Sender to specify the sender type
+    public Rail Rail { get; set; }
+    public GameObject Ball { get; set; }
 }
-
-//public class BallEnteredPocketEvent : BaseGameEvent
-//{
-//    public new PocketController Sender { get; set; } // overridden Sender to specify the sender type
-//    public Collision Collision { get; set; }
-//}
 
 //public class ShotScoreCalculatedEvent : BaseGameEvent
 //{
@@ -52,4 +47,11 @@ public class BallIsBeingChargedEvent : BaseGameEvent
 public class BallIsChargedEvent : BaseGameEvent
 {
     public new BallController Sender { get; set; } // overridden Sender to specify the sender type
+}
+
+public class BallPocketedEvent : BaseGameEvent
+{
+    public new PocketController Sender { get; set; } // overridden Sender to specify the sender type
+    public Pocket Pocket { get; set; }
+    public GameObject Ball { get; set; }
 }
