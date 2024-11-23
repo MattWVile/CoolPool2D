@@ -4,20 +4,24 @@ using System.Collections;
 public class CueMovement : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
-    public float distanceFromTarget = -4f; // Distance of the cue from the cue ball
+
     public GameObject target; // the target ball
-    private Shootable targetShootable;
+    
+    public float shotStrength = 1f;
     public float aimingAngle;
+
     public Vector2 targetPosition;
 
-    public float distanceForCueToGoBack = 1f;
-    private float chargeTime; 
+    private float distanceFromTarget = -4f; // Distance of the cue from target
+    private float distanceForCueToGoBack = 1f;
+    private float chargeTime;
+
+    private float? isChargingStart = null;
+
+    private Shootable targetShootable;
 
     private bool isBallBeingCharged = false;
     private bool hasBallBeenShot = false;
-    public float shotStrength = 1f;
-
-    private float? isChargingStart = null;
 
     private void Start()
     {
