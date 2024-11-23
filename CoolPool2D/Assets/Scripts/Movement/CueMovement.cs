@@ -1,17 +1,32 @@
 using UnityEngine;
+using System.Collections;
 
 public class CueMovement : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
-    public float distance = -4f; // Distance of the cue from the cue ball
+    public float distanceFromTarget = -4f; // Distance of the cue from the cue ball
     public GameObject target; // the target ball
     private Shootable targetShootable;
-    public float AimingAngle;
+    public float aimingAngle;
+    public Vector2 targetPosition;
 
+    public float distanceForCueToGoBack = 1f;
+    private float chargeTime; 
+
+    private bool isBallBeingCharged = false;
+    private bool hasBallBeenShot = false;
     public float shotStrength = 1f;
 
     private float? isChargingStart = null;
 
+    private void Start()
+    {
+        EventBus.Subscribe<BallStoppedEvent>((@event) =>
+        {
+            isBallBeingCharged = false;
+            hasBallBeenShot = false;
+        });
+    }
     private void Update()
     {
         SetPosition();
@@ -22,26 +37,35 @@ public class CueMovement : MonoBehaviour
     {
         // move the cue left and right
         float cueMovement = Input.GetAxis("Horizontal");
-        AimingAngle += cueMovement * Time.deltaTime;
+        aimingAngle += cueMovement * Time.deltaTime;
 
         if (Input.GetKey(KeyCode.Space))
         {
-            if (isChargingStart != null) return;
-            isChargingStart = Time.time;
+            if (isChargingStart == null){
+                isChargingStart = Time.time;
+                isBallBeingCharged = true;
+                hasBallBeenShot = false;
+            }
+            else
+            {
+                chargeTime = Mathf.Clamp(Time.time - isChargingStart.Value, 0, 1);
+            }
         }
         else
         {
             if (isChargingStart == null) return;
-            float chargeTime = Time.time - isChargingStart.Value;
+            isBallBeingCharged = false;
+            hasBallBeenShot = true;
+            chargeTime = Time.time - isChargingStart.Value;
             var power = Mathf.Clamp(chargeTime, 0, 1);
-            targetShootable.Shoot(AimingAngle, power * shotStrength);
+            targetShootable.Shoot(aimingAngle, power * shotStrength);
             isChargingStart = null;
-            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target});
+            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
         }
     }
-
-    public void Disable()
+    public IEnumerator DisableWithDelay(float delay)
     {
+        yield return new WaitForSeconds(delay);
         target = null;
         targetShootable = null;
         spriteRenderer.enabled = false;
@@ -52,15 +76,26 @@ public class CueMovement : MonoBehaviour
         target = targetObj;
         targetShootable = target.GetComponent<Shootable>();
         spriteRenderer.enabled = true;
+        targetPosition = target.transform.position;
     }
 
     private void SetPosition()
     {
         if(target == null) return;
-        var offset = getOffset(distance, AimingAngle);
-        transform.position = (Vector2) target.transform.position + offset;
-        // rotate the cue to face the direction the ball is going to move in
-        transform.rotation = Quaternion.Euler(0, 0, AimingAngle * Mathf.Rad2Deg);
+        if (isBallBeingCharged)
+        {
+            transform.position = targetPosition + getOffset(distanceFromTarget - (distanceForCueToGoBack * chargeTime), aimingAngle);
+        }
+        else if (hasBallBeenShot)
+        {
+            transform.position = targetPosition + getOffset(distanceFromTarget + (distanceForCueToGoBack), aimingAngle);
+        }
+        else
+        {
+            var offset = getOffset(distanceFromTarget, aimingAngle);
+            transform.position = targetPosition + offset;
+        }
+        transform.rotation = Quaternion.Euler(0, 0, aimingAngle * Mathf.Rad2Deg);
     }
 
     public Vector2 getOffset(float distance, float angle)
@@ -69,4 +104,5 @@ public class CueMovement : MonoBehaviour
         float y = distance * Mathf.Sin(angle);
         return new Vector2(x, y);
     }
+
 }
