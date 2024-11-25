@@ -4,7 +4,7 @@ using UnityEngine;
 public class CueMovement : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
-    public float distance = -4f; // Distance of the cue from the cue ball
+    public float distanceFromTarget = -4f; // Distance of the cue from the cue ball
     public GameObject target; // the target ball
     private Shootable targetShootable;
     public float AimingAngle;
@@ -73,7 +73,7 @@ public class CueMovement : MonoBehaviour
     private void SetPosition()
     {
         if (target == null) return;
-        var offset = getOffset(distance - (chargeTime()), AimingAngle);
+        var offset = getOffset(distanceFromTarget - (chargeTime()), AimingAngle);
         var targetPosition = (Vector2)target.transform.position + offset;
 
         // Smoothly move the cue to the target position using Lerp
