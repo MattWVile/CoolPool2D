@@ -67,7 +67,7 @@ public class CueMovement : MonoBehaviour
             EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
         }
     }
-    public IEnumerator DisableWithDelay(float delay)
+    public IEnumerator Disable(float delay = 0f)
     {
         yield return new WaitForSeconds(delay);
         target = null;
