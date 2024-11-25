@@ -1,36 +1,32 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class CueMovement : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
-
+    public float distance = -4f; // Distance of the cue from the cue ball
     public GameObject target; // the target ball
-    
+    private Shootable targetShootable;
+    public float AimingAngle;
+
+    public float smoothness = 10f;
+
     public float shotStrength = 1f;
-    public float aimingAngle;
-
-    public Vector2 targetPosition;
-
-    private float distanceFromTarget = -4f; // Distance of the cue from target
-    private float distanceForCueToGoBack = 1f;
-    private float chargeTime;
 
     private float? isChargingStart = null;
 
-    private Shootable targetShootable;
-
-    private bool isBallBeingCharged = false;
-    private bool hasBallBeenShot = false;
-
-    private void Start()
+    private float chargeTime()
     {
-        EventBus.Subscribe<BallStoppedEvent>((@event) =>
+        if (isChargingStart != null)
         {
-            isBallBeingCharged = false;
-            hasBallBeenShot = false;
-        });
+            return Mathf.Clamp(Time.time - isChargingStart.Value, 0, 1);
+        }
+        else
+        {
+            return 0;
+        }
     }
+
     private void Update()
     {
         SetPosition();
@@ -41,32 +37,24 @@ public class CueMovement : MonoBehaviour
     {
         // move the cue left and right
         float cueMovement = Input.GetAxis("Horizontal");
-        aimingAngle += cueMovement * Time.deltaTime;
+        AimingAngle += cueMovement * Time.deltaTime;
 
         if (Input.GetKey(KeyCode.Space))
         {
-            if (isChargingStart == null){
-                isChargingStart = Time.time;
-                isBallBeingCharged = true;
-                hasBallBeenShot = false;
-            }
-            else
-            {
-                chargeTime = Mathf.Clamp(Time.time - isChargingStart.Value, 0, 1);
-            }
+            if (isChargingStart != null) return;
+            isChargingStart = Time.time;
         }
         else
         {
             if (isChargingStart == null) return;
-            isBallBeingCharged = false;
-            hasBallBeenShot = true;
-            chargeTime = Time.time - isChargingStart.Value;
+            float chargeTime = Time.time - isChargingStart.Value;
             var power = Mathf.Clamp(chargeTime, 0, 1);
-            targetShootable.Shoot(aimingAngle, power * shotStrength);
+            targetShootable.Shoot(AimingAngle, power * shotStrength);
             isChargingStart = null;
             EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
         }
     }
+
     public IEnumerator Disable(float delay = 0f)
     {
         yield return new WaitForSeconds(delay);
@@ -80,26 +68,19 @@ public class CueMovement : MonoBehaviour
         target = targetObj;
         targetShootable = target.GetComponent<Shootable>();
         spriteRenderer.enabled = true;
-        targetPosition = target.transform.position;
     }
 
     private void SetPosition()
     {
-        if(target == null) return;
-        if (isBallBeingCharged)
-        {
-            transform.position = targetPosition + getOffset(distanceFromTarget - (distanceForCueToGoBack * chargeTime), aimingAngle);
-        }
-        else if (hasBallBeenShot)
-        {
-            transform.position = targetPosition + getOffset(distanceFromTarget + (distanceForCueToGoBack), aimingAngle);
-        }
-        else
-        {
-            var offset = getOffset(distanceFromTarget, aimingAngle);
-            transform.position = targetPosition + offset;
-        }
-        transform.rotation = Quaternion.Euler(0, 0, aimingAngle * Mathf.Rad2Deg);
+        if (target == null) return;
+        var offset = getOffset(distance - (chargeTime()), AimingAngle);
+        var targetPosition = (Vector2)target.transform.position + offset;
+
+        // Smoothly move the cue to the target position using Lerp
+        transform.position = Vector2.Lerp(transform.position, targetPosition, Time.deltaTime * smoothness);
+
+        // Rotate the cue to face the direction the ball is going to move in
+        transform.rotation = Quaternion.Euler(0, 0, AimingAngle * Mathf.Rad2Deg);
     }
 
     public Vector2 getOffset(float distance, float angle)
@@ -108,5 +89,4 @@ public class CueMovement : MonoBehaviour
         float y = distance * Mathf.Sin(angle);
         return new Vector2(x, y);
     }
-
 }
