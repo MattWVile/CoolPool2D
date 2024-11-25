@@ -15,8 +15,6 @@ public class CueMovement : MonoBehaviour
 
     private float? isChargingStart = null;
 
-    private float power;
-
     private float chargeTime => isChargingStart != null ? Mathf.Clamp(Time.time - isChargingStart.Value, 0, 1) : 0;
 
     private Vector2 initialTargetPosition;
@@ -41,8 +39,7 @@ public class CueMovement : MonoBehaviour
         else
         {
             if (isChargingStart == null) return;
-            power = Mathf.Clamp(chargeTime, 0, 1);
-            targetShootable.Shoot(AimingAngle, power * shotStrength);
+            targetShootable.Shoot(AimingAngle, chargeTime * shotStrength);
             isChargingStart = null;
             EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
         }
@@ -62,25 +59,15 @@ public class CueMovement : MonoBehaviour
         initialTargetPosition = target.transform.position;
         targetShootable = target.GetComponent<Shootable>();
         spriteRenderer.enabled = true;
-        power = 0;
     }
 
     private void SetPosition()
     {
         if (target == null)
-            return;
-        if(isChargingStart == null && power > 0)
-        {
-            var offset = getOffset(distanceFromTarget + (power * 3f), AimingAngle);
-            Vector2 targetPosition = initialTargetPosition + offset;
-            transform.position = Vector3.Slerp(transform.position, targetPosition, 0.2f);
-        }
-        else
-        {
-            var offset = getOffset(distanceFromTarget - (chargeTime * 3f), AimingAngle);
-            Vector2 targetPosition = initialTargetPosition + offset;
-            transform.position = targetPosition;
-        }
+        return;
+        var offset = getOffset(distanceFromTarget - (chargeTime * 3f), AimingAngle);
+        Vector2 targetPosition = initialTargetPosition + offset;
+        transform.position = targetPosition;
         // Rotate the cue to face the direction the ball is going to move in
         transform.rotation = Quaternion.Euler(0, 0, AimingAngle * Mathf.Rad2Deg);
     }
