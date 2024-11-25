@@ -2242,9 +2242,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteRenderer: {fileID: 1824203224}
-  distance: -4
+  distanceFromTarget: -4
   target: {fileID: 0}
   AimingAngle: 0
+  smoothness: 10
   shotStrength: 10000
 --- !u!1 &1827407676
 GameObject:

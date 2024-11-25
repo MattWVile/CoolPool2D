@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
 
         EventBus.Subscribe<BallHasBeenShotEvent>((@event) => {
             StartCoroutine(CheckIfAllBallsStopped());
-            cue.GetComponent<CueMovement>().Disable();
+            StartCoroutine(cue.GetComponent<CueMovement>().Disable(0.2f));
         });
         EventBus.Subscribe<BallStoppedEvent>((@event) =>
         {
