@@ -2244,9 +2244,8 @@ MonoBehaviour:
   spriteRenderer: {fileID: 1824203224}
   distanceFromTarget: -4
   target: {fileID: 0}
-  aimingAngle: 0
-  targetPosition: {x: 0, y: 0}
-  distanceForCueToGoBack: 1
+  AimingAngle: 0
+  smoothness: 10
   shotStrength: 10000
 --- !u!1 &1827407676
 GameObject:

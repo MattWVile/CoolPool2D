@@ -6,18 +6,20 @@ using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 public class CueMovement : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
-    public float distanceFromTarget = -4f; // Distance of the cue from the cue ball
+    public float distanceFromTarget = 4f; // Distance of the cue from the cue ball
     public GameObject target; // the target ball
     private Shootable targetShootable;
     public float AimingAngle;
-
-    public float smoothness = 10f;
 
     public float shotStrength = 1f;
 
     private float? isChargingStart = null;
 
+    private float power;
+
     private float chargeTime => isChargingStart != null ? Mathf.Clamp(Time.time - isChargingStart.Value, 0, 1) : 0;
+
+    private Vector2 initialTargetPosition;
 
     private void Update()
     {
@@ -39,7 +41,7 @@ public class CueMovement : MonoBehaviour
         else
         {
             if (isChargingStart == null) return;
-            var power = Mathf.Clamp(chargeTime, 0, 1);
+            power = Mathf.Clamp(chargeTime, 0, 1);
             targetShootable.Shoot(AimingAngle, power * shotStrength);
             isChargingStart = null;
             EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
@@ -57,21 +59,28 @@ public class CueMovement : MonoBehaviour
     public void Enable(GameObject targetObj)
     {
         target = targetObj;
+        initialTargetPosition = target.transform.position;
         targetShootable = target.GetComponent<Shootable>();
         spriteRenderer.enabled = true;
+        power = 0;
     }
 
     private void SetPosition()
     {
-        var smoothness = 10f;
         if (target == null)
             return;
-        var offset = getOffset(distanceFromTarget - (chargeTime * 5f), AimingAngle);
-        Vector3 targetPosition = (Vector2)target.transform.position + offset;
-
-        // Smoothly move the cue to the target position
-        transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * smoothness);
-
+        if(isChargingStart == null && power > 0)
+        {
+            var offset = getOffset(distanceFromTarget + (power * 3f), AimingAngle);
+            Vector2 targetPosition = initialTargetPosition + offset;
+            transform.position = Vector3.Slerp(transform.position, targetPosition, 0.2f);
+        }
+        else
+        {
+            var offset = getOffset(distanceFromTarget - (chargeTime * 3f), AimingAngle);
+            Vector2 targetPosition = initialTargetPosition + offset;
+            transform.position = targetPosition;
+        }
         // Rotate the cue to face the direction the ball is going to move in
         transform.rotation = Quaternion.Euler(0, 0, AimingAngle * Mathf.Rad2Deg);
     }
