@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class CueMovement : MonoBehaviour
@@ -8,9 +9,23 @@ public class CueMovement : MonoBehaviour
     private Shootable targetShootable;
     public float AimingAngle;
 
+    public float smoothness = 10f;
+
     public float shotStrength = 1f;
 
     private float? isChargingStart = null;
+
+    private float chargeTime()
+    {
+        if (isChargingStart != null)
+        {
+            return Mathf.Clamp(Time.time - isChargingStart.Value, 0, 1);
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
     private void Update()
     {
@@ -36,12 +51,13 @@ public class CueMovement : MonoBehaviour
             var power = Mathf.Clamp(chargeTime, 0, 1);
             targetShootable.Shoot(AimingAngle, power * shotStrength);
             isChargingStart = null;
-            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target});
+            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
         }
     }
 
-    public void Disable()
+    public IEnumerator Disable(float delay = 0f)
     {
+        yield return new WaitForSeconds(delay);
         target = null;
         targetShootable = null;
         spriteRenderer.enabled = false;
@@ -56,10 +72,14 @@ public class CueMovement : MonoBehaviour
 
     private void SetPosition()
     {
-        if(target == null) return;
-        var offset = getOffset(distance, AimingAngle);
-        transform.position = (Vector2) target.transform.position + offset;
-        // rotate the cue to face the direction the ball is going to move in
+        if (target == null) return;
+        var offset = getOffset(distance - (chargeTime()), AimingAngle);
+        var targetPosition = (Vector2)target.transform.position + offset;
+
+        // Smoothly move the cue to the target position using Lerp
+        transform.position = Vector2.Lerp(transform.position, targetPosition, Time.deltaTime * smoothness);
+
+        // Rotate the cue to face the direction the ball is going to move in
         transform.rotation = Quaternion.Euler(0, 0, AimingAngle * Mathf.Rad2Deg);
     }
 
