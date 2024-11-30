@@ -18,3 +18,10 @@ public enum Pocket {
     BottomLeft,
     BottomRight
 }
+
+public enum GameState {
+    Aiming,
+    Shooting,
+    CalculatePoints,
+    PrepareNextTurn,
+}
