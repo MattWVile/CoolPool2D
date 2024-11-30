@@ -28,26 +28,36 @@ public class ScoreCardManager : MonoBehaviour
 
     public VisualElement AddScoreType(string header, int multiplier, int amount, int score)
     {
-        VisualElement newShotType = null;
-        if (shotTypeTemplate != null)
+        // Ensure the template is assigned
+        if (shotTypeTemplate == null)
         {
-            // Clone the template
-            newShotType = shotTypeTemplate.Instantiate();
+            Debug.LogError("ShotTypeTemplate is not assigned in the Inspector!");
+            return null;
+        }
 
-            // Populate the cloned template with data
-            newShotType.Q<Label>("ShotTypeHeader").text = header;
-            newShotType.Q<Label>("ShotTypeMult").text = $"+{multiplier}*";
-            newShotType.Q<Label>("ShotTypeAmount").text = $"{amount} x";
-            newShotType.Q<Label>("ShotTypeScore").text = score.ToString();
+        // Instantiate a new instance of the template
+        VisualElement newShotType = shotTypeTemplate.Instantiate();
 
-            // Add the populated template to the Score Card
-            VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreBackground");
+        // Populate the cloned template with data
+        // Update the "header" text
+        newShotType.Q<Label>("ShotTypeHeading").text = header;
+
+        // Update the multiplier, amount, and score
+        newShotType.Q<Label>("ShotTypeMult").text = $"+{multiplier}*";
+        newShotType.Q<Label>("ShotTypeAmount").text = $"{amount} x";
+        newShotType.Q<Label>("ShotTypeScore").text = score.ToString();
+
+        // Add the populated template to the container in the main UI
+        VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreTypes");
+        if (shotScoreBackground != null)
+        {
             shotScoreBackground.Add(newShotType);
         }
         else
         {
-            Debug.LogError("ShotTypeTemplate is not assigned in the Inspector!");
+            Debug.LogError("Container 'ShotScoreTypes' not found in the UI!");
         }
+
         return newShotType;
     }
     public void UpdateScoreType(VisualElement shotType, int multiplier, int amount, int score)
