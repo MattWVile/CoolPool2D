@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -8,25 +10,38 @@ public class ScoreCardManager : MonoBehaviour
     public VisualTreeAsset shotTypeTemplate; // Assign the template .uxml here
     public VisualElement mostRecentShotAdded;
 
+    public List<VisualElement> scoreTypes; // List to hold current score types
+
     void Start()
     {
         // Access the root element of the UI Document
         root = uiDocument.rootVisualElement;
+        EventBus.Subscribe<BallCollidedWithRailEvent>(onBallCollidedWithRailEvent);
     }
-
-    private void Update()
+    private void onBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (@event.Ball.CompareTag("CueBall"))
         {
-            mostRecentShotAdded = AddScoreType("Cue Ball Wall Bounce", 2, 3, 2000);
-        }        
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            UpdateScoreType(mostRecentShotAdded, 1, 1, 1);
+            if (scoreTypes == null)
+            {
+                scoreTypes = new List<VisualElement>(); // Initialize the scoreTypes list
+                AddScoreType("Cue Ball Rail Bounce", 100);
+            }
+            else
+            {
+                foreach (VisualElement scoreType in scoreTypes)
+                {
+                    if (scoreType.Q<Label>("ShotTypeHeading").text == "Cue Ball Rail Bounce")
+                    {
+                        scoreType.Q<Label>("ShotTypeAmount").text = (int.Parse(scoreType.Q<Label>("ShotTypeAmount").text) + 1).ToString();
+                        return;
+                    }
+                }
+            }
         }
     }
 
-    public VisualElement AddScoreType(string header, int multiplier, int amount, int score)
+    public VisualElement AddScoreType(string header, int score, int multiplier = 0, int amount = 1)
     {
         // Ensure the template is assigned
         if (shotTypeTemplate == null)
@@ -43,10 +58,13 @@ public class ScoreCardManager : MonoBehaviour
         newShotType.Q<Label>("ShotTypeHeading").text = header;
 
         // Update the multiplier, amount, and score
-        newShotType.Q<Label>("ShotTypeMult").text = $"+{multiplier}*";
-        newShotType.Q<Label>("ShotTypeAmount").text = $"{amount} x";
-        newShotType.Q<Label>("ShotTypeScore").text = score.ToString();
+        newShotType.Q<Label>("ShotTypeMult").style.display = multiplier == 0 ? DisplayStyle.None : DisplayStyle.Flex;
+        newShotType.Q<Label>("ShotTypeMult").text = multiplier == 0 ? "" : $"+{multiplier}*";
 
+
+        newShotType.Q<Label>("ShotTypeAmount").text = amount.ToString();
+        newShotType.Q<Label>("ShotTypeScore").text = score.ToString();
+        scoreTypes.Add(newShotType);
         // Add the populated template to the container in the main UI
         VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreTypes");
         if (shotScoreBackground != null)
@@ -60,6 +78,7 @@ public class ScoreCardManager : MonoBehaviour
 
         return newShotType;
     }
+
     public void UpdateScoreType(VisualElement shotType, int multiplier, int amount, int score)
     {
         if (shotTypeTemplate != null)
