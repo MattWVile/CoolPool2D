@@ -17,11 +17,32 @@ public class ScoreCardManager : MonoBehaviour
         // Access the root element of the UI Document
         root = uiDocument.rootVisualElement;
         EventBus.Subscribe<BallCollidedWithRailEvent>(onBallCollidedWithRailEvent);
+        scoreTypes = new List<VisualElement>();
     }
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            AddScoreType("Testy Festyyyy", 1000f, 3, 1);
+        }
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            foreach (VisualElement scoreType in scoreTypes)
+            {
+                if (scoreType.Q<Label>("ShotTypeHeading").text == "Testy Festyyyy")
+                {
+                    IncrimentShotTypeAmount(scoreType);
+                    break;
+                }
+            }
+        }
+    }
+
     private void onBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
     {
         string shotTypeHeader = string.Empty;
         float shotTypeScore = 0f;
+        bool foundScoreType = false;
 
         switch (@event.Ball.tag)
         {
@@ -39,17 +60,11 @@ public class ScoreCardManager : MonoBehaviour
                 break;
         }
 
-        if (scoreTypes == null)
-        {
-            scoreTypes = new List<VisualElement>(); // Initialize the scoreTypes list
-        }
-
-        bool foundScoreType = false;
         foreach (VisualElement scoreType in scoreTypes)
         {
             if (scoreType.Q<Label>("ShotTypeHeading").text == shotTypeHeader)
             {
-                scoreType.Q<Label>("ShotTypeAmount").text = (int.Parse(scoreType.Q<Label>("ShotTypeAmount").text) + 1).ToString();
+                IncrimentShotTypeAmount(scoreType);
                 foundScoreType = true;
                 break;
             }
@@ -57,13 +72,12 @@ public class ScoreCardManager : MonoBehaviour
 
         if (!foundScoreType)
         {
-            AddScoreType(shotTypeHeader, 100);
+            AddScoreType(shotTypeHeader, shotTypeScore);
         }
     }
 
-    public VisualElement AddScoreType(string header, int score, int multiplier = 0, int amount = 1)
+    private VisualElement AddScoreType(string header, float score, int multiplier = 0, int amount = 1)
     {
-        // Ensure the template is assigned
         if (shotTypeTemplate == null)
         {
             Debug.LogError("ShotTypeTemplate is not assigned in the Inspector!");
@@ -73,12 +87,10 @@ public class ScoreCardManager : MonoBehaviour
         // Instantiate a new instance of the template
         VisualElement newShotType = shotTypeTemplate.Instantiate();
 
-        // Populate the cloned template with data
         // Update the "header" text
         newShotType.Q<Label>("ShotTypeHeading").text = header;
 
         // Update the multiplier, amount, and score
-        newShotType.Q<Label>("ShotTypeMult").style.display = multiplier == 0 ? DisplayStyle.None : DisplayStyle.Flex;
         newShotType.Q<Label>("ShotTypeMult").text = multiplier == 0 ? "" : $"+{multiplier}*";
 
 
@@ -98,23 +110,8 @@ public class ScoreCardManager : MonoBehaviour
 
         return newShotType;
     }
-
-    public void UpdateScoreType(VisualElement shotType, int multiplier, int amount, int score)
+    private void IncrimentShotTypeAmount(VisualElement scoreType)
     {
-        if (shotTypeTemplate != null)
-        {
-            // Populate the cloned template with data
-            shotType.Q<Label>("ShotTypeMult").text = $"+{multiplier}*";
-            shotType.Q<Label>("ShotTypeAmount").text = $"{amount} x";
-            shotType.Q<Label>("ShotTypeScore").text = score.ToString();
-
-            // Add the populated template to the Score Card
-            VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreBackground");
-            shotScoreBackground.Add(shotType);
-        }
-        else
-        {
-            Debug.LogError("ShotTypeTemplate is not assigned in the Inspector!");
-        }
+        scoreType.Q<Label>("ShotTypeAmount").text = (int.Parse(scoreType.Q<Label>("ShotTypeAmount").text) + 1).ToString();
     }
 }
