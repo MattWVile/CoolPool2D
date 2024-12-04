@@ -56,3 +56,8 @@ public class BallPocketedEvent : BaseGameEvent
     public Pocket Pocket { get; set; }
     public GameObject Ball { get; set; }
 }
+
+public class NewGameStateEvent : BaseGameEvent {
+    public new GameStateManager Sender { get; set; } // overridden Sender to specify the sender type
+    public GameState NewGameState { get; set; }
+}
