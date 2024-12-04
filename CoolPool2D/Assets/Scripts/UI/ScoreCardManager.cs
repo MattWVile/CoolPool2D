@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,6 +9,9 @@ public class ScoreCardManager : MonoBehaviour
     public VisualTreeAsset shotTypeTemplate; // Assign the template .uxml here
     public VisualElement mostRecentShotAdded;
 
+    public float shotScore;
+    public float totalScore = 0f;
+
     public List<VisualElement> scoreTypes; // List to hold current score types
 
     void Start()
@@ -18,12 +20,25 @@ public class ScoreCardManager : MonoBehaviour
         root = uiDocument.rootVisualElement;
         EventBus.Subscribe<BallCollidedWithRailEvent>(onBallCollidedWithRailEvent);
         scoreTypes = new List<VisualElement>();
+        EventBus.Subscribe<NewGameStateEvent>((@event) =>
+        {
+            if (@event.NewGameState == GameState.CalculatePoints)
+            {
+                UpdateTotalScore();
+                ClearShotScore();
+            }
+        });
     }
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.T))
         {
             AddScoreType("Testy Festyyyy", 1000f, 3, 1);
+        }        
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            UpdateTotalScore();
+            ClearShotScore();
         }
         if (Input.GetKeyDown(KeyCode.D))
         {
@@ -74,6 +89,8 @@ public class ScoreCardManager : MonoBehaviour
         {
             AddScoreType(shotTypeHeader, shotTypeScore);
         }
+
+        UpdateShotScore();
     }
 
     private VisualElement AddScoreType(string header, float score, int multiplier = 0, int amount = 1)
@@ -91,7 +108,9 @@ public class ScoreCardManager : MonoBehaviour
         newShotType.Q<Label>("ShotTypeHeading").text = header;
 
         // Update the multiplier, amount, and score
-        newShotType.Q<Label>("ShotTypeMult").text = multiplier == 0 ? "" : $"+{multiplier}*";
+        newShotType.Q<Label>("ShotTypeMultValue").text = multiplier == 0 ? "" : multiplier.ToString();
+        newShotType.Q<Label>("ShotTypeMultAdditionSymbol").text = multiplier == 0 ? "" : "+";
+        newShotType.Q<Label>("ShotTypeMultAsterix").text = multiplier == 0 ? "" : "*";
 
 
         newShotType.Q<Label>("ShotTypeAmount").text = amount.ToString();
@@ -114,4 +133,44 @@ public class ScoreCardManager : MonoBehaviour
     {
         scoreType.Q<Label>("ShotTypeAmount").text = (int.Parse(scoreType.Q<Label>("ShotTypeAmount").text) + 1).ToString();
     }
+
+    private void UpdateShotScore()
+    {
+        float totalScore = 0f;
+        float totalMultiplier = 1f;
+        foreach (VisualElement scoreType in scoreTypes)
+        {
+            totalScore += float.Parse(scoreType.Q<Label>("ShotTypeScore").text) * int.Parse(scoreType.Q<Label>("ShotTypeAmount").text);
+            string multValueText = scoreType.Q<Label>("ShotTypeMultValue").text;
+            if (!string.IsNullOrEmpty(multValueText))
+            {
+                totalMultiplier += float.Parse(multValueText);
+            }  
+        }
+        shotScore = totalScore * totalMultiplier;
+        root.Q<Label>("ShotScoreScore").text = (totalScore * totalMultiplier).ToString();
+    }
+    public void UpdateTotalScore()
+    {
+        totalScore += shotScore;
+        root.Q<Label>("TotalScore").text = totalScore.ToString();
+    }
+    public void ClearShotScore()
+    {
+        ClearScoreTypes();
+        shotScore = 0f;
+        root.Q<Label>("ShotScoreScore").text = "";
+    }
+    private void ClearScoreTypes()
+    {
+        foreach (VisualElement scoreType in scoreTypes)
+        {
+            scoreType.RemoveFromHierarchy();
+        }
+        scoreTypes.Clear();
+    }
+
+
+
+
 }
