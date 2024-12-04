@@ -20,24 +20,44 @@ public class ScoreCardManager : MonoBehaviour
     }
     private void onBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
     {
-        if (@event.Ball.CompareTag("CueBall"))
+        string shotTypeHeader = string.Empty;
+        float shotTypeScore = 0f;
+
+        switch (@event.Ball.tag)
         {
-            if (scoreTypes == null)
+            case "CueBall":
+                shotTypeHeader = "Cue Ball Rail Bounce";
+                shotTypeScore = 100f;
+                break;
+            case "ObjectBall":
+                shotTypeHeader = "Object Ball Rail Bounce";
+                shotTypeScore = 100f;
+                break;
+            default:
+                shotTypeHeader = "Tag not in case";
+                shotTypeScore = 100f;
+                break;
+        }
+
+        if (scoreTypes == null)
+        {
+            scoreTypes = new List<VisualElement>(); // Initialize the scoreTypes list
+        }
+
+        bool foundScoreType = false;
+        foreach (VisualElement scoreType in scoreTypes)
+        {
+            if (scoreType.Q<Label>("ShotTypeHeading").text == shotTypeHeader)
             {
-                scoreTypes = new List<VisualElement>(); // Initialize the scoreTypes list
-                AddScoreType("Cue Ball Rail Bounce", 100);
+                scoreType.Q<Label>("ShotTypeAmount").text = (int.Parse(scoreType.Q<Label>("ShotTypeAmount").text) + 1).ToString();
+                foundScoreType = true;
+                break;
             }
-            else
-            {
-                foreach (VisualElement scoreType in scoreTypes)
-                {
-                    if (scoreType.Q<Label>("ShotTypeHeading").text == "Cue Ball Rail Bounce")
-                    {
-                        scoreType.Q<Label>("ShotTypeAmount").text = (int.Parse(scoreType.Q<Label>("ShotTypeAmount").text) + 1).ToString();
-                        return;
-                    }
-                }
-            }
+        }
+
+        if (!foundScoreType)
+        {
+            AddScoreType(shotTypeHeader, 100);
         }
     }
 

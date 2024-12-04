@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ball
   - CueBall
+  - ObjectBall
   layers:
   - Default
   - TransparentFX

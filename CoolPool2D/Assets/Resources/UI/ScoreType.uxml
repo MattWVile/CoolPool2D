@@ -1,9 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:VisualElement name="ShotType" style="width: 100%; height: 100px; flex-direction: column; align-items: flex-start; -unity-font-style: normal;">
+    <ui:VisualElement name="ShotType" style="width: 100%; height: 65px; flex-direction: column; align-items: flex-start; -unity-font-style: normal;">
         <ui:VisualElement name="ShotTypeHeading" style="font-size: 25%; margin-bottom: -8px;">
-            <ui:Label tabindex="-1" text="Cue Ball Wall Boounce" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeHeading" style="justify-content: flex-start; align-self: auto; -unity-font-style: bold; font-size: 22.5%; -unity-text-align: middle-left; align-items: center; color: rgb(20, 49, 41);" />
+            <ui:Label tabindex="-1" text="Cue Ball Wall Boounce" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeHeading" style="justify-content: flex-start; align-self: auto; -unity-font-style: bold; font-size: 20%; -unity-text-align: middle-left; align-items: center; color: rgb(20, 49, 41);" />
         </ui:VisualElement>
-        <ui:VisualElement name="ShotType" style="height: 50%; flex-direction: row; font-size: 25%; align-items: flex-start; right: -27%; justify-content: flex-start;">
+        <ui:VisualElement name="ShotType" style="height: 50%; flex-direction: row; font-size: 25%; align-items: flex-start; right: 0; justify-content: flex-start; position: relative;">
             <ui:VisualElement name="VisualElement" style="width: auto; flex-grow: 1;">
                 <ui:Label tabindex="-1" text="+2*" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeMult" style="-unity-text-align: upper-right; font-size: 18%; -unity-font-style: bold; color: rgb(147, 128, 210);" />
             </ui:VisualElement>

@@ -1445,7 +1445,7 @@ GameObject:
   - component: {fileID: 342245650}
   m_Layer: 0
   m_Name: Ball
-  m_TagString: Ball
+  m_TagString: ObjectBall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3335,6 +3335,7 @@ MonoBehaviour:
   - {fileID: 788442963}
   balls: []
   ballRbs: []
+  gameStateManager: {fileID: 0}
 --- !u!4 &1469342013
 Transform:
   m_ObjectHideFlags: 0
@@ -5195,7 +5196,7 @@ GameObject:
   - component: {fileID: 2007219863}
   - component: {fileID: 2007219864}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: ScoreCardManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
