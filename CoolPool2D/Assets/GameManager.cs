@@ -55,8 +55,7 @@ public class GameManager : MonoBehaviour
     }
 
     private void LoadBalls() {
-
-        balls = GameObject.FindGameObjectsWithTag("Ball").ToList();
+        balls = GameObject.FindGameObjectsWithTag("ObjectBall").ToList();
         ballRbs = balls.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
     }
     private void HandleAimingState() {
