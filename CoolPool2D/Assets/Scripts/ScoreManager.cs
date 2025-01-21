@@ -31,13 +31,6 @@ public class ScoreManager : MonoBehaviour
     {
         // Handle ball pocketed logic
     }
-
-    //public void OnBallStopped(BallStoppedEvent @event)
-    //{
-    //    CalculatePoints();
-    //    shotScore = 0f;
-    //}
-
     private void OnBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
     {
         string shotTypeHeader = string.Empty;
@@ -60,7 +53,6 @@ public class ScoreManager : MonoBehaviour
         }
         shotScore += shotTypeScore;
         UIManager.Instance.AddScoreType(shotTypeHeader, shotTypeScore);
-
     }
 
     public void CalculatePoints()
