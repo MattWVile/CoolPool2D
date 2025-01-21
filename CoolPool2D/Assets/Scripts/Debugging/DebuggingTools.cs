@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 
 public class DebuggingTools : MonoBehaviour
@@ -13,10 +14,10 @@ public class DebuggingTools : MonoBehaviour
         cueMovement = GameObject.FindFirstObjectByType<CueMovement>();
         cueBall = GameObject.Find("CueBall");
 
-        EventBus.Subscribe<BallPocketedEvent>(@event =>
-            Debug.Log($"[DEBUG] [Event] BallPocketedEvent: {@event.Ball.gameObject.name} in {@event.Pocket}"));
-        EventBus.Subscribe<BallCollidedWithRailEvent>(@event =>
-            Debug.Log($"[DEBUG] [Event] BallCollidedWithRailEvent: {@event.Ball.gameObject.name} with {@event.Rail}"));
+        //EventBus.Subscribe<BallPocketedEvent>(@event =>
+        //    Debug.Log($"[DEBUG] [Event] BallPocketedEvent: {@event.Ball.gameObject.name} in {@event.Pocket}"));
+        //EventBus.Subscribe<BallCollidedWithRailEvent>(@event =>
+        //    Debug.Log($"[DEBUG] [Event] BallCollidedWithRailEvent: {@event.Ball.gameObject.name} with {@event.Rail}"));
     }
 
     // Update is called once per frame
@@ -28,14 +29,16 @@ public class DebuggingTools : MonoBehaviour
 
     private void HandleGameTools()
     {
-        if (Input.GetKeyDown(KeyCode.F4)) {
+        if (Input.GetKeyDown(KeyCode.F4))
+        {
             showLazer = !showLazer;
             Debug.Log($"[DEBUG] Show Lazer: {showLazer}");
         }
         if (showLazer) DrawLaser();
 
 
-        if (Input.GetKeyDown(KeyCode.F5)) {
+        if (Input.GetKeyDown(KeyCode.F5))
+        {
             cueBall.transform.position = new Vector3(-3.6f, 0, 0);
             Debug.Log($"[DEBUG] Reset CueBall position");
         }
@@ -65,7 +68,8 @@ public class DebuggingTools : MonoBehaviour
             Time.timeScale /= 0.998f;
             Debug.Log($"[DEBUG] Increased Time Scale [{Time.timeScale}]");
         }
-        if (Input.GetKey(KeyCode.F3)) {
+        if (Input.GetKey(KeyCode.F3))
+        {
             Time.timeScale = 1f;
             Debug.Log($"[DEBUG] Reset Time Scale [{Time.timeScale}]");
         }
