@@ -107,7 +107,7 @@ public class GameManager : MonoBehaviour
     private void HandleCalculatePointsState()
     {
         Debug.Log("Calculating points.");
-        ScoreManager.Instance.CalculatePoints();
+        ScoreManager.Instance.CalculateTotalPoints();
         StartCoroutine(WaitThenEndState(1f, GameState.CalculatePoints));
     }
 

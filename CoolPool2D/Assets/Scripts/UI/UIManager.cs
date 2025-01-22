@@ -37,10 +37,20 @@ public class UIManager : MonoBehaviour
         root.Q<Label>("TotalScore").text = newTotalScoreFloat.ToString();
     }
 
-    public void UpdateShotScore(float newShotScoreFloat)
+    public void AddToShotScore(float shotScoreToAdd)
     {
-        root.Q<Label>("ShotScoreScore").text = newShotScoreFloat.ToString();
+        string shotScoreText = root.Q<Label>("ShotScoreScore").text;
+        if (float.TryParse(shotScoreText, out float currentShotScore))
+        {
+            float newShotScore = currentShotScore + shotScoreToAdd;
+            root.Q<Label>("ShotScoreScore").text = newShotScore.ToString();
+        }
+        else
+        {
+            root.Q<Label>("ShotScoreScore").text = shotScoreToAdd.ToString();   
+        }
     }
+
     public void ClearShotScore()
     {
         ClearScoreTypes();
@@ -54,43 +64,47 @@ public class UIManager : MonoBehaviour
             Debug.LogError("ShotTypeTemplate is not assigned in the Inspector!");
             return;
         }
+
         ShotType shot = ScoreManager.Instance.currentShotTypes.Find(shot => shot.ShotTypeName == shotTypeHeader);
-        bool isMostRecent = true;
-        if (shot != null)
+        if (shot == null)
         {
-            foreach (VisualElement scoreType in UIManager.Instance.scoreTypes)
-            {
-                if (scoreType.Q<Label>("ShotTypeHeading").text == shotTypeHeader)
-                {
-                    UIManager.Instance.IncrementShotTypeAmount(scoreType);
-                    isMostRecent = false;
-                    break;
-                }
-            }
-
+            Debug.LogError($"ShotType with header {shotTypeHeader} not found in ScoreManager!");
+            return;
         }
-        if(isMostRecent)
-        {
-            VisualElement newShotType = shotTypeTemplate.Instantiate();
-            newShotType.Q<Label>("ShotTypeHeading").text = shotTypeHeader;
-            newShotType.Q<Label>("ShotTypeMultValue").text = shot.ShotTypeMultiplierAddition == 0 ? "" : shot.ShotTypeMultiplierAddition.ToString();
-            newShotType.Q<Label>("ShotTypeMultAdditionSymbol").text = shot.ShotTypeMultiplierAddition == 0 ? "" : "+";
-            newShotType.Q<Label>("ShotTypeMultAsterix").text = shot.ShotTypeMultiplierAddition == 0 ? "" : "*";
-            newShotType.Q<Label>("ShotTypeAmount").text = shot.NumberOfThisShotType.ToString();
-            newShotType.Q<Label>("ShotTypeScore").text = shot.ShotTypePoints.ToString();
-            scoreTypes.Add(newShotType);
 
-            VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreTypes");
-            if (shotScoreBackground != null)
-            {
-                shotScoreBackground.Add(newShotType);
-            }
-            else
-            {
-                Debug.LogError("Container 'ShotScoreTypes' not found in the UI!");
-            }
+        VisualElement existingShotType = scoreTypes.Find(scoreType => scoreType.Q<Label>("ShotTypeHeading").text == shotTypeHeader);
+        if (existingShotType != null)
+        {
+            IncrementShotTypeAmount(existingShotType);
+        }
+        else
+        {
+            CreateNewShotTypeElement(shotTypeHeader, shot);
         }
     }
+
+    private void CreateNewShotTypeElement(string shotTypeHeader, ShotType shot)
+    {
+        VisualElement newShotType = shotTypeTemplate.Instantiate();
+        newShotType.Q<Label>("ShotTypeHeading").text = shotTypeHeader;
+        newShotType.Q<Label>("ShotTypeMultValue").text = shot.ShotTypeMultiplierAddition == 0 ? "" : shot.ShotTypeMultiplierAddition.ToString();
+        newShotType.Q<Label>("ShotTypeMultAdditionSymbol").text = shot.ShotTypeMultiplierAddition == 0 ? "" : "+";
+        newShotType.Q<Label>("ShotTypeMultAsterix").text = shot.ShotTypeMultiplierAddition == 0 ? "" : "*";
+        newShotType.Q<Label>("ShotTypeAmount").text = shot.NumberOfThisShotType.ToString();
+        newShotType.Q<Label>("ShotTypeScore").text = shot.ShotTypePoints.ToString();
+        scoreTypes.Add(newShotType);
+
+        VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreTypes");
+        if (shotScoreBackground != null)
+        {
+            shotScoreBackground.Add(newShotType);
+        }
+        else
+        {
+            Debug.LogError("Container 'ShotScoreTypes' not found in the UI!");
+        }
+    }
+
     public void IncrementShotTypeAmount(VisualElement scoreType)
     {
         scoreType.Q<Label>("ShotTypeAmount").text = (int.Parse(scoreType.Q<Label>("ShotTypeAmount").text) + 1).ToString();

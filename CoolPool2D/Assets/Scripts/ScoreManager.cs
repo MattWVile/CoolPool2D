@@ -5,7 +5,6 @@ public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance { get; private set; }
 
-    public float shotScore;
     public float totalScore = 0f;
     public List<ShotType> currentShotTypes = new List<ShotType>();
 
@@ -34,52 +33,62 @@ public class ScoreManager : MonoBehaviour
     private void OnBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
     {
         string shotTypeHeader = string.Empty;
-        float shotTypeScore = 0f;
+        float shotTypePoints = 0f;
 
         switch (@event.Ball.tag)
         {
             case "CueBall":
                 shotTypeHeader = "Cue Ball Rail Bounce";
-                shotTypeScore = 100f;
+                shotTypePoints = 100f;
                 break;
             case "ObjectBall":
                 shotTypeHeader = "Object Ball Rail Bounce";
-                shotTypeScore = 100f;
+                shotTypePoints = 100f;
                 break;
             default:
-                shotTypeHeader = "Tag not in case";
-                shotTypeScore = 100f;
+                shotTypeHeader = "Tag not in case statement";
+                shotTypePoints = 100f;
                 break;
         }
+        AddOrUpdateShotType(shotTypeHeader, shotTypePoints);
+    }
+    private void AddOrUpdateShotType(string shotTypeHeader, float shotTypePoints)
+    {
+        ShotType shotType = currentShotTypes.Find(shot => shot.ShotTypeName == shotTypeHeader);
         // if shotTypeHeader is not in the list of currentShotTypes, add it
-        if (!currentShotTypes.Exists(shot => shot.ShotTypeName == shotTypeHeader))
+        if (shotType == null)
         {
-            AddShot(new ShotType(shotTypeHeader, shotTypeScore));
+            shotType = new ShotType(shotTypeHeader, shotTypePoints);
+            currentShotTypes.Add(shotType);
         }
         else
         {
             // if shotTypeHeader is in the list of currentShotTypes, increment the NumberOfThisShotType
-            ShotType shot = currentShotTypes.Find(shot => shot.ShotTypeName == shotTypeHeader);
-            shot.NumberOfThisShotType++;
+            shotType.NumberOfThisShotType++;
         }
 
+        UIManager.Instance.AddToShotScore(shotType.ShotTypePoints);
         UIManager.Instance.AddScoreType(shotTypeHeader);
     }
 
-    public void CalculatePoints()
+    private float calculateShotScore()
     {
-        // Calculate points logic
-        totalScore += shotScore;
+        float shotScore = 0f;
+        foreach (ShotType shot in currentShotTypes)
+        {
+            if (shot.IsShotFoul)
+            {
+            return 0f;
+            }
+            shotScore += shot.NumberOfThisShotType * shot.ShotTypePoints;
+        }
+        return shotScore;
+    }
+    public void CalculateTotalPoints()
+    {
+        totalScore += calculateShotScore();
         UIManager.Instance.UpdateTotalScore(totalScore);
-        shotScore = 0f;
         UIManager.Instance.ClearShotScore();
+        currentShotTypes.Clear();
     }
-    public void AddShot(ShotType shot)
-    {
-        currentShotTypes.Add(shot);
-        totalScore += shot.ShotTypePoints;
-        UIManager.Instance.UpdateTotalScore(totalScore);
-        UIManager.Instance.AddScoreType(shot.ShotTypeName);
-    }
-
 }
