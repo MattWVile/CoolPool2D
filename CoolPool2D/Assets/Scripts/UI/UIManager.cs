@@ -47,34 +47,37 @@ public class UIManager : MonoBehaviour
         root.Q<Label>("ShotScoreScore").text = "";
     }
 
-    public void AddScoreType(string header, float score, int multiplier = 0, int amount = 1)
+    public void AddScoreType(string shotTypeHeader)
     {
         if (shotTypeTemplate == null)
         {
             Debug.LogError("ShotTypeTemplate is not assigned in the Inspector!");
             return;
         }
-        bool foundScoreType = false;
-        if (UIManager.Instance.scoreTypes != null) {
+        ShotType shot = ScoreManager.Instance.currentShotTypes.Find(shot => shot.ShotTypeName == shotTypeHeader);
+        bool isMostRecent = true;
+        if (shot != null)
+        {
             foreach (VisualElement scoreType in UIManager.Instance.scoreTypes)
             {
-                if (scoreType.Q<Label>("ShotTypeHeading").text == header)
+                if (scoreType.Q<Label>("ShotTypeHeading").text == shotTypeHeader)
                 {
                     UIManager.Instance.IncrementShotTypeAmount(scoreType);
-                    foundScoreType = true;
+                    isMostRecent = false;
                     break;
                 }
             }
+
         }
-        if (!foundScoreType)
+        if(isMostRecent)
         {
             VisualElement newShotType = shotTypeTemplate.Instantiate();
-            newShotType.Q<Label>("ShotTypeHeading").text = header;
-            newShotType.Q<Label>("ShotTypeMultValue").text = multiplier == 0 ? "" : multiplier.ToString();
-            newShotType.Q<Label>("ShotTypeMultAdditionSymbol").text = multiplier == 0 ? "" : "+";
-            newShotType.Q<Label>("ShotTypeMultAsterix").text = multiplier == 0 ? "" : "*";
-            newShotType.Q<Label>("ShotTypeAmount").text = amount.ToString();
-            newShotType.Q<Label>("ShotTypeScore").text = score.ToString();
+            newShotType.Q<Label>("ShotTypeHeading").text = shotTypeHeader;
+            newShotType.Q<Label>("ShotTypeMultValue").text = shot.ShotTypeMultiplierAddition == 0 ? "" : shot.ShotTypeMultiplierAddition.ToString();
+            newShotType.Q<Label>("ShotTypeMultAdditionSymbol").text = shot.ShotTypeMultiplierAddition == 0 ? "" : "+";
+            newShotType.Q<Label>("ShotTypeMultAsterix").text = shot.ShotTypeMultiplierAddition == 0 ? "" : "*";
+            newShotType.Q<Label>("ShotTypeAmount").text = shot.NumberOfThisShotType.ToString();
+            newShotType.Q<Label>("ShotTypeScore").text = shot.ShotTypePoints.ToString();
             scoreTypes.Add(newShotType);
 
             VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreTypes");
@@ -87,7 +90,6 @@ public class UIManager : MonoBehaviour
                 Debug.LogError("Container 'ShotScoreTypes' not found in the UI!");
             }
         }
-        UpdateShotScore(ScoreManager.Instance.shotScore);
     }
     public void IncrementShotTypeAmount(VisualElement scoreType)
     {

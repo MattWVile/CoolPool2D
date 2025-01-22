@@ -1,24 +1,24 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ScoreManager : MonoBehaviour
 {
-    private static ScoreManager instance;
-    public static ScoreManager Instance { get { return instance; } }
+    public static ScoreManager Instance { get; private set; }
 
     public float shotScore;
     public float totalScore = 0f;
-    //private List<Shot> pastShots = new List<Shot>();
+    public List<ShotType> currentShotTypes = new List<ShotType>();
 
     void Awake()
     {
-        if (instance != null && instance != this)
+        if (Instance == null)
         {
-            Destroy(this.gameObject);
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
-            instance = this;
-            DontDestroyOnLoad(this.gameObject);
+            Destroy(gameObject);
         }
     }
 
@@ -51,8 +51,19 @@ public class ScoreManager : MonoBehaviour
                 shotTypeScore = 100f;
                 break;
         }
-        shotScore += shotTypeScore;
-        UIManager.Instance.AddScoreType(shotTypeHeader, shotTypeScore);
+        // if shotTypeHeader is not in the list of currentShotTypes, add it
+        if (!currentShotTypes.Exists(shot => shot.ShotTypeName == shotTypeHeader))
+        {
+            AddShot(new ShotType(shotTypeHeader, shotTypeScore));
+        }
+        else
+        {
+            // if shotTypeHeader is in the list of currentShotTypes, increment the NumberOfThisShotType
+            ShotType shot = currentShotTypes.Find(shot => shot.ShotTypeName == shotTypeHeader);
+            shot.NumberOfThisShotType++;
+        }
+
+        UIManager.Instance.AddScoreType(shotTypeHeader);
     }
 
     public void CalculatePoints()
@@ -63,4 +74,12 @@ public class ScoreManager : MonoBehaviour
         shotScore = 0f;
         UIManager.Instance.ClearShotScore();
     }
+    public void AddShot(ShotType shot)
+    {
+        currentShotTypes.Add(shot);
+        totalScore += shot.ShotTypePoints;
+        UIManager.Instance.UpdateTotalScore(totalScore);
+        UIManager.Instance.AddScoreType(shot.ShotTypeName);
+    }
+
 }

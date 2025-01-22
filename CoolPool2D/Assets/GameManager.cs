@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -41,13 +42,7 @@ public class GameManager : MonoBehaviour
 
         LoadBalls();
 
-        EventBus.Subscribe<BallPocketedEvent>((@event) =>
-        {
-            balls.Remove(@event.Ball);
-            ballRbs.Remove(@event.Ball.GetComponent<Rigidbody2D>());
-            Destroy(@event.Ball);
-            ScoreManager.Instance.OnBallPocketed(@event);
-        });
+        EventBus.Subscribe<BallPocketedEvent>(HandlePocketedBall);
 
         EventBus.Subscribe<BallHasBeenShotEvent>((@event) =>
         {
@@ -77,6 +72,13 @@ public class GameManager : MonoBehaviour
                     break;
             }
         });
+    }
+    private void HandlePocketedBall(BallPocketedEvent @event)
+    {
+        balls.Remove(@event.Ball);
+        ballRbs.Remove(@event.Ball.GetComponent<Rigidbody2D>());
+        Destroy(@event.Ball);
+        ScoreManager.Instance.OnBallPocketed(@event);
     }
 
     private void LoadBalls()
