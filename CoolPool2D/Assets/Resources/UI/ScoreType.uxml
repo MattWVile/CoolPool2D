@@ -1,22 +1,22 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:VisualElement name="ShotType" style="width: 100%; height: 65px; flex-direction: column; align-items: flex-start; -unity-font-style: normal; -unity-font: initial; flex-wrap: nowrap;">
-        <ui:VisualElement name="ShotTypeHeading" style="font-size: 25%; margin-bottom: -8px;">
-            <ui:Label tabindex="-1" text="Cue Ball Wall Boounce" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeHeading" style="justify-content: flex-start; align-self: auto; -unity-font-style: bold; font-size: 20%; -unity-text-align: middle-left; align-items: center; color: rgb(6, 140, 115); background-color: rgba(6, 140, 115, 0);" />
+    <ui:VisualElement name="ScoreType" style="width: 100%; height: 65px; flex-direction: column; align-items: flex-start; -unity-font-style: normal; -unity-font: initial; flex-wrap: nowrap;">
+        <ui:VisualElement name="ScoreTypeHeading" style="font-size: 25%; margin-bottom: -8px;">
+            <ui:Label tabindex="-1" text="Cue Ball Wall Boounce" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ScoreTypeHeading" style="justify-content: flex-start; align-self: auto; -unity-font-style: bold; font-size: 20%; -unity-text-align: middle-left; align-items: center; color: rgb(6, 140, 115); background-color: rgba(6, 140, 115, 0);" />
         </ui:VisualElement>
-        <ui:VisualElement name="ShotType" style="height: 50%; flex-direction: row; font-size: 25%; align-items: flex-start; right: 0; justify-content: flex-start; position: relative;">
+        <ui:VisualElement name="ScoreType" style="height: 50%; flex-direction: row; font-size: 25%; align-items: flex-start; right: 0; justify-content: flex-start; position: relative;">
             <ui:VisualElement name="VisualElement" style="width: auto; flex-grow: 2; flex-shrink: 0; flex-basis: auto; min-width: auto; align-items: stretch; flex-direction: row;">
-                <ui:Label tabindex="-1" text="+" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeMultAdditionSymbol" style="-unity-text-align: upper-right; font-size: 18%; -unity-font-style: bold; color: rgb(147, 128, 210); min-width: auto; margin-right: 2px;" />
-                <ui:Label tabindex="-1" text="2" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeMultValue" style="-unity-text-align: upper-right; font-size: 18%; -unity-font-style: bold; color: rgb(147, 128, 210); min-width: auto; margin-right: 0; margin-left: 0; padding-right: 0; padding-left: 0;" />
-                <ui:Label tabindex="-1" text="*" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeMultAsterix" style="-unity-text-align: upper-right; font-size: 18%; -unity-font-style: bold; color: rgb(147, 128, 210); min-width: auto;" />
+                <ui:Label tabindex="-1" text="+" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ScoreTypeMultAdditionSymbol" style="-unity-text-align: upper-right; font-size: 18%; -unity-font-style: bold; color: rgb(147, 128, 210); min-width: auto; margin-right: 2px;" />
+                <ui:Label tabindex="-1" text="2" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ScoreTypeMultValue" style="-unity-text-align: upper-right; font-size: 18%; -unity-font-style: bold; color: rgb(147, 128, 210); min-width: auto; margin-right: 0; margin-left: 0; padding-right: 0; padding-left: 0;" />
+                <ui:Label tabindex="-1" text="*" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ScoreTypeMultAsterix" style="-unity-text-align: upper-right; font-size: 18%; -unity-font-style: bold; color: rgb(147, 128, 210); min-width: auto;" />
             </ui:VisualElement>
             <ui:VisualElement name="VisualElement" style="flex-grow: 2; flex-shrink: 0; -unity-text-align: upper-left; white-space: normal; text-overflow: clip;">
-                <ui:Label tabindex="-1" text="10" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeAmount" style="-unity-text-align: upper-right; font-size: 28%; -unity-font-style: bold; color: rgb(224, 13, 13);" />
+                <ui:Label tabindex="-1" text="10" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ScoreTypeAmount" style="-unity-text-align: upper-right; font-size: 28%; -unity-font-style: bold; color: rgb(224, 13, 13);" />
             </ui:VisualElement>
             <ui:VisualElement name="VisualElement" style="flex-grow: 2; flex-shrink: 0; -unity-text-align: upper-left; white-space: normal; text-overflow: clip;">
-                <ui:Label tabindex="-1" text="x" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeMultiplicationSign" style="-unity-text-align: upper-center; font-size: 28%; -unity-font-style: bold; color: rgb(224, 13, 13);" />
+                <ui:Label tabindex="-1" text="x" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ScoreTypeMultiplicationSign" style="-unity-text-align: upper-center; font-size: 28%; -unity-font-style: bold; color: rgb(224, 13, 13);" />
             </ui:VisualElement>
             <ui:VisualElement style="flex-grow: 2; -unity-text-align: upper-left;">
-                <ui:Label tabindex="-1" text="2000" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ShotTypeScore" style="-unity-text-align: upper-left; font-size: 28%; -unity-font-style: bold; color: rgb(6, 140, 115); flex-direction: column;" />
+                <ui:Label tabindex="-1" text="2000" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ScoreTypeScore" style="-unity-text-align: upper-left; font-size: 28%; -unity-font-style: bold; color: rgb(6, 140, 115); flex-direction: column;" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

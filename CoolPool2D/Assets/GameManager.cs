@@ -108,7 +108,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Calculating points.");
         ScoreManager.Instance.CalculateTotalPoints();
-        StartCoroutine(WaitThenEndState(1f, GameState.CalculatePoints));
+        StartCoroutine(WaitThenEndState(.1f, GameState.CalculatePoints));
     }
 
     private void HandlePrepareNextTurnState()
@@ -125,7 +125,7 @@ public class GameManager : MonoBehaviour
             LoadBalls();
         }
 
-        StartCoroutine(WaitThenEndState(1f, GameState.PrepareNextTurn));
+        StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
     }
 
     private IEnumerator WaitThenEndState(float seconds, GameState gameState)

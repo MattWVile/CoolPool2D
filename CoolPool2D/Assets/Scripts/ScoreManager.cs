@@ -6,7 +6,7 @@ public class ScoreManager : MonoBehaviour
     public static ScoreManager Instance { get; private set; }
 
     public float totalScore = 0f;
-    public List<ShotType> currentShotTypes = new List<ShotType>();
+    public List<ScoreType> currentScoreTypes = new List<ScoreType>();
 
     void Awake()
     {
@@ -54,33 +54,33 @@ public class ScoreManager : MonoBehaviour
     }
     private void AddOrUpdateShotType(string shotTypeHeader, float shotTypePoints)
     {
-        ShotType shotType = currentShotTypes.Find(shot => shot.ShotTypeName == shotTypeHeader);
+        ScoreType shotType = currentScoreTypes.Find(shot => shot.ScoreTypeName == shotTypeHeader);
         // if shotTypeHeader is not in the list of currentShotTypes, add it
         if (shotType == null)
         {
-            shotType = new ShotType(shotTypeHeader, shotTypePoints);
-            currentShotTypes.Add(shotType);
+            shotType = new ScoreType(shotTypeHeader, shotTypePoints);
+            currentScoreTypes.Add(shotType);
         }
         else
         {
             // if shotTypeHeader is in the list of currentShotTypes, increment the NumberOfThisShotType
-            shotType.NumberOfThisShotType++;
+            shotType.NumberOfThisScoreType++;
         }
 
-        UIManager.Instance.AddToShotScore(shotType.ShotTypePoints);
+        UIManager.Instance.AddToShotScore(shotType.ScoreTypePoints);
         UIManager.Instance.AddScoreType(shotTypeHeader);
     }
 
     private float calculateShotScore()
     {
         float shotScore = 0f;
-        foreach (ShotType shot in currentShotTypes)
+        foreach (ScoreType shot in currentScoreTypes)
         {
-            if (shot.IsShotFoul)
+            if (shot.IsScoreFoul)
             {
             return 0f;
             }
-            shotScore += shot.NumberOfThisShotType * shot.ShotTypePoints;
+            shotScore += shot.NumberOfThisScoreType * shot.ScoreTypePoints;
         }
         return shotScore;
     }
@@ -89,6 +89,6 @@ public class ScoreManager : MonoBehaviour
         totalScore += calculateShotScore();
         UIManager.Instance.UpdateTotalScore(totalScore);
         UIManager.Instance.ClearShotScore();
-        currentShotTypes.Clear();
+        currentScoreTypes.Clear();
     }
 }
