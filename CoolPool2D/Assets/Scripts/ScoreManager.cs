@@ -59,7 +59,8 @@ public class ScoreManager : MonoBehaviour
     {
         // Calculate points logic
         totalScore += shotScore;
-        UIManager.Instance.UpdateTotalScore();
+        UIManager.Instance.UpdateTotalScore(totalScore);
         shotScore = 0f;
+        UIManager.Instance.ClearShotScore();
     }
 }

@@ -32,14 +32,14 @@ public class UIManager : MonoBehaviour
         scoreTypes = new List<VisualElement>();
     }
 
-    public void UpdateTotalScore()
+    public void UpdateTotalScore(float newTotalScoreFloat)
     {
-        root.Q<Label>("TotalScore").text = ScoreManager.Instance.totalScore.ToString();
+        root.Q<Label>("TotalScore").text = newTotalScoreFloat.ToString();
     }
 
-    public void UpdateShotScore()
+    public void UpdateShotScore(float newShotScoreFloat)
     {
-        root.Q<Label>("ShotScoreScore").text = ScoreManager.Instance.shotScore.ToString();
+        root.Q<Label>("ShotScoreScore").text = newShotScoreFloat.ToString();
     }
     public void ClearShotScore()
     {
@@ -87,7 +87,7 @@ public class UIManager : MonoBehaviour
                 Debug.LogError("Container 'ShotScoreTypes' not found in the UI!");
             }
         }
-        UpdateShotScore();
+        UpdateShotScore(ScoreManager.Instance.shotScore);
     }
     public void IncrementShotTypeAmount(VisualElement scoreType)
     {

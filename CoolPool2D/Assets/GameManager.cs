@@ -81,7 +81,8 @@ public class GameManager : MonoBehaviour
 
     private void LoadBalls()
     {
-        balls = GameObject.FindGameObjectsWithTag("ObjectBall").ToList();
+        balls = GameObject.FindGameObjectsWithTag("CueBall").ToList();
+        balls.AddRange(GameObject.FindGameObjectsWithTag("ObjectBall"));
         ballRbs = balls.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
     }
 
