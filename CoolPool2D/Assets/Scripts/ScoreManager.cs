@@ -28,59 +28,83 @@ public class ScoreManager : MonoBehaviour
 
     public void OnBallPocketed(BallPocketedEvent @event)
     {
-        // Handle ball pocketed logic
-    }
-    private void OnBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
-    {
-        string shotTypeHeader = string.Empty;
-        float shotTypePoints = 0f;
+        string scoreTypeHeader = string.Empty;
+        float scoreTypePoints = 0f;
+        bool isFoul = false;
 
         switch (@event.Ball.tag)
         {
             case "CueBall":
-                shotTypeHeader = "Cue Ball Rail Bounce";
-                shotTypePoints = 100f;
+                scoreTypeHeader = "Cue Ball Pot";
+                isFoul = true;
                 break;
             case "ObjectBall":
-                shotTypeHeader = "Object Ball Rail Bounce";
-                shotTypePoints = 100f;
+                scoreTypeHeader = "Object Ball Pot";
+                scoreTypePoints = 500f;
                 break;
             default:
-                shotTypeHeader = "Tag not in case statement";
-                shotTypePoints = 100f;
+                scoreTypeHeader = "Tag not in case statement";
                 break;
         }
-        AddOrUpdateShotType(shotTypeHeader, shotTypePoints);
+        AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
     }
-    private void AddOrUpdateShotType(string shotTypeHeader, float shotTypePoints)
+    private void OnBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
     {
-        ScoreType shotType = currentScoreTypes.Find(shot => shot.ScoreTypeName == shotTypeHeader);
-        // if shotTypeHeader is not in the list of currentShotTypes, add it
-        if (shotType == null)
+        string scoreTypeHeader = string.Empty;
+        float scoreTypePoints = 0f;
+
+        switch (@event.Ball.tag)
         {
-            shotType = new ScoreType(shotTypeHeader, shotTypePoints);
-            currentScoreTypes.Add(shotType);
+            case "CueBall":
+                scoreTypeHeader = "Cue Ball Rail Bounce";
+                scoreTypePoints = 100f;
+                break;
+            case "ObjectBall":
+                scoreTypeHeader = "Object Ball Rail Bounce";
+                scoreTypePoints = 100f;
+                break;
+            default:
+                scoreTypeHeader = "Tag not in case statement";
+                break;
+        }
+        AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints);
+    }
+    private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
+    {
+        ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeName == scoreTypeHeader);
+        // if scoreTypeHeader is not in the list of currentScoreTypes, add it
+        if (scoreType == null)
+        {
+            scoreType = new ScoreType(scoreTypeHeader, scoreTypePoints, isScoreTypeAFoul);
+            currentScoreTypes.Add(scoreType);
+        }
+        else if (isScoreTypeAFoul)
+        {
+            if (!scoreType.IsScoreFoul)
+            {
+                scoreType.IsScoreFoul = true;
+            }
         }
         else
         {
-            // if shotTypeHeader is in the list of currentShotTypes, increment the NumberOfThisShotType
-            shotType.NumberOfThisScoreType++;
+            // if scoreTypeHeader is in the list of currentScoreTypes, increment the NumberOfThisScoreType
+            scoreType.NumberOfThisScoreType++;
         }
 
-        UIManager.Instance.AddToShotScore(shotType.ScoreTypePoints);
-        UIManager.Instance.AddScoreType(shotTypeHeader);
+        UIManager.Instance.AddToShotScore(scoreType.ScoreTypePoints);
+        UIManager.Instance.AddScoreType(scoreTypeHeader);
     }
 
     private float calculateShotScore()
     {
         float shotScore = 0f;
-        foreach (ScoreType shot in currentScoreTypes)
+        foreach (ScoreType scoreType in currentScoreTypes)
         {
-            if (shot.IsScoreFoul)
+            if (scoreType.IsScoreFoul)
             {
             return 0f;
             }
-            shotScore += shot.NumberOfThisScoreType * shot.ScoreTypePoints;
+            shotScore += scoreType.NumberOfThisScoreType * scoreType.ScoreTypePoints;
         }
         return shotScore;
     }

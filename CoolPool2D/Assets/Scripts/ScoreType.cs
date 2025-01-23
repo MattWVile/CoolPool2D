@@ -9,12 +9,12 @@ public class ScoreType
 
 
 
-    public ScoreType(string scoreTypeName, float scoreTypePoints, float scoreTypeMultiplierAddition = 0, float numberOfThisScoreType = 1f, bool isScoreFoul = false)
+    public ScoreType(string scoreTypeName, float scoreTypePoints, bool isScoreFoul = false, float scoreTypeMultiplierAddition = 0, float numberOfThisScoreType = 1f)
     {
         ScoreTypeName = scoreTypeName;
         ScoreTypePoints = scoreTypePoints;
+        IsScoreFoul = isScoreFoul;
         ScoreTypeMultiplierAddition = scoreTypeMultiplierAddition;
         NumberOfThisScoreType = numberOfThisScoreType;
-        IsScoreFoul = isScoreFoul;
     }
 }
