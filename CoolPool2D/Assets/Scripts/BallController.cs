@@ -9,7 +9,7 @@ public class BallController : MonoBehaviour
     public float normalRotationSpeed = 5f;
     public float slowedRotationSpeed = 2f;
 
-    private Vector2 initalPosition = new Vector2(-4.81400299f, -0.119999997f);
+    private Vector2 initalPosition = new Vector2(-2.66f, -0.12f);
 
     void Start()
     {
@@ -23,7 +23,6 @@ public class BallController : MonoBehaviour
         {
             rb.velocity = Vector2.zero;
             transform.position = initalPosition;
-
         }
     }
 
