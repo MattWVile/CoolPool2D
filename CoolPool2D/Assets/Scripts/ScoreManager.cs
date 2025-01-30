@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -43,11 +44,11 @@ public class ScoreManager : MonoBehaviour
                 scoreTypePoints = 500f;
                 break;
             default:
-                scoreTypeHeader = "Tag not in case statement";
-                break;
+                throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.tag}");
         }
         AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
     }
+
     private void OnBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
     {
         string scoreTypeHeader = string.Empty;
@@ -64,11 +65,11 @@ public class ScoreManager : MonoBehaviour
                 scoreTypePoints = 100f;
                 break;
             default:
-                scoreTypeHeader = "Tag not in case statement";
-                break;
+                throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.tag}");
         }
         AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints);
     }
+
     private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
     {
         ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeName == scoreTypeHeader);
