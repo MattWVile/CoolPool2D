@@ -25,8 +25,21 @@ public class DebuggingTools : MonoBehaviour
     {
         HandleTimeControl();
         HandleGameTools();
+        HandleDeleteAllBalls();
     }
 
+    private void HandleDeleteAllBalls()
+    {
+        if (Input.GetKeyDown(KeyCode.F6))
+        {
+            var balls = GameManager.Instance.balls;
+            foreach (var ball in balls)
+            {
+                Destroy(ball);
+            }
+            Debug.Log($"[DEBUG] Deleted all balls");
+        }
+    }
     private void HandleGameTools()
     {
         if (Input.GetKeyDown(KeyCode.F4))
