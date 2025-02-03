@@ -39,9 +39,17 @@ public class ScoreManager : MonoBehaviour
                 scoreTypeHeader = "Cue Ball Pot";
                 isFoul = true;
                 break;
-            case "ObjectBall":
-                scoreTypeHeader = "Object Ball Pot";
+            case "YellowBall":
+                scoreTypeHeader = "Yellow Ball Pot";
                 scoreTypePoints = 500f;
+                break;
+            case "RedBall":
+                scoreTypeHeader = "Red Ball Pot";
+                scoreTypePoints = 500f;
+                break;
+            case "BlackBall":
+                scoreTypeHeader = "Black Ball Pot";
+                isFoul = true;
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.tag}");
@@ -60,9 +68,17 @@ public class ScoreManager : MonoBehaviour
                 scoreTypeHeader = "Cue Ball Rail Bounce";
                 scoreTypePoints = 100f;
                 break;
-            case "ObjectBall":
-                scoreTypeHeader = "Object Ball Rail Bounce";
+            case "YellowBall":
+                scoreTypeHeader = "Yellow Ball Rail Bounce";
                 scoreTypePoints = 100f;
+                break;
+            case "RedBall":
+                scoreTypeHeader = "Red Ball Rail Bounce";
+                scoreTypePoints = 100f;
+                break;
+            case "BlackBall":
+                scoreTypeHeader = "Black Ball Rail Bounce";
+                scoreTypePoints = 500f;
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.tag}");
