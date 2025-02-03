@@ -15,12 +15,6 @@ public class GameManager : MonoBehaviour
     public List<Rigidbody2D> ballRbs;
     public GameStateManager gameStateManager;
 
-    private Vector3 clothDimensions;
-    private Vector3 clothCenter;
-    private Vector3 firstBallOfLineVector;
-    private float ballRadius;
-
-
     private void Awake()
     {
         if (Instance == null)
@@ -36,7 +30,6 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        ballRadius = Resources.Load("Prefabs/ObjectBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
         cue = GameObject.Find("Cue");
         var cueball = GameObject.Find("CueBall");
         if (cueball != null)
@@ -48,7 +41,7 @@ public class GameManager : MonoBehaviour
             Debug.LogError("CueBall not found.");
         }
 
-        SpawnBallsInTriangle();
+        BallSpawner.SpawnBallsInTriangle();
         LoadBallsToList();
 
         EventBus.Subscribe<BallPocketedEvent>(HandlePocketedBall);
@@ -81,79 +74,6 @@ public class GameManager : MonoBehaviour
                     break;
             }
         });
-    }
-
-    private void SpawnBallsInTriangle()
-    {
-        int ballIndex = 1;
-        Bounds clothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
-        clothDimensions = clothBounds.size;
-        clothCenter = clothBounds.center;
-        clothCenter.x += clothDimensions.x / 5;
-
-        var ballSpawnVector = clothCenter;
-        //this is the first ball of the line it is 3.45 times the radius of the ball away from the black ball
-        ballSpawnVector.x += ballRadius * 3.45f;
-
-
-        for (int ballRow = 1; ballRow < 6; ballRow++)
-        {
-            if (ballRow != 1)
-            {
-                firstBallOfLineVector.x += ballRadius * 1.73f;
-            }
-
-            for (int ballNumber = 1; ballNumber <= ballRow; ballNumber++)
-            {
-                if ((ballNumber == 1) && (ballRow != 1))
-                {
-                    firstBallOfLineVector.y += ballRadius;
-                    ballSpawnVector = firstBallOfLineVector;
-                }
-                else if (ballRow != 1)
-                {
-                    ballSpawnVector.y -= ballRadius * 2;
-                }
-                else
-                {
-                    firstBallOfLineVector = ballSpawnVector;
-                }
-                SpawnBall(ballSpawnVector, ballIndex);
-                ballIndex++;
-
-            }
-        }
-    }
-
-    private void SpawnBall(Vector3 spawnPosition, int ballIndex)
-    {
-        List<string> ballPattern = new List<string> { "Y", "R", "Y", "Y", "B", "R", "R", "Y", "R", "Y", "Y", "R", "R", "Y", "R" };
-
-        GameObject ball = Instantiate(Resources.Load("Prefabs/ObjectBall"), spawnPosition, Quaternion.identity) as GameObject;
-        if (ball == null) throw new InvalidOperationException("Ball is null.");
-        if (ballIndex > 15) ballIndex = new System.Random().Next(1, 15);
-
-        var ballTypeString = ballPattern[ballIndex - 1];
-
-        if (ballTypeString == "R")
-        {
-            ball.tag = "RedBall";
-            ball.GetComponent<SpriteRenderer>().color = Color.red;
-        }
-        else if (ballTypeString == "Y")
-        {
-            ball.tag = "YellowBall";
-            ball.GetComponent<SpriteRenderer>().color = Color.yellow;
-        }
-        else if (ballTypeString == "B")
-        {
-            ball.tag = "BlackBall";
-            ball.GetComponent<SpriteRenderer>().color = Color.black;
-        }
-        else
-        {
-            throw new InvalidOperationException($"Unexpected ball type: {ballTypeString}");
-        }
     }
 
     private void LoadBallsToList()

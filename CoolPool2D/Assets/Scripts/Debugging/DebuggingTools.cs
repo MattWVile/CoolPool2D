@@ -1,6 +1,4 @@
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 
 public class DebuggingTools : MonoBehaviour
@@ -35,6 +33,7 @@ public class DebuggingTools : MonoBehaviour
             var balls = GameManager.Instance.balls;
             foreach (var ball in balls)
             {
+                if (ball == cueBall) continue;
                 Destroy(ball);
             }
             Debug.Log($"[DEBUG] Deleted all balls");
