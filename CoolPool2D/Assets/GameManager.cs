@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
         }
 
         BallSpawner.SpawnBallsInTriangle();
-        LoadBallsToList();
+        LoadBallsToLists();
 
         EventBus.Subscribe<BallPocketedEvent>(HandlePocketedBall);
 
@@ -72,15 +72,6 @@ public class GameManager : MonoBehaviour
                     break;
             }
         });
-    }
-
-    private void LoadBallsToList()
-    {
-        balls = GameObject.FindGameObjectsWithTag("CueBall").ToList();
-        balls.AddRange(GameObject.FindGameObjectsWithTag("RedBall"));
-        balls.AddRange(GameObject.FindGameObjectsWithTag("YellowBall"));
-        balls.AddRange(GameObject.FindGameObjectsWithTag("BlackBall"));
-        ballRbs = balls.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
     }
     private void HandlePocketedBall(BallPocketedEvent @event)
     {
@@ -123,8 +114,8 @@ public class GameManager : MonoBehaviour
         catch (System.NullReferenceException)
         {
             Debug.Log("No shootable found. placing one.");
-            Instantiate(Resources.Load<GameObject>("Prefabs/CueBall"));
-            LoadBallsToList();
+            var newCueBallGameObject = Instantiate(Resources.Load<GameObject>("Prefabs/CueBall"));
+            AddBallToLists(newCueBallGameObject);
         }
 
         StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
@@ -134,6 +125,21 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(seconds);
         gameStateManager.SubmitEndOfState(gameState);
+    }
+
+    private void LoadBallsToLists()
+    {
+        balls = GameObject.FindGameObjectsWithTag("CueBall").ToList();
+        balls.AddRange(GameObject.FindGameObjectsWithTag("RedBall"));
+        balls.AddRange(GameObject.FindGameObjectsWithTag("YellowBall"));
+        balls.AddRange(GameObject.FindGameObjectsWithTag("BlackBall"));
+        ballRbs = balls.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
+    }
+
+    private void AddBallToLists(GameObject ballToAdd)
+    {
+        balls.Add(ballToAdd);
+        ballRbs.Add(ballToAdd.GetComponent<Rigidbody2D>());
     }
 
     private IEnumerator CheckIfAllBallsStopped()
