@@ -6,10 +6,15 @@ using Unity.VisualScripting;
 public class BallSpawner : MonoBehaviour
 {
     private static readonly List<string> ballSpawnPattern = new List<string>
-    {"Y", "R", "Y", "Y", "B", "R", "R", "Y", "R", "Y", "Y", "R", "R", "Y", "R"};
-    public static void SpawnBallsInTriangle()
+    {"YellowBall", "RedBall", "YellowBall", "YellowBall", "BlackBall", "RedBall", "RedBall",
+     "YellowBall", "RedBall", "YellowBall", "YellowBall", "RedBall", "RedBall", "YellowBall", "RedBall"};
+
+
+    public static Vector2 cueBallInitalPosition = new Vector2(-1.91f, 0.03f);
+    public static List<Ball> SpawnBallsInTriangle()
     {
-        var firstBallOfLineVector = Vector3.zero;
+        var balls = new List<Ball>();
+        var firstBallOfLineVector = Vector2.zero;
         var ballRadius = Resources.Load("Prefabs/ObjectBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
         int ballIndex = 1;
         Bounds clothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
@@ -20,7 +25,6 @@ public class BallSpawner : MonoBehaviour
         var ballSpawnVector = clothCenterVector;
         //this is the first ball of the line it is 3.45 times the radius of the ball away from the black ball
         ballSpawnVector.x += ballRadius * 3.45f;
-
 
         for (int ballRow = 1; ballRow < 6; ballRow++)
         {
@@ -44,38 +48,50 @@ public class BallSpawner : MonoBehaviour
                 {
                     firstBallOfLineVector = ballSpawnVector;
                 }
-                SpawnBall(ballSpawnVector, ballIndex);
+                balls.Add(SpawnBall(ballSpawnVector, ballIndex));
                 ballIndex++;
-
             }
         }
+        return balls;
     }
 
-    private static void SpawnBall(Vector3 spawnPosition, int ballIndex)
+    private static Ball SpawnBall(Vector2 spawnPosition, int ballIndex)
     {
-        GameObject ball = Instantiate(Resources.Load("Prefabs/ObjectBall"), spawnPosition, Quaternion.identity) as GameObject;
-        if (ball == null) throw new InvalidOperationException("Ball is null.");
         if (ballIndex > 15) ballIndex = new System.Random().Next(1, 15);
-
         var ballTypeString = ballSpawnPattern[ballIndex - 1];
 
+        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/ObjectBall"), spawnPosition, Quaternion.identity) as GameObject;
+
+        if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
+
+        Ball ball = new Ball(ballTypeString + " " + ballIndex.ToString(), ballGameObject);
+
+        ballGameObject.tag = ballTypeString;
+        ballGameObject.name = ball.BallName;
         switch (ballTypeString)
         {
-            case "R":
-                ball.tag = "RedBall";
-                ball.GetComponent<SpriteRenderer>().color = Color.red;
+            case "RedBall":
+                ballGameObject.GetComponent<SpriteRenderer>().color = Color.red;
                 break;
-            case "Y":
-                ball.tag = "YellowBall";
-                ball.GetComponent<SpriteRenderer>().color = Color.yellow;
+            case "YellowBall":
+                ballGameObject.GetComponent<SpriteRenderer>().color = Color.yellow;
                 break;
-            case "B":
-                ball.tag = "BlackBall";
-                ball.GetComponent<SpriteRenderer>().color = Color.black;
+            case "BlackBall":
+                ballGameObject.GetComponent<SpriteRenderer>().color = Color.black;
+                ball.BallMultiplier = 5;
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected ball type: {ballTypeString}");
         }
+        return ball;
     }
 
+    public static Ball SpawnCueBall(int cueBallIndex)
+    {
+        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitalPosition, Quaternion.identity) as GameObject;
+        Ball ball = new Ball("CueBall" + " " + cueBallIndex, ballGameObject);
+        ballGameObject.name = ball.BallName;
+        return ball;
+    }
 }
+

@@ -9,9 +9,12 @@ public class GameManager : MonoBehaviour
 
     public GameObject cue;
     public List<GameObject> possibleTargets;
-    public List<GameObject> balls;
+    public List<GameObject> ballGameObjects;
     public List<Rigidbody2D> ballRbs;
+    public List<Ball> listOfBalls;
     public GameStateManager gameStateManager;
+
+    public int amountOfCueBallsSpawned = 0;
 
     private void Awake()
     {
@@ -29,18 +32,6 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         cue = GameObject.Find("Cue");
-        var cueball = GameObject.Find("CueBall");
-        if (cueball != null)
-        {
-            cue.GetComponent<CueMovement>().Enable(cueball);
-        }
-        else
-        {
-            Debug.LogError("CueBall not found.");
-        }
-
-        BallSpawner.SpawnBallsInTriangle();
-        LoadBallsToLists();
 
         EventBus.Subscribe<BallPocketedEvent>(HandlePocketedBall);
 
@@ -70,12 +61,31 @@ public class GameManager : MonoBehaviour
                 case GameState.PrepareNextTurn:
                     HandlePrepareNextTurnState();
                     break;
+                case GameState.GameStart:
+                    StartGame();
+                    break;
             }
         });
+
+        gameStateManager.SetGameState(GameState.GameStart);
+    }
+
+    public void StartGame()
+    {
+        SpawnBallTriangleAndCueBall();
+        gameStateManager.SubmitEndOfState(GameState.GameStart);
+    }
+    public void SpawnBallTriangleAndCueBall()
+    {
+        listOfBalls = BallSpawner.SpawnBallsInTriangle();
+        listOfBalls.Add(BallSpawner.SpawnCueBall(amountOfCueBallsSpawned));
+        amountOfCueBallsSpawned++;
+        ballGameObjects = listOfBalls.Select(ball => ball.BallGameObject).ToList();
+        ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
     }
     private void HandlePocketedBall(BallPocketedEvent @event)
     {
-        balls.Remove(@event.Ball);
+        ballGameObjects.Remove(@event.Ball);
         ballRbs.Remove(@event.Ball.GetComponent<Rigidbody2D>());
         Destroy(@event.Ball);
         ScoreManager.Instance.OnBallPocketed(@event);
@@ -87,6 +97,7 @@ public class GameManager : MonoBehaviour
         var target = possibleTargets.First();
         if (target == null)
             target = FindObjectOfType<Shootable>().gameObject;
+        possibleTargets.Add(target);
         cue.GetComponent<CueMovement>().Enable(target);
     }
 
@@ -110,11 +121,12 @@ public class GameManager : MonoBehaviour
         try
         {
             var target = FindObjectOfType<Shootable>().gameObject;
+            possibleTargets.Add(target);
         }
         catch (System.NullReferenceException)
         {
             Debug.Log("No shootable found. placing one.");
-            var newCueBallGameObject = Instantiate(Resources.Load<GameObject>("Prefabs/CueBall"));
+            var newCueBallGameObject = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned).BallGameObject;
             AddBallToLists(newCueBallGameObject);
         }
 
@@ -126,19 +138,9 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(seconds);
         gameStateManager.SubmitEndOfState(gameState);
     }
-
-    private void LoadBallsToLists()
-    {
-        balls = GameObject.FindGameObjectsWithTag("CueBall").ToList();
-        balls.AddRange(GameObject.FindGameObjectsWithTag("RedBall"));
-        balls.AddRange(GameObject.FindGameObjectsWithTag("YellowBall"));
-        balls.AddRange(GameObject.FindGameObjectsWithTag("BlackBall"));
-        ballRbs = balls.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
-    }
-
     private void AddBallToLists(GameObject ballToAdd)
     {
-        balls.Add(ballToAdd);
+        ballGameObjects.Add(ballToAdd);
         ballRbs.Add(ballToAdd.GetComponent<Rigidbody2D>());
     }
 

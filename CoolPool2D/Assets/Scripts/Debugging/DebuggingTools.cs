@@ -10,7 +10,6 @@ public class DebuggingTools : MonoBehaviour
     void Start()
     {
         cueMovement = GameObject.FindFirstObjectByType<CueMovement>();
-        cueBall = GameObject.Find("CueBall");
 
         //EventBus.Subscribe<BallPocketedEvent>(@event =>
         //    Debug.Log($"[DEBUG] [Event] BallPocketedEvent: {@event.Ball.gameObject.name} in {@event.Pocket}"));
@@ -24,19 +23,32 @@ public class DebuggingTools : MonoBehaviour
         HandleTimeControl();
         HandleGameTools();
         HandleDeleteAllBalls();
+        HandleResetCueBall();
     }
 
     private void HandleDeleteAllBalls()
     {
         if (Input.GetKeyDown(KeyCode.F6))
         {
-            var balls = GameManager.Instance.balls;
+
+            cueBall = GameObject.FindWithTag("CueBall");
+            var balls = GameManager.Instance.ballGameObjects;
             foreach (var ball in balls)
             {
                 if (ball == cueBall) continue;
                 Destroy(ball);
             }
             Debug.Log($"[DEBUG] Deleted all balls");
+        }
+    }
+    private void HandleResetCueBall()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            cueBall = GameObject.FindWithTag("CueBall");
+            cueBall.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            cueBall.transform.position = BallSpawner.cueBallInitalPosition;
+            Debug.Log($"[DEBUG] Reset CueBall position");
         }
     }
     private void HandleGameTools()
