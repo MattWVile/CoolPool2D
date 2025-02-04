@@ -9,11 +9,11 @@ public class BallSpawner : MonoBehaviour
     {"YellowBall", "RedBall", "YellowBall", "YellowBall", "BlackBall", "RedBall", "RedBall",
      "YellowBall", "RedBall", "YellowBall", "YellowBall", "RedBall", "RedBall", "YellowBall", "RedBall"};
 
+    public static Vector2 cueBallInitialPosition = new Vector2(-1.91f, 0.03f);
 
-    public static Vector2 cueBallInitalPosition = new Vector2(-1.91f, 0.03f);
-    public static List<Ball> SpawnBallsInTriangle()
+    public static Dictionary<GameObject, Ball> SpawnBallsInTriangle()
     {
-        var balls = new List<Ball>();
+        var balls = new Dictionary<GameObject, Ball>();
         var firstBallOfLineVector = Vector2.zero;
         var ballRadius = Resources.Load("Prefabs/ObjectBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
         int ballIndex = 1;
@@ -23,7 +23,6 @@ public class BallSpawner : MonoBehaviour
         clothCenterVector.x += clothDimensionsVector.x / 5;
 
         var ballSpawnVector = clothCenterVector;
-        //this is the first ball of the line it is 3.45 times the radius of the ball away from the black ball
         ballSpawnVector.x += ballRadius * 3.45f;
 
         for (int ballRow = 1; ballRow < 6; ballRow++)
@@ -48,7 +47,8 @@ public class BallSpawner : MonoBehaviour
                 {
                     firstBallOfLineVector = ballSpawnVector;
                 }
-                balls.Add(SpawnBall(ballSpawnVector, ballIndex));
+                var ball = SpawnBall(ballSpawnVector, ballIndex);
+                balls.Add(ball.BallGameObject, ball);
                 ballIndex++;
             }
         }
@@ -78,7 +78,7 @@ public class BallSpawner : MonoBehaviour
                 break;
             case "BlackBall":
                 ballGameObject.GetComponent<SpriteRenderer>().color = Color.black;
-                ball.BallMultiplier = 5;
+                ball.BallPoints = 500;
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected ball type: {ballTypeString}");
@@ -88,10 +88,9 @@ public class BallSpawner : MonoBehaviour
 
     public static Ball SpawnCueBall(int cueBallIndex)
     {
-        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitalPosition, Quaternion.identity) as GameObject;
+        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
         Ball ball = new Ball("CueBall" + " " + cueBallIndex, ballGameObject);
         ballGameObject.name = ball.BallName;
         return ball;
     }
 }
-

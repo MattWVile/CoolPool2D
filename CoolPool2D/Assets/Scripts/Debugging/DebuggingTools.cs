@@ -23,7 +23,6 @@ public class DebuggingTools : MonoBehaviour
         HandleTimeControl();
         HandleGameTools();
         HandleDeleteAllBalls();
-        HandleResetCueBall();
     }
 
     private void HandleDeleteAllBalls()
@@ -41,16 +40,6 @@ public class DebuggingTools : MonoBehaviour
             Debug.Log($"[DEBUG] Deleted all balls");
         }
     }
-    private void HandleResetCueBall()
-    {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            cueBall = GameObject.FindWithTag("CueBall");
-            cueBall.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            cueBall.transform.position = BallSpawner.cueBallInitalPosition;
-            Debug.Log($"[DEBUG] Reset CueBall position");
-        }
-    }
     private void HandleGameTools()
     {
         if (Input.GetKeyDown(KeyCode.F4))
@@ -60,10 +49,11 @@ public class DebuggingTools : MonoBehaviour
         }
         if (showLazer) DrawLaser();
 
-
-        if (Input.GetKeyDown(KeyCode.F5))
+        if (Input.GetKeyDown(KeyCode.R))
         {
-            cueBall.transform.position = new Vector3(-3.6f, 0, 0);
+            cueBall = GameObject.FindWithTag("CueBall");
+            cueBall.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            cueBall.transform.position = BallSpawner.cueBallInitialPosition;
             Debug.Log($"[DEBUG] Reset CueBall position");
         }
     }

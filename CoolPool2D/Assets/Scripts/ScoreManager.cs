@@ -30,29 +30,29 @@ public class ScoreManager : MonoBehaviour
     public void OnBallPocketed(BallPocketedEvent @event)
     {
         string scoreTypeHeader = string.Empty;
-        float scoreTypePoints = 0f;
+        float scoreTypePoints = @event.Ball.BallPoints;
         bool isFoul = false;
 
-        switch (@event.Ball.tag)
+        switch (@event.Ball.BallGameObject.tag)
         {
             case "CueBall":
                 scoreTypeHeader = "Cue Ball Pot";
+                scoreTypePoints = 0f;
                 isFoul = true;
                 break;
             case "YellowBall":
                 scoreTypeHeader = "Yellow Ball Pot";
-                scoreTypePoints = 500f;
                 break;
             case "RedBall":
                 scoreTypeHeader = "Red Ball Pot";
-                scoreTypePoints = 500f;
                 break;
             case "BlackBall":
                 scoreTypeHeader = "Black Ball Pot";
+                scoreTypePoints = 0f;
                 isFoul = true;
                 break;
             default:
-                throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.tag}");
+                throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
         }
         AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
     }
@@ -60,28 +60,24 @@ public class ScoreManager : MonoBehaviour
     private void OnBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
     {
         string scoreTypeHeader = string.Empty;
-        float scoreTypePoints = 0f;
+        float scoreTypePoints = @event.Ball.BallPoints;
 
-        switch (@event.Ball.tag)
+        switch (@event.Ball.BallGameObject.tag)
         {
             case "CueBall":
                 scoreTypeHeader = "Cue Ball Rail Bounce";
-                scoreTypePoints = 100f;
                 break;
             case "YellowBall":
                 scoreTypeHeader = "Yellow Ball Rail Bounce";
-                scoreTypePoints = 100f;
                 break;
             case "RedBall":
                 scoreTypeHeader = "Red Ball Rail Bounce";
-                scoreTypePoints = 100f;
                 break;
             case "BlackBall":
                 scoreTypeHeader = "Black Ball Rail Bounce";
-                scoreTypePoints = 500f;
                 break;
             default:
-                throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.tag}");
+                throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
         }
         AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints);
     }

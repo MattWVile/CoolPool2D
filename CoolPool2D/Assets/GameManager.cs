@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -11,7 +12,7 @@ public class GameManager : MonoBehaviour
     public List<GameObject> possibleTargets;
     public List<GameObject> ballGameObjects;
     public List<Rigidbody2D> ballRbs;
-    public List<Ball> listOfBalls;
+    public Dictionary<GameObject, Ball> ballDictionary = new Dictionary<GameObject, Ball>();
     public GameStateManager gameStateManager;
 
     public int amountOfCueBallsSpawned = 0;
@@ -75,19 +76,24 @@ public class GameManager : MonoBehaviour
         SpawnBallTriangleAndCueBall();
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
+
     public void SpawnBallTriangleAndCueBall()
     {
-        listOfBalls = BallSpawner.SpawnBallsInTriangle();
-        listOfBalls.Add(BallSpawner.SpawnCueBall(amountOfCueBallsSpawned));
+        ballDictionary = BallSpawner.SpawnBallsInTriangle();
+        var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
         amountOfCueBallsSpawned++;
-        ballGameObjects = listOfBalls.Select(ball => ball.BallGameObject).ToList();
+        ballDictionary.Add(cueBall.BallGameObject, cueBall);
+
+        ballGameObjects = ballDictionary.Keys.ToList();
         ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
     }
+
     private void HandlePocketedBall(BallPocketedEvent @event)
     {
-        ballGameObjects.Remove(@event.Ball);
-        ballRbs.Remove(@event.Ball.GetComponent<Rigidbody2D>());
-        Destroy(@event.Ball);
+        ballGameObjects.Remove(@event.Ball.BallGameObject);
+        ballRbs.Remove(@event.Ball.BallGameObject.GetComponent<Rigidbody2D>());
+        ballDictionary.Remove(@event.Ball.BallGameObject);
+        Destroy(@event.Ball.BallGameObject);
         ScoreManager.Instance.OnBallPocketed(@event);
     }
 
@@ -138,10 +144,13 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(seconds);
         gameStateManager.SubmitEndOfState(gameState);
     }
+
     private void AddBallToLists(GameObject ballToAdd)
     {
         ballGameObjects.Add(ballToAdd);
         ballRbs.Add(ballToAdd.GetComponent<Rigidbody2D>());
+        var ball = new Ball(ballToAdd.name, ballToAdd);
+        ballDictionary.Add(ballToAdd, ball);
     }
 
     private IEnumerator CheckIfAllBallsStopped()
