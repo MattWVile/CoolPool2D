@@ -1,17 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PocketController : MonoBehaviour
 {
     public Pocket pocket;
-    public void OnTriggerEnter2D(Collider2D other) {
-        EventBus.Publish(new BallPocketedEvent()
+
+    public void OnTriggerEnter2D(Collider2D other)
+    {
+        if (GameManager.Instance.ballDictionary.TryGetValue(other.gameObject, out Ball ball))
         {
-            Ball = other.gameObject,
-            Pocket = pocket,
-            Sender = this
-        });
-        
+            EventBus.Publish(new BallPocketedEvent()
+            {
+                Ball = ball,
+                Pocket = pocket,
+                Sender = this
+            });
+        }
     }
 }

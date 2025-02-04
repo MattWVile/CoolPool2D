@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.PackageManager;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -10,9 +10,12 @@ public class GameManager : MonoBehaviour
 
     public GameObject cue;
     public List<GameObject> possibleTargets;
-    public List<GameObject> balls;
+    public List<GameObject> ballGameObjects;
     public List<Rigidbody2D> ballRbs;
+    public Dictionary<GameObject, Ball> ballDictionary = new Dictionary<GameObject, Ball>();
     public GameStateManager gameStateManager;
+
+    public int amountOfCueBallsSpawned = 0;
 
     private void Awake()
     {
@@ -30,17 +33,6 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         cue = GameObject.Find("Cue");
-        var cueball = GameObject.Find("CueBall");
-        if (cueball != null)
-        {
-            cue.GetComponent<CueMovement>().Enable(cueball);
-        }
-        else
-        {
-            Debug.LogError("CueBall not found.");
-        }
-
-        LoadBalls();
 
         EventBus.Subscribe<BallPocketedEvent>(HandlePocketedBall);
 
@@ -70,22 +62,39 @@ public class GameManager : MonoBehaviour
                 case GameState.PrepareNextTurn:
                     HandlePrepareNextTurnState();
                     break;
+                case GameState.GameStart:
+                    StartGame();
+                    break;
             }
         });
-    }
-    private void HandlePocketedBall(BallPocketedEvent @event)
-    {
-        balls.Remove(@event.Ball);
-        ballRbs.Remove(@event.Ball.GetComponent<Rigidbody2D>());
-        Destroy(@event.Ball);
-        ScoreManager.Instance.OnBallPocketed(@event);
+
+        gameStateManager.SetGameState(GameState.GameStart);
     }
 
-    private void LoadBalls()
+    public void StartGame()
     {
-        balls = GameObject.FindGameObjectsWithTag("CueBall").ToList();
-        balls.AddRange(GameObject.FindGameObjectsWithTag("ObjectBall"));
-        ballRbs = balls.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
+        SpawnBallTriangleAndCueBall();
+        gameStateManager.SubmitEndOfState(GameState.GameStart);
+    }
+
+    public void SpawnBallTriangleAndCueBall()
+    {
+        ballDictionary = BallSpawner.SpawnBallsInTriangle();
+        var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
+        amountOfCueBallsSpawned++;
+        ballDictionary.Add(cueBall.BallGameObject, cueBall);
+
+        ballGameObjects = ballDictionary.Keys.ToList();
+        ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
+    }
+
+    private void HandlePocketedBall(BallPocketedEvent @event)
+    {
+        ballGameObjects.Remove(@event.Ball.BallGameObject);
+        ballRbs.Remove(@event.Ball.BallGameObject.GetComponent<Rigidbody2D>());
+        ballDictionary.Remove(@event.Ball.BallGameObject);
+        Destroy(@event.Ball.BallGameObject);
+        ScoreManager.Instance.OnBallPocketed(@event);
     }
 
     private void HandleAimingState()
@@ -94,6 +103,7 @@ public class GameManager : MonoBehaviour
         var target = possibleTargets.First();
         if (target == null)
             target = FindObjectOfType<Shootable>().gameObject;
+        possibleTargets.Add(target);
         cue.GetComponent<CueMovement>().Enable(target);
     }
 
@@ -117,12 +127,13 @@ public class GameManager : MonoBehaviour
         try
         {
             var target = FindObjectOfType<Shootable>().gameObject;
+            possibleTargets.Add(target);
         }
         catch (System.NullReferenceException)
         {
             Debug.Log("No shootable found. placing one.");
-            Instantiate(Resources.Load<GameObject>("Prefabs/CueBall"));
-            LoadBalls();
+            var newCueBallGameObject = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned).BallGameObject;
+            AddBallToLists(newCueBallGameObject);
         }
 
         StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
@@ -132,6 +143,14 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(seconds);
         gameStateManager.SubmitEndOfState(gameState);
+    }
+
+    private void AddBallToLists(GameObject ballToAdd)
+    {
+        ballGameObjects.Add(ballToAdd);
+        ballRbs.Add(ballToAdd.GetComponent<Rigidbody2D>());
+        var ball = new Ball(ballToAdd.name, ballToAdd);
+        ballDictionary.Add(ballToAdd, ball);
     }
 
     private IEnumerator CheckIfAllBallsStopped()

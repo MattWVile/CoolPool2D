@@ -1,6 +1,4 @@
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 
 public class DebuggingTools : MonoBehaviour
@@ -12,7 +10,6 @@ public class DebuggingTools : MonoBehaviour
     void Start()
     {
         cueMovement = GameObject.FindFirstObjectByType<CueMovement>();
-        cueBall = GameObject.Find("CueBall");
 
         //EventBus.Subscribe<BallPocketedEvent>(@event =>
         //    Debug.Log($"[DEBUG] [Event] BallPocketedEvent: {@event.Ball.gameObject.name} in {@event.Pocket}"));
@@ -25,8 +22,24 @@ public class DebuggingTools : MonoBehaviour
     {
         HandleTimeControl();
         HandleGameTools();
+        HandleDeleteAllBalls();
     }
 
+    private void HandleDeleteAllBalls()
+    {
+        if (Input.GetKeyDown(KeyCode.F6))
+        {
+
+            cueBall = GameObject.FindWithTag("CueBall");
+            var balls = GameManager.Instance.ballGameObjects;
+            foreach (var ball in balls)
+            {
+                if (ball == cueBall) continue;
+                Destroy(ball);
+            }
+            Debug.Log($"[DEBUG] Deleted all balls");
+        }
+    }
     private void HandleGameTools()
     {
         if (Input.GetKeyDown(KeyCode.F4))
@@ -36,10 +49,11 @@ public class DebuggingTools : MonoBehaviour
         }
         if (showLazer) DrawLaser();
 
-
-        if (Input.GetKeyDown(KeyCode.F5))
+        if (Input.GetKeyDown(KeyCode.R))
         {
-            cueBall.transform.position = new Vector3(-3.6f, 0, 0);
+            cueBall = GameObject.FindWithTag("CueBall");
+            cueBall.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            cueBall.transform.position = BallSpawner.cueBallInitialPosition;
             Debug.Log($"[DEBUG] Reset CueBall position");
         }
     }

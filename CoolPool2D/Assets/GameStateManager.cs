@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEngine;
 
 /// <summary>
@@ -9,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class GameStateManager : MonoBehaviour
 {
-    public GameState CurrentGameState { get; private set; } = GameState.Aiming;
+    public GameState CurrentGameState { get; private set; } = GameState.GameStart;
 
     /// <summary>
     /// This method is used (by the GameManager) to submit the end of a state.
@@ -31,7 +28,16 @@ public class GameStateManager : MonoBehaviour
             case GameState.PrepareNextTurn:
                 CurrentGameState = GameState.Aiming;
                 break;
+            case GameState.GameStart:
+                CurrentGameState = GameState.Aiming;
+                break;
         }
+        EventBus.Publish(new NewGameStateEvent { Sender = this, NewGameState = CurrentGameState });
+    }
+
+    public void SetGameState(GameState gameState)
+    {
+        CurrentGameState = gameState;
         EventBus.Publish(new NewGameStateEvent { Sender = this, NewGameState = CurrentGameState });
     }
 }

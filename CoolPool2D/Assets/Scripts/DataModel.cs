@@ -24,4 +24,5 @@ public enum GameState {
     Shooting,
     CalculatePoints,
     PrepareNextTurn,
+    GameStart
 }
