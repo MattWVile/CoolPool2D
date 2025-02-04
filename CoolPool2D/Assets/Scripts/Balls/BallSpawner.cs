@@ -5,7 +5,8 @@ using Unity.VisualScripting;
 
 public class BallSpawner : MonoBehaviour
 {
-
+    private static readonly List<string> ballSpawnPattern = new List<string>
+    {"Y", "R", "Y", "Y", "B", "R", "R", "Y", "R", "Y", "Y", "R", "R", "Y", "R"};
     public static void SpawnBallsInTriangle()
     {
         var firstBallOfLineVector = Vector3.zero;
@@ -52,32 +53,28 @@ public class BallSpawner : MonoBehaviour
 
     private static void SpawnBall(Vector3 spawnPosition, int ballIndex)
     {
-        List<string> ballPattern = new List<string> { "Y", "R", "Y", "Y", "B", "R", "R", "Y", "R", "Y", "Y", "R", "R", "Y", "R" };
-
         GameObject ball = Instantiate(Resources.Load("Prefabs/ObjectBall"), spawnPosition, Quaternion.identity) as GameObject;
         if (ball == null) throw new InvalidOperationException("Ball is null.");
         if (ballIndex > 15) ballIndex = new System.Random().Next(1, 15);
 
-        var ballTypeString = ballPattern[ballIndex - 1];
+        var ballTypeString = ballSpawnPattern[ballIndex - 1];
 
-        if (ballTypeString == "R")
+        switch (ballTypeString)
         {
-            ball.tag = "RedBall";
-            ball.GetComponent<SpriteRenderer>().color = Color.red;
-        }
-        else if (ballTypeString == "Y")
-        {
-            ball.tag = "YellowBall";
-            ball.GetComponent<SpriteRenderer>().color = Color.yellow;
-        }
-        else if (ballTypeString == "B")
-        {
-            ball.tag = "BlackBall";
-            ball.GetComponent<SpriteRenderer>().color = Color.black;
-        }
-        else
-        {
-            throw new InvalidOperationException($"Unexpected ball type: {ballTypeString}");
+            case "R":
+                ball.tag = "RedBall";
+                ball.GetComponent<SpriteRenderer>().color = Color.red;
+                break;
+            case "Y":
+                ball.tag = "YellowBall";
+                ball.GetComponent<SpriteRenderer>().color = Color.yellow;
+                break;
+            case "B":
+                ball.tag = "BlackBall";
+                ball.GetComponent<SpriteRenderer>().color = Color.black;
+                break;
+            default:
+                throw new InvalidOperationException($"Unexpected ball type: {ballTypeString}");
         }
     }
 
