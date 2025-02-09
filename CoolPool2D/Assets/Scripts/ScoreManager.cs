@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +7,11 @@ public class ScoreManager : MonoBehaviour
 
     public float totalScore = 0f;
     public List<ScoreType> currentScoreTypes = new List<ScoreType>();
+
+    public enum BallColour { None, Red, Yellow }
+    public BallColour playerColor = BallColour.None;
+
+    public bool hasPlayerFouledThisShot = false;
 
     void Awake()
     {
@@ -29,30 +33,9 @@ public class ScoreManager : MonoBehaviour
 
     public void OnScorableEvent(IScorableEvent @event)
     {
-        string scoreTypeHeader = string.Empty;
-        float scoreTypePoints = @event.ScoreTypePoints;
+        string scoreTypeHeader = @event.ScoreTypeHeader;
         bool isFoul = @event.IsFoul;
-
-        switch (@event.Ball.BallGameObject.tag)
-        {
-            case "CueBall":
-                scoreTypeHeader = "Cue Ball";
-                isFoul = @event is BallPocketedEvent;
-                break;
-            case "YellowBall":
-                scoreTypeHeader = "Yellow Ball" ;
-                break;
-            case "RedBall":
-                scoreTypeHeader = "Red Ball";
-                break;
-            case "BlackBall":
-                scoreTypeHeader = "Black Ball";
-                isFoul = @event is BallPocketedEvent;
-                break;
-            default:
-                throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
-        }
-        scoreTypeHeader += @event is BallPocketedEvent ? " Pot" : " Bounce";
+        float scoreTypePoints = isFoul ? 0f : @event.ScoreTypePoints;
         AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
     }
 
@@ -70,6 +53,7 @@ public class ScoreManager : MonoBehaviour
             {
                 scoreType.IsScoreFoul = true;
             }
+
         }
         else
         {
@@ -100,5 +84,6 @@ public class ScoreManager : MonoBehaviour
         UIManager.Instance.UpdateTotalScore(totalScore);
         UIManager.Instance.ClearShotScore();
         currentScoreTypes.Clear();
+        hasPlayerFouledThisShot = false;
     }
 }
