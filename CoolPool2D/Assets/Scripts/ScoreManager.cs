@@ -24,68 +24,44 @@ public class ScoreManager : MonoBehaviour
 
     void Start()
     {
-        EventBus.Subscribe<BallCollidedWithRailEvent>(OnBallCollidedWithRailEvent);
+        EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
+        Debug.Log("Subscribing to IScorableEvent");
     }
 
-    public void OnBallPocketed(BallPocketedEvent @event)
+    public void OnScorableEvent(IScorableEvent @event)
     {
         string scoreTypeHeader = string.Empty;
-        float scoreTypePoints = @event.Ball.BallPoints;
-        bool isFoul = false;
+        float scoreTypePoints = @event.ScoreTypePoints;
+        bool isFoul = @event.IsFoul;
 
         switch (@event.Ball.BallGameObject.tag)
         {
             case "CueBall":
-                scoreTypeHeader = "Cue Ball Pot";
+                scoreTypeHeader = @event is BallPocketedEvent ? "Cue Ball Pot" : "Cue Ball Rail Bounce";
                 scoreTypePoints = 0f;
                 isFoul = true;
                 break;
             case "YellowBall":
-                scoreTypeHeader = "Yellow Ball Pot";
+                scoreTypeHeader = @event is BallPocketedEvent ? "Yellow Ball Pot" : "Yellow Ball Rail Bounce";
                 break;
             case "RedBall":
-                scoreTypeHeader = "Red Ball Pot";
+                scoreTypeHeader = @event is BallPocketedEvent ? "Red Ball Pot" : "Red Ball Rail Bounce";
                 break;
             case "BlackBall":
-                scoreTypeHeader = "Black Ball Pot";
+                scoreTypeHeader = @event is BallPocketedEvent ? "Black Ball Pot" : "Black Ball Rail Bounce";
                 scoreTypePoints = 0f;
                 isFoul = true;
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
         }
+
         AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
-    }
-
-    private void OnBallCollidedWithRailEvent(BallCollidedWithRailEvent @event)
-    {
-        string scoreTypeHeader = string.Empty;
-        float scoreTypePoints = @event.Ball.BallPoints;
-
-        switch (@event.Ball.BallGameObject.tag)
-        {
-            case "CueBall":
-                scoreTypeHeader = "Cue Ball Rail Bounce";
-                break;
-            case "YellowBall":
-                scoreTypeHeader = "Yellow Ball Rail Bounce";
-                break;
-            case "RedBall":
-                scoreTypeHeader = "Red Ball Rail Bounce";
-                break;
-            case "BlackBall":
-                scoreTypeHeader = "Black Ball Rail Bounce";
-                break;
-            default:
-                throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
-        }
-        AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints);
     }
 
     private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
     {
         ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeName == scoreTypeHeader);
-        // if scoreTypeHeader is not in the list of currentScoreTypes, add it
         if (scoreType == null)
         {
             scoreType = new ScoreType(scoreTypeHeader, scoreTypePoints, isScoreTypeAFoul);
@@ -100,7 +76,6 @@ public class ScoreManager : MonoBehaviour
         }
         else
         {
-            // if scoreTypeHeader is in the list of currentScoreTypes, increment the NumberOfThisScoreType
             scoreType.NumberOfThisScoreType++;
         }
 
@@ -115,12 +90,13 @@ public class ScoreManager : MonoBehaviour
         {
             if (scoreType.IsScoreFoul)
             {
-            return 0f;
+                return 0f;
             }
             shotScore += scoreType.NumberOfThisScoreType * scoreType.ScoreTypePoints;
         }
         return shotScore;
     }
+
     public void CalculateTotalPoints()
     {
         totalScore += calculateShotScore();

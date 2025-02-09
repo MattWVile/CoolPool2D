@@ -2,6 +2,7 @@ using System;
 using JetBrains.Annotations;
 using UnityEngine;
 
+public interface IGameEventArgs { }
 public abstract class BaseGameEvent : IGameEventArgs
 {
     public DateTime TimeStamp { get; } = DateTime.Now;
@@ -29,11 +30,14 @@ public class BallIsBeingMovedEvent : BaseGameEvent
 {
     public new BallController Sender { get; set; } // overridden Sender to specify the sender type
 }
-public class BallCollidedWithRailEvent : BaseGameEvent
+public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
 {
-    public new RailController Sender { get; set; } // overridden Sender to specify the sender type
     public Rail Rail { get; set; }
+    public new RailController Sender { get; set; }
     public Ball Ball { get; set; }
+    public string ScoreTypeHeader { get; set; }
+    public float ScoreTypePoints { get; set; }
+    public bool IsFoul { get; set; }
 }
 
 //public class ShotScoreCalculatedEvent : BaseGameEvent
@@ -50,11 +54,14 @@ public class BallIsChargedEvent : BaseGameEvent
     public new BallController Sender { get; set; } // overridden Sender to specify the sender type
 }
 
-public class BallPocketedEvent : BaseGameEvent
+public class BallPocketedEvent : BaseGameEvent, IScorableEvent
 {
-    public new PocketController Sender { get; set; } // overridden Sender to specify the sender type
     public Pocket Pocket { get; set; }
+    public new PocketController Sender { get; set; }
     public Ball Ball { get; set; }
+    public string ScoreTypeHeader { get; set; }
+    public float ScoreTypePoints { get; set; }
+    public bool IsFoul { get; set; }
 }
 
 public class NewGameStateEvent : BaseGameEvent {

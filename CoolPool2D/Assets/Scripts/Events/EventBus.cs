@@ -1,14 +1,9 @@
 using System;
 using System.Collections.Generic;
-public interface IGameEventArgs { }
-/// <summary>
-/// WARNING:
-///     When an object is destroyed, we are required to unsubscribe from the event manually.
-///     If we do not do this, we will have a memory leak.
-/// </summary>
-public class EventBus
-{
+using UnityEngine;
 
+public static class EventBus
+{
     private static readonly Dictionary<Type, Delegate> _events = new Dictionary<Type, Delegate>();
 
     public static void Subscribe<TGameEventArgs>(Action<TGameEventArgs> handler) where TGameEventArgs : IGameEventArgs
@@ -50,8 +45,17 @@ public class EventBus
             var handler = _events[eventType] as Action<TGameEventArgs>;
             if (handler != null)
             {
-                handler(eventArgs);
+                Debug.Log($"Publishing event of type {eventType}");
+                handler.Invoke(eventArgs);
             }
+            else
+            {
+                Debug.LogWarning($"No handler found for event of type {eventType}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"No subscribers for event of type {eventType}");
         }
     }
 }
