@@ -25,7 +25,6 @@ public class ScoreManager : MonoBehaviour
     void Start()
     {
         EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
-        Debug.Log("Subscribing to IScorableEvent");
     }
 
     public void OnScorableEvent(IScorableEvent @event)
@@ -37,25 +36,23 @@ public class ScoreManager : MonoBehaviour
         switch (@event.Ball.BallGameObject.tag)
         {
             case "CueBall":
-                scoreTypeHeader = @event is BallPocketedEvent ? "Cue Ball Pot" : "Cue Ball Rail Bounce";
-                scoreTypePoints = 0f;
-                isFoul = true;
+                scoreTypeHeader = "Cue Ball";
+                isFoul = @event is BallPocketedEvent;
                 break;
             case "YellowBall":
-                scoreTypeHeader = @event is BallPocketedEvent ? "Yellow Ball Pot" : "Yellow Ball Rail Bounce";
+                scoreTypeHeader = "Yellow Ball" ;
                 break;
             case "RedBall":
-                scoreTypeHeader = @event is BallPocketedEvent ? "Red Ball Pot" : "Red Ball Rail Bounce";
+                scoreTypeHeader = "Red Ball";
                 break;
             case "BlackBall":
-                scoreTypeHeader = @event is BallPocketedEvent ? "Black Ball Pot" : "Black Ball Rail Bounce";
-                scoreTypePoints = 0f;
-                isFoul = true;
+                scoreTypeHeader = "Black Ball";
+                isFoul = @event is BallPocketedEvent;
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
         }
-
+        scoreTypeHeader += @event is BallPocketedEvent ? " Pot" : " Bounce";
         AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
     }
 
