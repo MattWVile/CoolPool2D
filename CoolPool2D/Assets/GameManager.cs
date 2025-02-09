@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -94,7 +93,6 @@ public class GameManager : MonoBehaviour
         ballRbs.Remove(@event.Ball.BallGameObject.GetComponent<Rigidbody2D>());
         ballDictionary.Remove(@event.Ball.BallGameObject);
         Destroy(@event.Ball.BallGameObject);
-        ScoreManager.Instance.OnBallPocketed(@event);
     }
 
     private void HandleAimingState()
