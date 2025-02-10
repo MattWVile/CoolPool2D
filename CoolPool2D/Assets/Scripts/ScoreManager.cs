@@ -8,9 +8,6 @@ public class ScoreManager : MonoBehaviour
     public float totalScore = 0f;
     public List<ScoreType> currentScoreTypes = new List<ScoreType>();
 
-    public enum BallColour { None, Red, Yellow }
-    public BallColour playerColor = BallColour.None;
-
     public bool hasPlayerFouledThisShot = false;
 
     void Awake()

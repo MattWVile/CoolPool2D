@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
+
 
 public class GameManager : MonoBehaviour
 {
-    public enum BallColor { None, Red, Yellow }
-    public BallColor playerColor = BallColor.None;
+    public PlayerBallColor playerColor = PlayerBallColor.None;
     public static GameManager Instance { get; private set; }
 
     public GameObject cue;
