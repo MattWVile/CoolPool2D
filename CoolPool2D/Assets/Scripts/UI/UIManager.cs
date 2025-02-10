@@ -131,4 +131,7 @@ public class UIManager : MonoBehaviour
         }
         scoreTypes.Clear();
     }
+
+    //TODO: Make UI show total points with UI Builder
+    // should have a button to restart to gameStart state
 }
