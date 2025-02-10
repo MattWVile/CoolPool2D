@@ -27,16 +27,16 @@ public static class ScorableEventUtils
         }
     }
 
-    public static bool DetermineIfFoul(Ball ball, PlayerBallColor playerColor)
+    public static bool DetermineIfFoul(Ball ball, PlayerBallColour playerColor)
     {
-        PlayerBallColor ballColor;
+        PlayerBallColour ballColor;
         switch (ball.BallGameObject.tag)
         {
             case "YellowBall":
-                ballColor = PlayerBallColor.Yellow;
+                ballColor = PlayerBallColour.Yellow;
                 break;
             case "RedBall":
-                ballColor = PlayerBallColor.Red;
+                ballColor = PlayerBallColour.Red;
                 break;
             case "BlackBall":
                 return true;
@@ -46,7 +46,7 @@ public static class ScorableEventUtils
                 throw new InvalidOperationException($"Unexpected ball tag: {ball.BallGameObject.tag}");
         }
 
-        if (playerColor == PlayerBallColor.None)
+        if (playerColor == PlayerBallColour.None)
         {
             // Assign the player's color based on the first ball
             GameManager.Instance.playerColor = ballColor;

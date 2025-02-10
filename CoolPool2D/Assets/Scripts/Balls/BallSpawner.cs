@@ -10,6 +10,7 @@ public class BallSpawner : MonoBehaviour
      "YellowBall", "RedBall", "YellowBall", "YellowBall", "RedBall", "RedBall", "YellowBall", "RedBall"};
 
     public static Vector2 cueBallInitialPosition = new Vector2(-1.91f, 0.03f);
+    public static Vector2 blackBallInitialPosition = new Vector2(4.29202366f, 0.0384333134f);
 
     public static Dictionary<GameObject, Ball> SpawnBallsInTriangle()
     {
@@ -88,9 +89,20 @@ public class BallSpawner : MonoBehaviour
 
     public static Ball SpawnCueBall(int cueBallIndex)
     {
-        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
-        Ball ball = new Ball("CueBall" + " " + cueBallIndex, ballGameObject);
-        ballGameObject.name = ball.BallName;
+        GameObject cueBallGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
+        Ball ball = new Ball("CueBall" + " " + cueBallIndex, cueBallGameObject);
+        cueBallGameObject.name = ball.BallName;
+        return ball;
+    }    
+    
+    public static Ball SpawnBlackBall()
+    {
+        GameObject blackBallGameObject = Instantiate(Resources.Load("Prefabs/ObjectBall"), blackBallInitialPosition, Quaternion.identity) as GameObject;
+        Ball ball = new Ball("BlackBallReplacement", blackBallGameObject);
+        blackBallGameObject.tag = "BlackBall";
+        blackBallGameObject.name = ball.BallName;
+        blackBallGameObject.GetComponent<SpriteRenderer>().color = Color.black;
+        ball.BallPoints = 500;
         return ball;
     }
 }

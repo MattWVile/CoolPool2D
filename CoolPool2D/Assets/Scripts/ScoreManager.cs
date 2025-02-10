@@ -78,6 +78,7 @@ public class ScoreManager : MonoBehaviour
     public void CalculateTotalPoints()
     {
         totalScore += calculateShotScore();
+        if (GameManager.Instance != null && GameManager.Instance.blackBallIsIncorrectlyPotted) totalScore /= 2;
         UIManager.Instance.UpdateTotalScore(totalScore);
         UIManager.Instance.ClearShotScore();
         currentScoreTypes.Clear();

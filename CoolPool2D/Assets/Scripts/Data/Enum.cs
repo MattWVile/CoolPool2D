@@ -1,4 +1,4 @@
-public enum PlayerBallColor { 
+public enum PlayerBallColour { 
     None, 
     Red, 
     Yellow, 

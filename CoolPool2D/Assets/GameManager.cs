@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public PlayerBallColor playerColor = PlayerBallColor.None;
+    public PlayerBallColour playerColor = PlayerBallColour.None;
     public static GameManager Instance { get; private set; }
 
     public GameObject cue;
@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour
     public float amountOfYellowBalls = 1;
 
     public int amountOfCueBallsSpawned = 0;
+
+    public bool blackBallIsIncorrectlyPotted = false;
 
     private void Awake()
     {
@@ -106,34 +108,9 @@ public class GameManager : MonoBehaviour
         ballRbs.Remove(@event.Ball.BallGameObject.GetComponent<Rigidbody2D>());
         ballDictionary.Remove(@event.Ball.BallGameObject);
         UpdateBallCounts(@event.Ball);
+        CheckIfBlackIncorrectlyPotted(@event.Ball);
         Destroy(@event.Ball.BallGameObject);
         @event.Ball = null;
-    }
-
-    private void UpdateBallCounts(Ball ball)
-    {
-        if (ball.BallGameObject.CompareTag("RedBall") && amountOfRedBalls > 0)
-        {
-            amountOfRedBalls--;
-        }
-        else if (ball.BallGameObject.CompareTag("YellowBall") && amountOfYellowBalls > 0)
-        {
-            amountOfYellowBalls--;
-        }
-
-        if (amountOfRedBalls == 0 || amountOfYellowBalls == 0)
-        {
-            playerColor = PlayerBallColor.Black;
-            CheckForGameOver(ball);
-        }
-    }
-
-    private void CheckForGameOver(Ball ball)
-    {
-        if (ball.BallGameObject.CompareTag("BlackBall") && playerColor == PlayerBallColor.Black)
-        {
-            gameStateManager.SetGameState(GameState.GameOver);
-        }
     }
 
     private void HandleAimingState()
@@ -170,7 +147,11 @@ public class GameManager : MonoBehaviour
             var newCueBallGameObject = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned).BallGameObject;
             AddBallToLists(newCueBallGameObject);
         }
-
+        if (blackBallIsIncorrectlyPotted)
+        {
+            BallSpawner.SpawnBlackBall();
+            blackBallIsIncorrectlyPotted = true;
+        }
         StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
     }
 
@@ -202,6 +183,19 @@ public class GameManager : MonoBehaviour
     {
         return ballRbs.All(rb => rb.velocity.magnitude < 0.1f);
     }
+
+    private void HandleGameOverState()
+    {
+        ScoreManager.Instance.CalculateTotalPoints();
+        ShowTotalPoints();
+        DespawnAllBalls();
+    }
+    private void ShowTotalPoints()
+    {
+        // Make UI show total points
+        Debug.Log("Total score: " + ScoreManager.Instance.totalScore);
+    }
+
     private void DespawnAllBalls()
     {
         foreach (var ballGameObject in ballGameObjects)
@@ -212,16 +206,40 @@ public class GameManager : MonoBehaviour
         ballRbs.Clear();
         ballDictionary.Clear();
     }
-    private void ShowTotalPoints()
+
+    private void UpdateBallCounts(Ball ball)
     {
-        // Assuming you have a UIManager to handle UI updates
-        Debug.Log("Total score: " + ScoreManager.Instance.totalScore);
+        if (ball.BallGameObject.CompareTag("RedBall") && amountOfRedBalls > 0)
+        {
+            amountOfRedBalls--;
+        }
+        else if (ball.BallGameObject.CompareTag("YellowBall") && amountOfYellowBalls > 0)
+        {
+            amountOfYellowBalls--;
+        }
+
+        if (amountOfRedBalls == 0 || amountOfYellowBalls == 0)
+        {
+            playerColor = PlayerBallColour.Black;
+            CheckForGameOver(ball);
+        }
     }
-    private void HandleGameOverState()
+
+    private void CheckIfBlackIncorrectlyPotted(Ball ball)
     {
-        ScoreManager.Instance.CalculateTotalPoints();
-        ShowTotalPoints();
-        DespawnAllBalls();
+        if (ball.BallGameObject.CompareTag("BlackBall") && playerColor != PlayerBallColour.Black)
+        {
+            blackBallIsIncorrectlyPotted = true;
+        }
+    }
+
+
+    private void CheckForGameOver(Ball ball)
+    {
+        if (ball.BallGameObject.CompareTag("BlackBall") && playerColor == PlayerBallColour.Black)
+        {
+            gameStateManager.SetGameState(GameState.GameOver);
+        }
     }
 
 }
