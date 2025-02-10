@@ -8,14 +8,17 @@ public class PocketController : MonoBehaviour
     {
         if (GameManager.Instance.ballDictionary.TryGetValue(other.gameObject, out Ball ball))
         {
+            string scoreTypeHeader = ScorableEventUtils.GetScoreTypeHeader(ball) + " Pocketed";
+            bool isFoul = ScorableEventUtils.DetermineIfFoul(ball, GameManager.Instance.playerColor);
+
             var ballPocketedEvent = new BallPocketedEvent
             {
                 Ball = ball,
                 Pocket = pocket,
                 Sender = this,
-                ScoreTypeHeader = "Ball Pocketed",
+                ScoreTypeHeader = scoreTypeHeader,
                 ScoreTypePoints = ball.BallPoints,
-                IsFoul = false
+                IsFoul = isFoul
             };
             EventBus.Publish(ballPocketedEvent);
         }
