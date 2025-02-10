@@ -30,5 +30,6 @@ public enum GameState
     Shooting,
     CalculatePoints,
     PrepareNextTurn,
-    GameStart
+    GameStart,
+    GameOver
 }

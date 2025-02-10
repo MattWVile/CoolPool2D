@@ -17,6 +17,9 @@ public class GameManager : MonoBehaviour
     public Dictionary<GameObject, Ball> ballDictionary = new Dictionary<GameObject, Ball>();
     public GameStateManager gameStateManager;
 
+    public float amountOfRedBalls = 1;
+    public float amountOfYellowBalls = 1;
+
     public int amountOfCueBallsSpawned = 0;
 
     private void Awake()
@@ -45,7 +48,11 @@ public class GameManager : MonoBehaviour
 
         EventBus.Subscribe<BallStoppedEvent>((@event) =>
         {
-            gameStateManager.SubmitEndOfState(GameState.Shooting);
+
+            if (gameStateManager.CurrentGameState != GameState.GameOver)
+            {
+                gameStateManager.SubmitEndOfState(GameState.Shooting);
+            }
         });
 
         EventBus.Subscribe<NewGameStateEvent>((@event) =>
@@ -66,6 +73,9 @@ public class GameManager : MonoBehaviour
                     break;
                 case GameState.GameStart:
                     StartGame();
+                    break;
+                case GameState.GameOver:
+                    HandleGameOverState();
                     break;
             }
         });
@@ -95,7 +105,35 @@ public class GameManager : MonoBehaviour
         ballGameObjects.Remove(@event.Ball.BallGameObject);
         ballRbs.Remove(@event.Ball.BallGameObject.GetComponent<Rigidbody2D>());
         ballDictionary.Remove(@event.Ball.BallGameObject);
+        UpdateBallCounts(@event.Ball);
         Destroy(@event.Ball.BallGameObject);
+        @event.Ball = null;
+    }
+
+    private void UpdateBallCounts(Ball ball)
+    {
+        if (ball.BallGameObject.CompareTag("RedBall") && amountOfRedBalls > 0)
+        {
+            amountOfRedBalls--;
+        }
+        else if (ball.BallGameObject.CompareTag("YellowBall") && amountOfYellowBalls > 0)
+        {
+            amountOfYellowBalls--;
+        }
+
+        if (amountOfRedBalls == 0 || amountOfYellowBalls == 0)
+        {
+            playerColor = PlayerBallColor.Black;
+            CheckForGameOver(ball);
+        }
+    }
+
+    private void CheckForGameOver(Ball ball)
+    {
+        if (ball.BallGameObject.CompareTag("BlackBall") && playerColor == PlayerBallColor.Black)
+        {
+            gameStateManager.SetGameState(GameState.GameOver);
+        }
     }
 
     private void HandleAimingState()
@@ -116,7 +154,7 @@ public class GameManager : MonoBehaviour
     private void HandleCalculatePointsState()
     {
         ScoreManager.Instance.CalculateTotalPoints();
-        StartCoroutine(WaitThenEndState(.1f, GameState.CalculatePoints));
+        StartCoroutine(WaitThenEndState(.5f, GameState.CalculatePoints));
     }
 
     private void HandlePrepareNextTurnState()
@@ -164,4 +202,26 @@ public class GameManager : MonoBehaviour
     {
         return ballRbs.All(rb => rb.velocity.magnitude < 0.1f);
     }
+    private void DespawnAllBalls()
+    {
+        foreach (var ballGameObject in ballGameObjects)
+        {
+            Destroy(ballGameObject);
+        }
+        ballGameObjects.Clear();
+        ballRbs.Clear();
+        ballDictionary.Clear();
+    }
+    private void ShowTotalPoints()
+    {
+        // Assuming you have a UIManager to handle UI updates
+        Debug.Log("Total score: " + ScoreManager.Instance.totalScore);
+    }
+    private void HandleGameOverState()
+    {
+        ScoreManager.Instance.CalculateTotalPoints();
+        ShowTotalPoints();
+        DespawnAllBalls();
+    }
+
 }

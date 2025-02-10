@@ -117,7 +117,10 @@ public class UIManager : MonoBehaviour
 
     public void IncrementShotTypeAmount(VisualElement scoreType)
     {
-        scoreType.Q<Label>("ScoreTypeAmount").text = (int.Parse(scoreType.Q<Label>("ScoreTypeAmount").text) + 1).ToString();
+        if (scoreType.Q<Label>("ScoreTypeMultiplicationSign").text != "FOUL!")
+        {
+            scoreType.Q<Label>("ScoreTypeAmount").text = (int.Parse(scoreType.Q<Label>("ScoreTypeAmount").text) + 1).ToString();
+        }
     }
 
     private void ClearScoreTypes()
