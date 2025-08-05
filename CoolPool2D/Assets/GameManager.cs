@@ -72,16 +72,30 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        SpawnBallTriangleAndCueBall();
+        SpawnBlackBallAndCueBall();
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
 
-    public void SpawnBallTriangleAndCueBall()
+    //public void SpawnBallTriangleAndCueBall()
+    //{
+    //    ballDictionary = BallSpawner.SpawnBallsInTriangle();
+    //    var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
+    //    amountOfCueBallsSpawned++;
+    //    ballDictionary.Add(cueBall.BallGameObject, cueBall);
+
+    //    ballGameObjects = ballDictionary.Keys.ToList();
+    //    ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
+    //}
+
+    public void SpawnBlackBallAndCueBall()
     {
-        ballDictionary = BallSpawner.SpawnBallsInTriangle();
+        var blackBall = BallSpawner.SpawnSpecificBall("BlackBall", "Triangle Center");
+        ballDictionary.Add(blackBall.BallGameObject, blackBall);
+
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-        amountOfCueBallsSpawned++;
         ballDictionary.Add(cueBall.BallGameObject, cueBall);
+
+        amountOfCueBallsSpawned++;
 
         ballGameObjects = ballDictionary.Keys.ToList();
         ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
