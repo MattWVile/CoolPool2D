@@ -21,6 +21,18 @@ public class CueMovement : MonoBehaviour
     {
         SetPosition();
         HandleInput();
+        if (targetShootable != null && isChargingStart != null)
+        {
+            Vector2 startPos = target.transform.position;
+            Vector2 direction = new Vector2(Mathf.Cos(AimingAngle), Mathf.Sin(AimingAngle));
+            float power = shotStrength;
+
+            targetShootable.ShowTrajectory(startPos, direction, power);
+        }
+        else
+        {
+            targetShootable?.HideTrajectory();
+        }
     }
 
     private void HandleInput()

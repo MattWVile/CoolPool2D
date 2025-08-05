@@ -172,11 +172,18 @@ public class GameManager : MonoBehaviour
         {
             yield return new WaitForSeconds(0.5f);
         }
+        StopBallRotation();
         EventBus.Publish(new BallStoppedEvent());
     }
 
     private bool AllBallsStopped()
     {
         return ballRbs.All(rb => rb.velocity.magnitude < 0.1f);
+    }
+
+    private void StopBallRotation()
+    {
+        ballRbs.ForEach(rb => rb.freezeRotation = true);
+        ballRbs.ForEach(rb => rb.freezeRotation = false);
     }
 }
