@@ -95,10 +95,16 @@ public class Shootable : MonoBehaviour
         // 1) Perfect mirror reflection
         Vector2 reflected = Vector2.Reflect(inDir, normal);
 
-        // 2) Compute the tangent (along-wall) direction
+        // 2) Compute the tangent (slide along-wall) direction
         Vector2 tangent = new Vector2(-normal.y, normal.x);
 
-        // 3) How “grazing” is the hit?  ±1 for shallow, 0 for head-on
+        //This dot product tells you how aligned the bounce direction is with the tangent.
+
+        //If the bounce is grazing the wall(shallow angle), the dot product is close to ±1
+
+        //If it's head-on, the dot product is close to 0
+
+        //So this value tells us how much we should skew the bounce.
         float grazing = Vector2.Dot(reflected, tangent);
 
         // 4) Build and apply your skew
@@ -107,6 +113,4 @@ public class Shootable : MonoBehaviour
         // 5) Return the normalized sum
         return (reflected + skew).normalized;
     }
-
-
 }
