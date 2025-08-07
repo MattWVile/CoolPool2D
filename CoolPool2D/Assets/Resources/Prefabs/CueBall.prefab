@@ -181,7 +181,7 @@ MonoBehaviour:
   skewStrength: 0.25
   collisionMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 320
   lineRendererWidthMultiplier: 0.2
   lineRendererStartRoundness: 5
   lineRendererColourHex: '#BBBBC5'
