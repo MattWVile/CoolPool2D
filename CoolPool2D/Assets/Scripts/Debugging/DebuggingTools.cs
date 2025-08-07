@@ -51,10 +51,7 @@ public class DebuggingTools : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            cueBall = GameObject.FindWithTag("CueBall");
-            cueBall.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            cueBall.transform.position = BallSpawner.cueBallInitialPosition;
-            Debug.Log($"[DEBUG] Reset CueBall position");
+            GameManager.Instance.ResetGame();
         }
     }
 

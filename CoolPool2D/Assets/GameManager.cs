@@ -76,16 +76,26 @@ public class GameManager : MonoBehaviour
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
 
-    //public void SpawnBallTriangleAndCueBall()
-    //{
-    //    ballDictionary = BallSpawner.SpawnBallsInTriangle();
-    //    var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-    //    amountOfCueBallsSpawned++;
-    //    ballDictionary.Add(cueBall.BallGameObject, cueBall);
+    public void ResetGame()
+    {
+        ballGameObjects.ForEach(Destroy);
+        ballGameObjects.Clear();
+        ballRbs.Clear();
+        ballDictionary.Clear();
+        amountOfCueBallsSpawned = 0;
+        gameStateManager.SetGameState(GameState.GameStart);
+    }
 
-    //    ballGameObjects = ballDictionary.Keys.ToList();
-    //    ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
-    //}
+    public void SpawnBallTriangleAndCueBall()
+    {
+        ballDictionary = BallSpawner.SpawnBallsInTriangle();
+        var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
+        amountOfCueBallsSpawned++;
+        ballDictionary.Add(cueBall.BallGameObject, cueBall);
+
+        ballGameObjects = ballDictionary.Keys.ToList();
+        ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
+    }
 
     public void SpawnBlackBallAndCueBall()
     {
@@ -172,7 +182,7 @@ public class GameManager : MonoBehaviour
         {
             yield return new WaitForSeconds(0.5f);
         }
-        StopBallRotation();
+        //StopBallRotation();
         EventBus.Publish(new BallStoppedEvent());
     }
 

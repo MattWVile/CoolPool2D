@@ -21,7 +21,7 @@ public class CueMovement : MonoBehaviour
     {
         SetPosition();
         HandleInput();
-        if (targetShootable != null && isChargingStart != null)
+        if (targetShootable != null && isChargingStart == null)
         {
             Vector2 startPos = target.transform.position;
             Vector2 direction = new Vector2(Mathf.Cos(AimingAngle), Mathf.Sin(AimingAngle));

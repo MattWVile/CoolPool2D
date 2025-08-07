@@ -114,7 +114,7 @@ Rigidbody2D:
   m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!58 &7959586936815649917
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -175,8 +175,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef41ec1e588f2c6428f72a6db9335517, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trajectoryPoints: 30
-  timeStep: 0.1
+  maxReflections: 5
+  maxRayDistance: 30
+  stepOffset: 0.01
+  skewStrength: 0.25
   collisionMask:
     serializedVersion: 2
     m_Bits: 64
+  lineRendererWidthMultiplier: 0.2
+  lineRendererStartRoundness: 5
+  lineRendererColourHex: '#BBBBC5'
+  lineRendererColour: {r: 0, g: 0, b: 0, a: 0}
