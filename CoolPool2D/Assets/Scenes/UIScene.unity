@@ -1803,7 +1803,7 @@ MonoBehaviour:
   distanceFromTarget: -4
   target: {fileID: 0}
   AimingAngle: 0
-  shotStrength: 10000
+  shotStrength: 5000
 --- !u!1 &1827407676
 GameObject:
   m_ObjectHideFlags: 0
