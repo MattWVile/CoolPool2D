@@ -83,6 +83,7 @@ public class GameManager : MonoBehaviour
         ballRbs.Clear();
         ballDictionary.Clear();
         amountOfCueBallsSpawned = 0;
+        // Update the game state
         gameStateManager.SetGameState(GameState.GameStart);
     }
 

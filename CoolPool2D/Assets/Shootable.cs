@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer))]
 public class Shootable : MonoBehaviour
 {
     private Rigidbody2D rb;
@@ -20,17 +21,10 @@ public class Shootable : MonoBehaviour
 
     private float ballRadius;
 
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
-        lineRenderer.positionCount = 0;
-        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-
-        ColorUtility.TryParseHtmlString(lineRendererColourHex, out lineRendererColour);
-        lineRenderer.startColor = lineRendererColour;
-        lineRenderer.endColor = lineRendererColour;
-
+        ConfigureLineRenderer();
         ballRadius = GetComponent<SpriteRenderer>().bounds.size.x / 2f;
     }
 
@@ -64,31 +58,55 @@ public class Shootable : MonoBehaviour
 
             lineRenderer.positionCount++;
             lineRenderer.SetPosition(pointIndex++, centerHit);
-            Vector2 reflected = Vector2.Reflect(currentDir, hit.normal);
 
-            Vector2 tangent = new Vector2(-hit.normal.y, hit.normal.x);
-
-
-            float grazingFactor = Vector2.Dot(reflected, tangent);
-
-            Vector2 skew = tangent * skewStrength * grazingFactor;
-
-            currentDir = (reflected + skew).normalized;
+            currentDir = GetBounceDirection(currentDir, hit.normal);
             currentPos = centerHit + currentDir * stepOffset;
         }
+    }
+    public void HideTrajectory()
+    {
+        // throw away all points
+        lineRenderer.positionCount = 0;
+
+        // (optional) make sure the underlying array is emptied too
+        lineRenderer.SetPositions(new Vector3[0]);
     }
 
     private void SetupLineRenderer(Vector2 startPos)
     {
-        lineRenderer.widthMultiplier = lineRendererWidthMultiplier;
-        lineRenderer.numCapVertices = lineRendererStartRoundness;
-        lineRenderer.alignment = LineAlignment.TransformZ;
         lineRenderer.positionCount = 1;
         lineRenderer.SetPosition(0, startPos);
     }
 
-    public void HideTrajectory()
+    private void ConfigureLineRenderer()
     {
+        lineRenderer = gameObject.AddComponent<LineRenderer>();
         lineRenderer.positionCount = 0;
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        ColorUtility.TryParseHtmlString(lineRendererColourHex, out lineRendererColour);
+        lineRenderer.startColor = lineRendererColour;
+        lineRenderer.endColor = lineRendererColour;
+        lineRenderer.widthMultiplier = lineRendererWidthMultiplier;
+        lineRenderer.numCapVertices = lineRendererStartRoundness;
+        lineRenderer.alignment = LineAlignment.TransformZ;
     }
+    private Vector2 GetBounceDirection(Vector2 inDir, Vector2 normal)
+    {
+        // 1) Perfect mirror reflection
+        Vector2 reflected = Vector2.Reflect(inDir, normal);
+
+        // 2) Compute the tangent (along-wall) direction
+        Vector2 tangent = new Vector2(-normal.y, normal.x);
+
+        // 3) How “grazing” is the hit?  ±1 for shallow, 0 for head-on
+        float grazing = Vector2.Dot(reflected, tangent);
+
+        // 4) Build and apply your skew
+        Vector2 skew = tangent * (skewStrength * grazing);
+
+        // 5) Return the normalized sum
+        return (reflected + skew).normalized;
+    }
+
+
 }

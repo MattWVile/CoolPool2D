@@ -6,7 +6,18 @@ using UnityEngine;
 /// </summary>
 public class GameStateManager : MonoBehaviour
 {
+    public static GameStateManager Instance { get; private set; }
     public GameState CurrentGameState { get; private set; } = GameState.GameStart;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else Destroy(gameObject);
+    }
 
     /// <summary>
     /// This method is used (by the GameManager) to submit the end of a state.
