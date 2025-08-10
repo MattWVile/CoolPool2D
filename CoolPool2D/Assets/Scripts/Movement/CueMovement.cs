@@ -17,25 +17,35 @@ public class CueMovement : MonoBehaviour
 
     private Vector2 initialTargetPosition;
 
+    public float aimingSpeed = 1f; // Speed of aiming adjustment
+
     private void Update()
     {
         SetPosition();
         HandleInput();
-        if (targetShootable != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
+        if (targetShootable != null && isChargingStart == null)
         {
             Vector2 startPos = target.transform.position;
             Vector2 direction = new Vector2(Mathf.Cos(AimingAngle), Mathf.Sin(AimingAngle));
             float power = shotStrength;
 
-            targetShootable.ShowTrajectory(startPos, direction, power);
+            targetShootable.ShowTrajectory(initialTargetPosition, direction, power);
         }
     }
 
     private void HandleInput()
     {
-        // move the cue left and right
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            aimingSpeed -= 0.1f;
+        }
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            aimingSpeed += 0.1f;
+        }
         float cueMovement = Input.GetAxis("Horizontal");
-        AimingAngle += cueMovement * Time.deltaTime;
+        AimingAngle += cueMovement * Time.deltaTime * aimingSpeed;
+
 
         if (Input.GetKey(KeyCode.Space))
         {

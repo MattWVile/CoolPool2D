@@ -104,7 +104,7 @@ Rigidbody2D:
   m_LinearDrag: 1
   m_AngularDrag: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 6200000, guid: ec78e41b26cead24698121e9203ea8fe, type: 2}
+  m_Material: {fileID: 6200000, guid: 0466c24ed9d04f14ab1bba743f662179, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -175,14 +175,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef41ec1e588f2c6428f72a6db9335517, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxReflections: 5
-  maxRayDistance: 30
+  maxReflections: 10
+  maxRayDistance: 40
   stepOffset: 0.01
   skewStrength: 0.25
-  collisionMask:
+  ballCollisionMask:
     serializedVersion: 2
-    m_Bits: 320
+    m_Bits: 256
+  railCollisionMask:
+    serializedVersion: 2
+    m_Bits: 64
+  objectBallLineRenderer: {fileID: 0}
   lineRendererWidthMultiplier: 0.2
   lineRendererStartRoundness: 5
-  lineRendererColourHex: '#BBBBC5'
-  lineRendererColour: {r: 0, g: 0, b: 0, a: 0}
+  cueBallLineRendererColourHex: '#BBBBC5'
+  cueBallLineRendererColour: {r: 0, g: 0, b: 0, a: 0}

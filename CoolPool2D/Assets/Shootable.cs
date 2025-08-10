@@ -4,27 +4,30 @@ using UnityEngine;
 public class Shootable : MonoBehaviour
 {
     private Rigidbody2D rb;
-    private LineRenderer lineRenderer;
 
     [Header("Trajectory Settings")]
     [SerializeField] private int maxReflections = 5;
     [SerializeField] private float maxRayDistance = 30f;
     [SerializeField] private float stepOffset = 0.01f;
     [SerializeField] private float skewStrength = 0.25f;
-    [SerializeField] private LayerMask collisionMask;
+    [SerializeField] private LayerMask ballCollisionMask;
+    [SerializeField] private LayerMask railCollisionMask;
 
     [Header("LineRenderer Settings")]
+    private LineRenderer cueBallLineRenderer;
+    public LineRenderer objectBallLineRenderer;
     [SerializeField] private float lineRendererWidthMultiplier = .2f;
     [SerializeField] private int lineRendererStartRoundness = 5;
-    [SerializeField] private string lineRendererColourHex = "#BBBBC5";
-    [SerializeField, HideInInspector] private Color lineRendererColour;
+    [SerializeField] private string cueBallLineRendererColourHex = "#BBBBC5";
+    [SerializeField, HideInInspector] private Color cueBallLineRendererColour;
 
     private float ballRadius;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        ConfigureLineRenderer();
+        ColorUtility.TryParseHtmlString(cueBallLineRendererColourHex, out cueBallLineRendererColour);
+        cueBallLineRenderer = ConfigureLineRenderer(gameObject, cueBallLineRendererColour);
         ballRadius = GetComponent<SpriteRenderer>().bounds.size.x / 2f;
     }
 
@@ -37,7 +40,7 @@ public class Shootable : MonoBehaviour
 
     public void ShowTrajectory(Vector2 startPos, Vector2 direction, float power)
     {
-        SetupLineRenderer(startPos);
+        LineRendererStart(cueBallLineRenderer, startPos);
 
         Vector2 currentPos = startPos;
         Vector2 currentDir = direction.normalized;
@@ -45,50 +48,70 @@ public class Shootable : MonoBehaviour
 
         for (int i = 0; i < maxReflections; i++)
         {
-            var hit = Physics2D.CircleCast(currentPos, ballRadius, currentDir, maxRayDistance, collisionMask);
-            if (hit.collider == null)
+            var hit = Physics2D.CircleCast(currentPos, ballRadius, currentDir, maxRayDistance, ballCollisionMask);
+            if (hit.collider != null)
             {
-                float travel = maxRayDistance - ballRadius;
-                lineRenderer.positionCount++;
-                lineRenderer.SetPosition(pointIndex, currentPos + currentDir * travel);
-                break;
+                var objectBallGameObject = hit.collider.gameObject;
+                if (objectBallLineRenderer == null)
+                {
+                    objectBallLineRenderer = ConfigureLineRenderer(objectBallGameObject, objectBallGameObject.GetComponent<SpriteRenderer>().color);
+                    LineRendererStart(objectBallLineRenderer, currentPos);
+                }
+                //calculate current direction using the angle of the hit.
+                Vector2 center = objectBallGameObject.transform.position;
+                Vector2 collisionPoint = hit.point;
+
+                //var objectBallHit = Physics2D.CircleCast(objectBallGameObject.transform.position, ballRadius, directionOfObjectBall, maxRayDistance, railCollisionMask);
+
+            }
+            else
+            {
+                hit = Physics2D.CircleCast(currentPos, ballRadius, currentDir, maxRayDistance, railCollisionMask);
+                if (hit.collider == null)
+                {
+                    float travel = maxRayDistance - ballRadius;
+                    cueBallLineRenderer.positionCount++;
+                    cueBallLineRenderer.SetPosition(pointIndex, currentPos + currentDir * travel);
+                    break;
+                }
             }
 
             Vector2 centerHit = hit.point + hit.normal * ballRadius;
-
-            lineRenderer.positionCount++;
-            lineRenderer.SetPosition(pointIndex++, centerHit);
+            cueBallLineRenderer.positionCount++;
+            cueBallLineRenderer.SetPosition(pointIndex++, centerHit);
 
             currentDir = GetBounceDirection(currentDir, hit.normal);
             currentPos = centerHit + currentDir * stepOffset;
+
         }
     }
     public void HideTrajectory()
     {
         // throw away all points
-        lineRenderer.positionCount = 0;
+        cueBallLineRenderer.positionCount = 0;
 
         // (optional) make sure the underlying array is emptied too
-        lineRenderer.SetPositions(new Vector3[0]);
+        cueBallLineRenderer.SetPositions(new Vector3[0]);
+        objectBallLineRenderer = null;
     }
 
-    private void SetupLineRenderer(Vector2 startPos)
+    private void LineRendererStart(LineRenderer lineRenderer, Vector2 startPos)
     {
         lineRenderer.positionCount = 1;
         lineRenderer.SetPosition(0, startPos);
     }
 
-    private void ConfigureLineRenderer()
+    private LineRenderer ConfigureLineRenderer(GameObject gameObjectToAddLR, Color lineRendererColour)
     {
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
+        LineRenderer lineRenderer = gameObjectToAddLR.AddComponent<LineRenderer>();
         lineRenderer.positionCount = 0;
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-        ColorUtility.TryParseHtmlString(lineRendererColourHex, out lineRendererColour);
         lineRenderer.startColor = lineRendererColour;
         lineRenderer.endColor = lineRendererColour;
         lineRenderer.widthMultiplier = lineRendererWidthMultiplier;
         lineRenderer.numCapVertices = lineRendererStartRoundness;
         lineRenderer.alignment = LineAlignment.TransformZ;
+        return lineRenderer;
     }
     private Vector2 GetBounceDirection(Vector2 inDir, Vector2 normal)
     {
