@@ -912,6 +912,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &682658746
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 682658748}
+  - component: {fileID: 682658747}
+  m_Layer: 0
+  m_Name: FPSVisual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &682658747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 682658746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d71794beb34bb4a4aa9f0b12fed1b7e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocityIterations: 16
+  positionIterations: 8
+--- !u!4 &682658748
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 682658746}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.351384, y: 0.17330047, z: 0.04228431}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &830456690
 GameObject:
   m_ObjectHideFlags: 0
@@ -1804,6 +1850,7 @@ MonoBehaviour:
   target: {fileID: 0}
   AimingAngle: 0
   shotStrength: 5000
+  aimingSpeed: 1
 --- !u!1 &1827407676
 GameObject:
   m_ObjectHideFlags: 0
@@ -2073,3 +2120,4 @@ SceneRoots:
   - {fileID: 897729865}
   - {fileID: 2007219863}
   - {fileID: 830456692}
+  - {fileID: 682658748}

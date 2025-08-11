@@ -35,13 +35,20 @@ public class CueMovement : MonoBehaviour
 
     private void HandleInput()
     {
+
         if (Input.GetKeyDown(KeyCode.W))
         {
-            aimingSpeed -= 0.1f;
+            if (aimingSpeed <= 1f)
+            {
+                aimingSpeed += 0.3f;
+            }
         }
         if (Input.GetKeyDown(KeyCode.S))
         {
-            aimingSpeed += 0.1f;
+            if (aimingSpeed >= .1f)
+            {
+                aimingSpeed -= 0.3f;
+            }
         }
         float cueMovement = Input.GetAxis("Horizontal");
         AimingAngle += cueMovement * Time.deltaTime * aimingSpeed;

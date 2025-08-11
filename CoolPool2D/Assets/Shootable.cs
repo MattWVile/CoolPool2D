@@ -40,51 +40,102 @@ public class Shootable : MonoBehaviour
 
     public void ShowTrajectory(Vector2 startPos, Vector2 direction, float power)
     {
+        // Keep cue-ball LR start exactly as you had it
         LineRendererStart(cueBallLineRenderer, startPos);
 
         Vector2 currentPos = startPos;
         Vector2 currentDir = direction.normalized;
-        int pointIndex = 1;
+
+        // Separate indices for each LR to avoid cross-contamination
+        int cueBallPointIndex = 1;
 
         for (int i = 0; i < maxReflections; i++)
         {
+            // First, try to hit a ball
             var hit = Physics2D.CircleCast(currentPos, ballRadius, currentDir, maxRayDistance, ballCollisionMask);
+
             if (hit.collider != null)
             {
                 var objectBallGameObject = hit.collider.gameObject;
+                Vector2 objectBallCenter = objectBallGameObject.transform.position;
+
+                // Ensure the object LR exists; create if needed
                 if (objectBallLineRenderer == null)
                 {
                     objectBallLineRenderer = ConfigureLineRenderer(objectBallGameObject, objectBallGameObject.GetComponent<SpriteRenderer>().color);
-                    LineRendererStart(objectBallLineRenderer, currentPos);
                 }
-                //calculate current direction using the angle of the hit.
-                Vector2 center = objectBallGameObject.transform.position;
-                Vector2 collisionPoint = hit.point;
 
-                //var objectBallHit = Physics2D.CircleCast(objectBallGameObject.transform.position, ballRadius, directionOfObjectBall, maxRayDistance, railCollisionMask);
+                // ALWAYS set the LR start to the object's current center (prevents leftover 0,0)
+                // This also resets the LR for this hit so subsequent points start at index 1.
+                objectBallLineRenderer.positionCount = 1;
+                objectBallLineRenderer.SetPosition(0, objectBallCenter);
 
+                // object-specific index starts at 1 (position 0 is the object center)
+                int objectBallPointIndex = 1;
+
+                // Reconstruct cue-ball center at the moment of impact
+                // (hit.point is on the object surface; hit.normal points OUT from the object center)
+                Vector2 cueBallCenterAtHit = hit.point - hit.normal * ballRadius;
+
+                // CORRECT direction: from cue center AT HIT toward the object center
+                Vector2 directionOfObjectBall = -(objectBallCenter - cueBallCenterAtHit).normalized;
+
+                // Cast the object-ball path against rails
+                // Offset the origin slightly forward so the cast doesn't immediately register odd contact
+                Vector2 objectCastOrigin = objectBallCenter + directionOfObjectBall * stepOffset;
+                var objectBallHit = Physics2D.CircleCast(objectCastOrigin, ballRadius, directionOfObjectBall, maxRayDistance, railCollisionMask);
+
+                if (objectBallHit.collider != null)
+                {
+                    // Translate the rail contact point to the moving-ball center position at contact
+                    Vector2 objectBallCenterHit = objectBallHit.point + objectBallHit.normal * ballRadius;
+
+                    objectBallLineRenderer.positionCount++;
+                    objectBallLineRenderer.SetPosition(objectBallPointIndex++, objectBallCenterHit);
+                }
+                else
+                {
+                    // No rail hit — extend the line out to max distance from the object's center
+                    Vector2 fallbackEnd = objectBallCenter + directionOfObjectBall * (maxRayDistance - ballRadius);
+                    objectBallLineRenderer.positionCount++;
+                    objectBallLineRenderer.SetPosition(objectBallPointIndex++, fallbackEnd);
+                }
+
+                // --- continue processing cue-ball path after the collision ---
+                // Draw cue center at impact (same style you already used)
+                Vector2 centerHit = hit.point + hit.normal * ballRadius;
+                cueBallLineRenderer.positionCount++;
+                cueBallLineRenderer.SetPosition(cueBallPointIndex++, centerHit);
+
+                // Update cue direction (bounce) and step off the surface
+                currentDir = GetBounceDirection(currentDir, hit.normal);
+                currentPos = centerHit + currentDir * stepOffset;
+
+                // Important: continue loop to allow cue to reflect again or hit another ball
+                continue;
             }
             else
             {
+                // No ball hit — check rails for the cue ball like before
                 hit = Physics2D.CircleCast(currentPos, ballRadius, currentDir, maxRayDistance, railCollisionMask);
                 if (hit.collider == null)
                 {
                     float travel = maxRayDistance - ballRadius;
                     cueBallLineRenderer.positionCount++;
-                    cueBallLineRenderer.SetPosition(pointIndex, currentPos + currentDir * travel);
+                    cueBallLineRenderer.SetPosition(cueBallPointIndex, currentPos + currentDir * travel);
                     break;
                 }
+
+                Vector2 centerHit = hit.point + hit.normal * ballRadius;
+                cueBallLineRenderer.positionCount++;
+                cueBallLineRenderer.SetPosition(cueBallPointIndex++, centerHit);
+
+                currentDir = GetBounceDirection(currentDir, hit.normal);
+                currentPos = centerHit + currentDir * stepOffset;
             }
-
-            Vector2 centerHit = hit.point + hit.normal * ballRadius;
-            cueBallLineRenderer.positionCount++;
-            cueBallLineRenderer.SetPosition(pointIndex++, centerHit);
-
-            currentDir = GetBounceDirection(currentDir, hit.normal);
-            currentPos = centerHit + currentDir * stepOffset;
-
         }
     }
+
     public void HideTrajectory()
     {
         // throw away all points
@@ -92,7 +143,12 @@ public class Shootable : MonoBehaviour
 
         // (optional) make sure the underlying array is emptied too
         cueBallLineRenderer.SetPositions(new Vector3[0]);
-        objectBallLineRenderer = null;
+        if (objectBallLineRenderer != null)
+        {
+            objectBallLineRenderer.positionCount = 0;
+            objectBallLineRenderer.SetPositions(new Vector3[0]);
+            objectBallLineRenderer = null;
+        }
     }
 
     private void LineRendererStart(LineRenderer lineRenderer, Vector2 startPos)
@@ -113,10 +169,10 @@ public class Shootable : MonoBehaviour
         lineRenderer.alignment = LineAlignment.TransformZ;
         return lineRenderer;
     }
-    private Vector2 GetBounceDirection(Vector2 inDir, Vector2 normal)
+    private Vector2 GetBounceDirection(Vector2 currentDirection, Vector2 normal)
     {
         // 1) Perfect mirror reflection
-        Vector2 reflected = Vector2.Reflect(inDir, normal);
+        Vector2 reflected = Vector2.Reflect(currentDirection, normal);
 
         // 2) Compute the tangent (slide along-wall) direction
         Vector2 tangent = new Vector2(-normal.y, normal.x);
