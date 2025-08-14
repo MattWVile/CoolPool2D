@@ -72,8 +72,19 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        SpawnBallTriangleAndCueBall();
+        SpawnBlackBallAndCueBall();
         gameStateManager.SubmitEndOfState(GameState.GameStart);
+    }
+
+    public void ResetGame()
+    {
+        ballGameObjects.ForEach(Destroy);
+        ballGameObjects.Clear();
+        ballRbs.Clear();
+        ballDictionary.Clear();
+        amountOfCueBallsSpawned = 0;
+        // Update the game state
+        gameStateManager.SetGameState(GameState.GameStart);
     }
 
     public void SpawnBallTriangleAndCueBall()
@@ -82,6 +93,20 @@ public class GameManager : MonoBehaviour
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
         amountOfCueBallsSpawned++;
         ballDictionary.Add(cueBall.BallGameObject, cueBall);
+
+        ballGameObjects = ballDictionary.Keys.ToList();
+        ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
+    }
+
+    public void SpawnBlackBallAndCueBall()
+    {
+        var blackBall = BallSpawner.SpawnSpecificBall("BlackBall", "Triangle Center");
+        ballDictionary.Add(blackBall.BallGameObject, blackBall);
+
+        var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
+        ballDictionary.Add(cueBall.BallGameObject, cueBall);
+
+        amountOfCueBallsSpawned++;
 
         ballGameObjects = ballDictionary.Keys.ToList();
         ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
@@ -100,7 +125,8 @@ public class GameManager : MonoBehaviour
         Debug.Log("HandleAimingState");
         var target = possibleTargets.First();
         if (target == null)
-            target = FindObjectOfType<Shootable>().gameObject;
+            //target = FindObjectOfType<Shootable>().gameObject;
+            target = FindObjectOfType<DeterministicBall>().gameObject;
         possibleTargets.Add(target);
         cue.GetComponent<CueMovement>().Enable(target);
     }
@@ -158,11 +184,18 @@ public class GameManager : MonoBehaviour
         {
             yield return new WaitForSeconds(0.5f);
         }
+        //StopBallRotation();
         EventBus.Publish(new BallStoppedEvent());
     }
 
     private bool AllBallsStopped()
     {
         return ballRbs.All(rb => rb.velocity.magnitude < 0.1f);
+    }
+
+    private void StopBallRotation()
+    {
+        ballRbs.ForEach(rb => rb.freezeRotation = true);
+        ballRbs.ForEach(rb => rb.freezeRotation = false);
     }
 }

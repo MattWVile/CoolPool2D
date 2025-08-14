@@ -122,6 +122,62 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &124450165
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 124450167}
+  - component: {fileID: 124450166}
+  m_Layer: 0
+  m_Name: PoolWorld
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &124450166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 124450165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab7964174ad37b84781742a4492008d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minX: -4.68
+  maxX: 6.67
+  minY: -2.88
+  maxY: 2.92
+  pockets: []
+  dragPerSecond: 0.5
+  ballBounciness: 0.9
+  wallBounciness: 0.9
+  maxEventsPerFrame: 256
+  slopEpsilon: 0.00001
+  sleepSpeed: 0
+  debug: 1
+--- !u!4 &124450167
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 124450165}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.5313454, y: -0.18634155, z: 0.043701626}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &130643773
 GameObject:
   m_ObjectHideFlags: 0
@@ -133,7 +189,7 @@ GameObject:
   - component: {fileID: 130643774}
   - component: {fileID: 130643775}
   - component: {fileID: 130643776}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: TopLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -251,7 +307,7 @@ GameObject:
   - component: {fileID: 253206639}
   - component: {fileID: 253206640}
   - component: {fileID: 253206641}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BottomLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -332,7 +388,7 @@ GameObject:
   - component: {fileID: 275362492}
   - component: {fileID: 275362493}
   - component: {fileID: 275362494}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: MidLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -398,11 +454,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -2.3177454, y: 0.7183322}
-      - {x: -2.318145, y: 0.18388844}
-      - {x: -2.3189394, y: -1.055319}
+    - - {x: -2.3189394, y: -1.055319}
       - {x: -2.219319, y: -0.9620379}
-      - {x: -2.2158608, y: 0.95161813}
+      - {x: -2.219319, y: 0.95161813}
       - {x: -2.318367, y: 1.0462947}
   m_UseDelaunayMesh: 0
 --- !u!114 &275362494
@@ -516,7 +570,7 @@ GameObject:
   - component: {fileID: 444022712}
   - component: {fileID: 444022713}
   - component: {fileID: 444022714}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BottomRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -582,10 +636,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 2.078374, y: -1.1196539}
-      - {x: 0.17308636, y: -1.1209081}
+    - - {x: 2.078374, y: -1.118035}
+      - {x: 0.17308636, y: -1.118035}
       - {x: 0.11923373, y: -1.2216272}
-      - {x: 0.9499043, y: -1.219164}
       - {x: 2.1651773, y: -1.2097157}
   m_UseDelaunayMesh: 0
 --- !u!114 &444022714
@@ -612,7 +665,7 @@ GameObject:
   - component: {fileID: 508518187}
   - component: {fileID: 508518188}
   - component: {fileID: 508518189}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: TopLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -678,10 +731,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.53070265, y: 1.2119815}
-      - {x: -2.1688204, y: 1.2086798}
+    - - {x: -2.1688204, y: 1.2086798}
       - {x: -2.0718827, y: 1.1004971}
-      - {x: -0.17381227, y: 1.0999906}
+      - {x: -0.17381227, y: 1.100497}
       - {x: -0.11374575, y: 1.2111684}
   m_UseDelaunayMesh: 0
 --- !u!114 &508518189
@@ -916,6 +968,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &682658746
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 682658748}
+  - component: {fileID: 682658747}
+  m_Layer: 0
+  m_Name: FPSVisual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &682658747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 682658746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d71794beb34bb4a4aa9f0b12fed1b7e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocityIterations: 16
+  positionIterations: 8
+--- !u!4 &682658748
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 682658746}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.351384, y: 0.17330047, z: 0.04228431}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &830456690
 GameObject:
   m_ObjectHideFlags: 0
@@ -972,7 +1070,7 @@ GameObject:
   - component: {fileID: 859875812}
   - component: {fileID: 859875813}
   - component: {fileID: 859875814}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BottomLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1038,9 +1136,8 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -2.0729642, y: -1.1190882}
+    - - {x: -2.0729642, y: -1.118035}
       - {x: -2.1569893, y: -1.2100492}
-      - {x: -0.8952319, y: -1.2181615}
       - {x: -0.11420317, y: -1.2199929}
       - {x: -0.1768202, y: -1.118035}
   m_UseDelaunayMesh: 0
@@ -1116,7 +1213,7 @@ GameObject:
   - component: {fileID: 978755548}
   - component: {fileID: 978755549}
   - component: {fileID: 978755550}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: MidRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1182,12 +1279,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 2.3211248, y: 0.5495834}
-      - {x: 2.3310568, y: -0.33268952}
-      - {x: 2.324812, y: -1.0602009}
-      - {x: 2.2249503, y: -0.96975034}
+    - - {x: 2.324812, y: -1.0602009}
       - {x: 2.2252576, y: -0.96975535}
-      - {x: 2.2242844, y: 0.95297605}
+      - {x: 2.225258, y: 0.95297605}
       - {x: 2.3249164, y: 1.0509537}
   m_UseDelaunayMesh: 0
 --- !u!114 &978755550
@@ -1251,7 +1345,7 @@ GameObject:
   - component: {fileID: 1399249354}
   - component: {fileID: 1399249355}
   - component: {fileID: 1399249356}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: TopRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1464,7 +1558,7 @@ GameObject:
   - component: {fileID: 1711520359}
   - component: {fileID: 1711520360}
   - component: {fileID: 1711520361}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BottomMiddle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1545,7 +1639,7 @@ GameObject:
   - component: {fileID: 1746868101}
   - component: {fileID: 1746868102}
   - component: {fileID: 1746868103}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: TopRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1611,10 +1705,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 1.4555782, y: 1.2097323}
-      - {x: 0.11752871, y: 1.2096802}
-      - {x: 0.18578713, y: 1.0980957}
-      - {x: 2.0752316, y: 1.1002986}
+    - - {x: 0.11752871, y: 1.2096802}
+      - {x: 0.18578713, y: 1.100497}
+      - {x: 2.0752316, y: 1.100497}
       - {x: 2.1649952, y: 1.2092618}
   m_UseDelaunayMesh: 0
 --- !u!114 &1746868103
@@ -1641,7 +1734,7 @@ GameObject:
   - component: {fileID: 1784321150}
   - component: {fileID: 1784321151}
   - component: {fileID: 1784321152}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BottomRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1812,7 +1905,8 @@ MonoBehaviour:
   distanceFromTarget: -4
   target: {fileID: 0}
   AimingAngle: 0
-  shotStrength: 10000
+  shotStrength: 5
+  aimingSpeed: 1
 --- !u!1 &1827407676
 GameObject:
   m_ObjectHideFlags: 0
@@ -1824,7 +1918,7 @@ GameObject:
   - component: {fileID: 1827407677}
   - component: {fileID: 1827407678}
   - component: {fileID: 1827407679}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: TopMiddle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2082,3 +2176,5 @@ SceneRoots:
   - {fileID: 897729865}
   - {fileID: 2007219863}
   - {fileID: 830456692}
+  - {fileID: 682658748}
+  - {fileID: 124450167}
