@@ -8,12 +8,14 @@ public class RailController : MonoBehaviour
     {
         if (GameManager.Instance.ballDictionary.TryGetValue(collision.gameObject, out Ball ball))
         {
+            string scoreTypeHeader = ScorableEventUtils.GetScoreTypeHeader(ball) + " Rail Hit";
+
             var ballCollidedWithRailEvent = new BallCollidedWithRailEvent
             {
                 Ball = ball,
                 Rail = rail,
                 Sender = this,
-                ScoreTypeHeader = "Ball Collided With Rail",
+                ScoreTypeHeader = scoreTypeHeader,
                 ScoreTypePoints = ball.BallPoints,
                 IsFoul = false
             };

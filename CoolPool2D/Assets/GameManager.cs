@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
+
 
 public class GameManager : MonoBehaviour
 {
+    public PlayerBallColor playerColor = PlayerBallColor.None;
     public static GameManager Instance { get; private set; }
 
     public GameObject cue;
@@ -122,7 +125,6 @@ public class GameManager : MonoBehaviour
 
     private void HandleAimingState()
     {
-        Debug.Log("HandleAimingState");
         var target = possibleTargets.First();
         if (target == null)
             //target = FindObjectOfType<Shootable>().gameObject;
@@ -133,21 +135,18 @@ public class GameManager : MonoBehaviour
 
     private void HandleShootingState()
     {
-        Debug.Log("HandleShootingState");
         StartCoroutine(CheckIfAllBallsStopped());
         StartCoroutine(cue.GetComponent<CueMovement>().Disable(0.2f));
     }
 
     private void HandleCalculatePointsState()
     {
-        Debug.Log("Calculating points.");
         ScoreManager.Instance.CalculateTotalPoints();
         StartCoroutine(WaitThenEndState(.1f, GameState.CalculatePoints));
     }
 
     private void HandlePrepareNextTurnState()
     {
-        Debug.Log("Preparing next turn.");
         try
         {
             var target = FindObjectOfType<Shootable>().gameObject;

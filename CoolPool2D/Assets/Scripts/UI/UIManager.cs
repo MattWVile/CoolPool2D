@@ -83,15 +83,25 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void CreateNewScoreTypeElement(string shotTypeHeader, ScoreType shot)
+    private void CreateNewScoreTypeElement(string shotTypeHeader, ScoreType score)
     {
         VisualElement scoreType = shotTypeTemplate.Instantiate();
+
         scoreType.Q<Label>("ScoreTypeHeading").text = shotTypeHeader;
-        scoreType.Q<Label>("ScoreTypeMultValue").text = shot.ScoreTypeMultiplierAddition == 0 ? "" : shot.ScoreTypeMultiplierAddition.ToString();
-        scoreType.Q<Label>("ScoreTypeMultAdditionSymbol").text = shot.ScoreTypeMultiplierAddition == 0 ? "" : "+";
-        scoreType.Q<Label>("ScoreTypeMultAsterix").text = shot.ScoreTypeMultiplierAddition == 0 ? "" : "*";
-        scoreType.Q<Label>("ScoreTypeAmount").text = shot.NumberOfThisScoreType.ToString();
-        scoreType.Q<Label>("ScoreTypeScore").text = shot.ScoreTypePoints.ToString();
+        if (score.IsScoreFoul)
+        {
+            scoreType.Q<Label>("ScoreTypeAmount").text = "";
+            scoreType.Q<Label>("ScoreTypeMultiplicationSign").text = "FOUL!";
+        }
+        else
+        {
+            scoreType.Q<Label>("ScoreTypeAmount").text = score.NumberOfThisScoreType.ToString();
+        }
+        scoreType.Q<Label>("ScoreTypeScore").text = score.ScoreTypePoints == 0 ? "" : score.ScoreTypePoints.ToString();
+        scoreType.Q<Label>("ScoreTypeMultValue").text = score.ScoreTypeMultiplierAddition == 0 ? "" : score.ScoreTypeMultiplierAddition.ToString();
+        scoreType.Q<Label>("ScoreTypeMultAdditionSymbol").text = score.ScoreTypeMultiplierAddition == 0 ? "" : "+";
+        scoreType.Q<Label>("ScoreTypeMultAsterix").text = score.ScoreTypeMultiplierAddition == 0 ? "" : "*";
+
         scoreTypes.Add(scoreType);
 
         VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreTypes");

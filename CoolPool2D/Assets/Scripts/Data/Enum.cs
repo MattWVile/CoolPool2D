@@ -1,8 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+public enum PlayerBallColor { 
+    None, 
+    Red, 
+    Yellow, 
+    Black 
+}
 
-public enum Rail {
+public enum Rail
+{
     TopLeft,
     TopRight,
     MiddleLeft,
@@ -10,7 +14,8 @@ public enum Rail {
     BottomLeft,
     BottomRight
 }
-public enum Pocket {
+public enum Pocket
+{
     TopLeft,
     TopRight,
     TopMiddle,
@@ -19,7 +24,8 @@ public enum Pocket {
     BottomRight
 }
 
-public enum GameState {
+public enum GameState
+{
     Aiming,
     Shooting,
     CalculatePoints,
