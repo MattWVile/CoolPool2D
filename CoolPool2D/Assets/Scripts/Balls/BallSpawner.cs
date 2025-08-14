@@ -9,7 +9,7 @@ public class BallSpawner : MonoBehaviour
     {"YellowBall", "RedBall", "YellowBall", "YellowBall", "BlackBall", "RedBall", "RedBall",
      "YellowBall", "RedBall", "YellowBall", "YellowBall", "RedBall", "RedBall", "YellowBall", "RedBall"};
 
-    public static Vector2 cueBallInitialPosition = new Vector2(-1.91f, 0.03f);
+    public static Vector2 cueBallInitialPosition = new Vector2(-1.91f, 0.0384333f);
     public static Bounds ClothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
     public static Vector2 ClothCenterVector = ClothBounds.center;
     public static Vector2 ClothDimensionsVector = ClothBounds.size;
@@ -100,7 +100,7 @@ public class BallSpawner : MonoBehaviour
             default:
                 throw new InvalidOperationException($"Unexpected spawn position selector: {spawnPositionSelector}");
         }
-        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/ObjectBall"), spawnPosition, Quaternion.identity) as GameObject;
+        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/DeterministicBall"), spawnPosition, Quaternion.identity) as GameObject;
 
         if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
 
@@ -143,7 +143,7 @@ public class BallSpawner : MonoBehaviour
 
     public static Ball SpawnCueBall(int cueBallIndex)
     {
-        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
+        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/DeterministicCueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
         Ball ball = new Ball("CueBall" + " " + cueBallIndex, ballGameObject);
         ballGameObject.name = ball.BallName;
         return ball;

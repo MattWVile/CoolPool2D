@@ -65,5 +65,15 @@ public class DebuggingTools : MonoBehaviour
             Time.timeScale = 1f;
             Debug.Log($"[DEBUG] Reset Time Scale [{Time.timeScale}]");
         }
+        if (Input.GetKey(KeyCode.F4))
+        {
+            Time.timeScale = 0.001f;
+            Debug.Log($"[DEBUG] set Time Scale [{Time.timeScale}]");
+        }
+        if (Input.GetKey(KeyCode.F5))
+        {
+            Time.timeScale = 0.01f;
+            Debug.Log($"[DEBUG]     set Time Scale [{Time.timeScale}]");
+        }
     }
 }

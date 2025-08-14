@@ -122,6 +122,62 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &124450165
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 124450167}
+  - component: {fileID: 124450166}
+  m_Layer: 0
+  m_Name: PoolWorld
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &124450166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 124450165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab7964174ad37b84781742a4492008d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minX: -4.68
+  maxX: 6.67
+  minY: -2.88
+  maxY: 2.92
+  pockets: []
+  dragPerSecond: 0.5
+  ballBounciness: 0.9
+  wallBounciness: 0.9
+  maxEventsPerFrame: 256
+  slopEpsilon: 0.00001
+  sleepSpeed: 0
+  debug: 1
+--- !u!4 &124450167
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 124450165}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.5313454, y: -0.18634155, z: 0.043701626}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &130643773
 GameObject:
   m_ObjectHideFlags: 0
@@ -1849,7 +1905,7 @@ MonoBehaviour:
   distanceFromTarget: -4
   target: {fileID: 0}
   AimingAngle: 0
-  shotStrength: 5000
+  shotStrength: 5
   aimingSpeed: 1
 --- !u!1 &1827407676
 GameObject:
@@ -2121,3 +2177,4 @@ SceneRoots:
   - {fileID: 2007219863}
   - {fileID: 830456692}
   - {fileID: 682658748}
+  - {fileID: 124450167}

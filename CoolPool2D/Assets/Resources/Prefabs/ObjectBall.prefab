@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 5034041189043988745}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.66, y: -0.12, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.3093397, y: 0.3093397, z: 0.3093397}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -110,10 +110,10 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 1
+  m_Interpolate: 2
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!58 &7959586936815649917
 CircleCollider2D:
   m_ObjectHideFlags: 0

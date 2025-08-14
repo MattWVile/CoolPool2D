@@ -10,6 +10,7 @@ public class Shootable : MonoBehaviour
     [SerializeField] private float maxRayDistance = 30f;
     [SerializeField] private float stepOffset = 0.01f;
     [SerializeField] private float skewStrength = 0.25f;
+    [SerializeField] private float objectBallSkewStrength = 0.25f;
     [SerializeField] private LayerMask ballCollisionMask;
     [SerializeField] private LayerMask railCollisionMask;
 
@@ -33,9 +34,9 @@ public class Shootable : MonoBehaviour
 
     public void Shoot(float aimingAngle, float power)
     {
-        Vector2 force = new Vector2(Mathf.Cos(aimingAngle), Mathf.Sin(aimingAngle)) * power;
-        rb.AddForce(force);
-        HideTrajectory();
+        rb.velocity = new Vector2(Mathf.Cos(aimingAngle), Mathf.Sin(aimingAngle)) * power;
+
+        //HideTrajectory();
     }
 
     public void ShowTrajectory(Vector2 startPos, Vector2 direction, float power)
@@ -49,6 +50,8 @@ public class Shootable : MonoBehaviour
         // Separate indices for each LR to avoid cross-contamination
         int cueBallPointIndex = 1;
 
+        bool isObjectBallGoingToBeHit = false;
+
         for (int i = 0; i < maxReflections; i++)
         {
             // First, try to hit a ball
@@ -56,33 +59,44 @@ public class Shootable : MonoBehaviour
 
             if (hit.collider != null)
             {
+                isObjectBallGoingToBeHit = true;
                 var objectBallGameObject = hit.collider.gameObject;
                 Vector2 objectBallCenter = objectBallGameObject.transform.position;
 
                 // Ensure the object LR exists; create if needed
                 if (objectBallLineRenderer == null)
                 {
-                    objectBallLineRenderer = ConfigureLineRenderer(objectBallGameObject, objectBallGameObject.GetComponent<SpriteRenderer>().color);
+                    //objectBallLineRenderer = ConfigureLineRenderer(objectBallGameObject, objectBallGameObject.GetComponent<SpriteRenderer>().color);
+                    objectBallLineRenderer = ConfigureLineRenderer(objectBallGameObject, cueBallLineRendererColour);
                 }
 
-                // ALWAYS set the LR start to the object's current center (prevents leftover 0,0)
-                // This also resets the LR for this hit so subsequent points start at index 1.
                 objectBallLineRenderer.positionCount = 1;
                 objectBallLineRenderer.SetPosition(0, objectBallCenter);
 
-                // object-specific index starts at 1 (position 0 is the object center)
                 int objectBallPointIndex = 1;
 
-                // Reconstruct cue-ball center at the moment of impact
                 // (hit.point is on the object surface; hit.normal points OUT from the object center)
                 Vector2 cueBallCenterAtHit = hit.point - hit.normal * ballRadius;
 
                 // CORRECT direction: from cue center AT HIT toward the object center
                 Vector2 directionOfObjectBall = -(objectBallCenter - cueBallCenterAtHit).normalized;
 
-                // Cast the object-ball path against rails
                 // Offset the origin slightly forward so the cast doesn't immediately register odd contact
                 Vector2 objectCastOrigin = objectBallCenter + directionOfObjectBall * stepOffset;
+
+                // Calculate normal and tangent
+                Vector2 normal = (objectBallCenter - cueBallCenterAtHit).normalized;
+                Vector2 tangent = new Vector2(-normal.y, normal.x);
+
+                // Calculate the angle between the incoming direction and the normal
+                float angle = Vector2.Angle(currentDir, normal); // in degrees
+
+                // Calculate the skew factor: sin(angle) is 0 for direct, 1 for grazing
+                float skewFactor = Mathf.Sin(angle * Mathf.Deg2Rad);
+
+                // Skew the object ball direction based on skewFactor
+                directionOfObjectBall = (directionOfObjectBall + (tangent * objectBallSkewStrength * skewFactor)).normalized;
+
                 var objectBallHit = Physics2D.CircleCast(objectCastOrigin, ballRadius, directionOfObjectBall, maxRayDistance, railCollisionMask);
 
                 if (objectBallHit.collider != null)
@@ -114,9 +128,14 @@ public class Shootable : MonoBehaviour
                 // Important: continue loop to allow cue to reflect again or hit another ball
                 continue;
             }
+            else if (isObjectBallGoingToBeHit)
+            {
+                // If we already hit an object ball, stop processing further
+                break;
+            }
             else
             {
-                // No ball hit — check rails for the cue ball like before
+                // No ball hit — check rails
                 hit = Physics2D.CircleCast(currentPos, ballRadius, currentDir, maxRayDistance, railCollisionMask);
                 if (hit.collider == null)
                 {

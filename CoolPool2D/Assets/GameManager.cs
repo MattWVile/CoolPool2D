@@ -125,7 +125,8 @@ public class GameManager : MonoBehaviour
         Debug.Log("HandleAimingState");
         var target = possibleTargets.First();
         if (target == null)
-            target = FindObjectOfType<Shootable>().gameObject;
+            //target = FindObjectOfType<Shootable>().gameObject;
+            target = FindObjectOfType<DeterministicBall>().gameObject;
         possibleTargets.Add(target);
         cue.GetComponent<CueMovement>().Enable(target);
     }
