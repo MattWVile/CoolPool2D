@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8915513477243938377}
   - component: {fileID: 5827085982206608818}
   - component: {fileID: 3257443262695396514}
+  - component: {fileID: -5796948662831537196}
   m_Layer: 8
   m_Name: DeterministicBall
   m_TagString: Untagged
@@ -97,7 +98,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f422a00e89da4e4a9b6abefc5e8c378, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 0.15
+  ballRadius: 0
   velocity: {x: 0, y: 0}
   pocketable: 1
   active: 1
+--- !u!114 &-5796948662831537196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6997192344708437271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e68e49004bc655f4cba292f61c040ea4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxReflections: 5
+  maxRayDistance: 30
+  stepOffset: 0.01
+  lineRendererWidthMultiplier: 0.2
+  lineRendererStartRoundness: 5
+  lineRendererColourHex: '#BBBBC5'
+  lineRendererColour: {r: 0, g: 0, b: 0, a: 0}
