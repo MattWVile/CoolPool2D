@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8915513477243938377}
   - component: {fileID: 5827085982206608818}
   - component: {fileID: 3257443262695396514}
-  - component: {fileID: -5796948662831537196}
+  - component: {fileID: 3092828180257088002}
   m_Layer: 8
   m_Name: DeterministicBall
   m_TagString: Untagged
@@ -102,7 +102,7 @@ MonoBehaviour:
   velocity: {x: 0, y: 0}
   pocketable: 1
   active: 1
---- !u!114 &-5796948662831537196
+--- !u!114 &3092828180257088002
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -115,7 +115,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxReflections: 5
-  maxRayDistance: 30
+  maxRayDistance: 60
   stepOffset: 0.01
   lineRendererWidthMultiplier: 0.2
   lineRendererStartRoundness: 5

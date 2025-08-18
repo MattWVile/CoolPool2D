@@ -40,10 +40,10 @@ public class GameManager : MonoBehaviour
             gameStateManager.SubmitEndOfState(GameState.Aiming);
         });
 
-        EventBus.Subscribe<BallStoppedEvent>((@event) =>
-        {
-            gameStateManager.SubmitEndOfState(GameState.Shooting);
-        });
+        //EventBus.Subscribe<BallStoppedEvent>((@event) =>
+        //{
+        //    gameStateManager.SubmitEndOfState(GameState.Shooting);
+        //});
 
         EventBus.Subscribe<NewGameStateEvent>((@event) =>
         {
@@ -185,17 +185,11 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
         //StopBallRotation();
-        EventBus.Publish(new BallStoppedEvent());
+        //EventBus.Publish(new BallStoppedEvent());
     }
 
     private bool AllBallsStopped()
     {
         return ballRbs.All(rb => rb.velocity.magnitude < 0.1f);
-    }
-
-    private void StopBallRotation()
-    {
-        ballRbs.ForEach(rb => rb.freezeRotation = true);
-        ballRbs.ForEach(rb => rb.freezeRotation = false);
     }
 }
