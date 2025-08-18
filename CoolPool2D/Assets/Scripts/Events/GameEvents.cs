@@ -17,19 +17,19 @@ public class GenericGameEvent : BaseGameEvent
     public string Message { get; set; }
 }
 
-public class BallStoppedEvent : BaseGameEvent
-{
-    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
-}
+//public class BallStoppedEvent : BaseGameEvent
+//{
+//    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
+//}
 public class BallHasBeenShotEvent : BaseGameEvent
 {
     public new CueMovement Sender { get; set; } // overridden Sender to specify the sender type
     public GameObject Target { get; set; }
 }
-public class BallIsBeingMovedEvent : BaseGameEvent
-{
-    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
-}
+//public class BallIsBeingMovedEvent : BaseGameEvent
+//{
+//    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
+//}
 public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
 {
     public Rail Rail { get; set; }
@@ -45,14 +45,14 @@ public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
 //    public new ScoreController Sender { get; set; } // overridden Sender to specify the sender type
 //}
 
-public class BallIsBeingChargedEvent : BaseGameEvent
-{
-    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
-}
-public class BallIsChargedEvent : BaseGameEvent
-{
-    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
-}
+//public class BallIsBeingChargedEvent : BaseGameEvent
+//{
+//    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
+//}
+//public class BallIsChargedEvent : BaseGameEvent
+//{
+//    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
+//}
 
 public class BallPocketedEvent : BaseGameEvent, IScorableEvent
 {

@@ -7,20 +7,26 @@ using UnityEngine;
 /// </summary>
 public class PoolWorld : MonoBehaviour
 {
+
+    private const float MIN_DIRECTION_EPSILON = 1e-9f;
+    private const float MIN_VELOCITY_THRESHOLD = 1e-12f;
     public static PoolWorld Instance { get; private set; }
 
     [Header("Table Bounds (Axis-Aligned, world units)")]
-    public float minX = -4.68f, maxX = 6.67f;
-    public float minY = -2.88f, maxY = 2.92f;
+    public float minimumTableX = -4.68f;
+    public float maximumTableX = 6.67f;
+    public float minimumTableY = -2.88f;
+    public float maximumTableY = 2.92f;
 
     [System.Serializable]
     public struct Pocket { public Vector2 center; public float radius; }
+
     [Header("Pockets (optional)")]
-    public List<Pocket> pockets = new List<Pocket>();
+    public List<Pocket> pocketList = new List<Pocket>();
 
     [Header("Physics")]
     [Tooltip("Coefficient for exponential drag per second (0 = no drag).")]
-    public float dragPerSecond = 0.25f; // small default so you see friction; set 0 to disable
+    public float dragPerSecond = 0.25f;
     [Tooltip("Ball-ball normal bounciness (1 = perfectly elastic).")]
     public float ballBounciness = 1f;
     [Tooltip("Cushion normal bounciness (1 = perfectly elastic).")]
@@ -28,302 +34,356 @@ public class PoolWorld : MonoBehaviour
 
     [Header("Solver Controls")]
     [Tooltip("Max collision events processed per frame.")]
-    public int maxEventsPerFrame = 256;
+    public int maxCollisionEventsPerFrame = 256;
     [Tooltip("Small separation to prevent immediate re-collision due to float ties.")]
-    public float slopEpsilon = 1e-5f;
+    public float separationNudge = 1e-5f;
     [Tooltip("Speeds below this are treated as rest to avoid jitter (set 0 to always simulate).")]
-    public float sleepSpeed = 0f; // 0 for testing — set >0 for production
+    public float sleepVelocityThreshold = 0f;
 
     [Header("Debugging")]
-    public bool debug = true; // enable while testing collisions
+    public bool enableDebugLogs = true;
 
-    // Registered balls
-    internal readonly List<DeterministicBall> balls = new List<DeterministicBall>();
+    /// <summary>List of all deterministic balls registered with the world.</summary>
+    internal readonly List<DeterministicBall> registeredBalls = new List<DeterministicBall>();
+
+
+
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) Debug.LogWarning("Multiple PoolWorld instances found. Using the last one.");
+        if (Instance != null && Instance != this)
+            Debug.LogWarning("Multiple PoolWorld instances found. Using the last one.");
         Instance = this;
     }
 
     private void Update()
     {
-        float dt = Time.deltaTime;
-        if (dt <= 0f || balls.Count == 0) return;
-        StepAll(dt);
+        float deltaTime = Time.deltaTime;
+        if (deltaTime <= 0f || registeredBalls.Count == 0) return;
+        StepSimulationForAllBalls(deltaTime);
     }
 
-    public bool IsInPocket(Vector2 pos, float radius, out int index)
+    /// <summary>
+    /// Returns true and the pocket index if the given ball center is inside any pocket's effective area.
+    /// </summary>
+    public bool IsBallInPocket(Vector2 ballCenter, float ballRadius, out int pocketIndex)
     {
-        for (int i = 0; i < pockets.Count; i++)
+        for (int pocketIdx = 0; pocketIdx < pocketList.Count; pocketIdx++)
         {
-            float rr = pockets[i].radius;
-            if ((pos - pockets[i].center).sqrMagnitude <= (rr - radius) * (rr - radius))
-            { index = i; return true; }
-        }
-        index = -1; return false;
-    }
-
-    // --- Global event-driven step for all balls ---
-    private void StepAll(float dt)
-    {
-        float remaining = dt;
-        int guard = maxEventsPerFrame;
-
-        // squared sleep threshold for faster checks
-        float sleepSq = sleepSpeed * sleepSpeed;
-
-        while (remaining > 0f && guard-- > 0)
-        {
-            // 1) Find earliest collision across ALL balls (vs walls, vs other balls)
-            float earliestT = remaining;
-            int wallHitBallIdx = -1;
-            Vector2 wallNormal = Vector2.zero;
-
-            int pairI = -1, pairJ = -1;
-            Vector2 pairNormal = Vector2.zero;
-
-            // Walls
-            for (int i = 0; i < balls.Count; i++)
+            float pocketRadius = pocketList[pocketIdx].radius;
+            // check if center is within (pocketRadius - ballRadius)
+            if ((ballCenter - pocketList[pocketIdx].center).sqrMagnitude <= (pocketRadius - ballRadius) * (pocketRadius - ballRadius))
             {
-                var b = balls[i];
-                if (!b.active || b.velocity.sqrMagnitude < sleepSq) continue;
+                pocketIndex = pocketIdx;
+                return true;
+            }
+        }
+        pocketIndex = -1;
+        return false;
+    }
 
-                float t; Vector2 n;
-                if (TimeToAABB((Vector2)b.transform.position, b.velocity, b.radius,
-                               minX, maxX, minY, maxY, remaining, out t, out n))
+    /// <summary>
+    /// Main deterministic simulation driver. Advances time and resolves the earliest events iteratively.
+    /// </summary>
+    private void StepSimulationForAllBalls(float deltaTime)
+    {
+        float remainingTime = deltaTime;
+        int eventsGuard = maxCollisionEventsPerFrame;
+        float sleepVelocityThresholdSq = sleepVelocityThreshold * sleepVelocityThreshold;
+
+        while (remainingTime > 0f && eventsGuard-- > 0)
+        {
+            // earliest collision within remainingTime (default: end of slice)
+            float earliestCollisionTime = remainingTime;
+
+            // wall collision candidate
+            int wallCollisionBallIndex = -1;
+            Vector2 wallCollisionNormal = Vector2.zero;
+
+            // ball-vs-ball collision candidate
+            int ballPairIndexA = -1;
+            int ballPairIndexB = -1;
+            Vector2 ballPairCollisionNormal = Vector2.zero;
+
+            // 1) find earliest wall collision across all balls
+            for (int ballIndex = 0; ballIndex < registeredBalls.Count; ballIndex++)
+            {
+                DeterministicBall candidateBall = registeredBalls[ballIndex];
+                if (!candidateBall.active || candidateBall.velocity.sqrMagnitude < sleepVelocityThresholdSq) continue;
+
+                if (CalculateTimeToAABBCollision((Vector2)candidateBall.transform.position, candidateBall.velocity, candidateBall.ballRadius,
+                                                 minimumTableX, maximumTableX, minimumTableY, maximumTableY,
+                                                 remainingTime, out float candidateTime, out Vector2 candidateNormal))
                 {
-                    if (t < earliestT)
+                    if (candidateTime < earliestCollisionTime)
                     {
-                        earliestT = t;
-                        wallHitBallIdx = i;
-                        wallNormal = n;
-                        pairI = pairJ = -1;
+                        earliestCollisionTime = candidateTime;
+                        wallCollisionBallIndex = ballIndex;
+                        wallCollisionNormal = candidateNormal;
+                        ballPairIndexA = ballPairIndexB = -1;
                     }
                 }
             }
 
-            // Ball↔Ball
-            for (int i = 0; i < balls.Count; i++)
+            // 2) find earliest ball-vs-ball collision across all pairs
+            for (int indexA = 0; indexA < registeredBalls.Count; indexA++)
             {
-                var a = balls[i];
-                if (!a.active || a.velocity.sqrMagnitude < sleepSq) continue;
+                DeterministicBall ballA = registeredBalls[indexA];
+                if (!ballA.active || ballA.velocity.sqrMagnitude < sleepVelocityThresholdSq) continue;
 
-                for (int j = i + 1; j < balls.Count; j++)
+                for (int indexB = indexA + 1; indexB < registeredBalls.Count; indexB++)
                 {
-                    var b = balls[j];
-                    if (!b.active || b.velocity.sqrMagnitude < sleepSq) continue;
+                    DeterministicBall ballB = registeredBalls[indexB];
+                    if (!ballB.active || ballB.velocity.sqrMagnitude < sleepVelocityThresholdSq) continue;
 
-                    float t; Vector2 n;
-                    if (TimeToBall((Vector2)a.transform.position, a.velocity, a.radius,
-                                   (Vector2)b.transform.position, b.velocity, b.radius,
-                                   remaining, out t, out n))
+                    if (CalculateTimeToBallCollision((Vector2)ballA.transform.position, ballA.velocity, ballA.ballRadius,
+                                                     (Vector2)ballB.transform.position, ballB.velocity, ballB.ballRadius,
+                                                     remainingTime, out float candidateTime, out Vector2 candidateNormal))
                     {
-                        if (t < earliestT)
+                        if (candidateTime < earliestCollisionTime)
                         {
-                            earliestT = t;
-                            pairI = i; pairJ = j;
-                            pairNormal = n;
-                            wallHitBallIdx = -1;
+                            earliestCollisionTime = candidateTime;
+                            ballPairIndexA = indexA;
+                            ballPairIndexB = indexB;
+                            ballPairCollisionNormal = candidateNormal;
+                            wallCollisionBallIndex = -1;
                         }
                     }
                 }
             }
 
-            // 2) Advance ALL balls by earliestT and apply drag
-            float dragFactor = (dragPerSecond > 0f) ? Mathf.Exp(-dragPerSecond * earliestT) : 1f;
-            for (int i = 0; i < balls.Count; i++)
+            // 3) advance all balls up to earliestCollisionTime and apply drag
+            float dragFactor = (dragPerSecond > 0f) ? Mathf.Exp(-dragPerSecond * earliestCollisionTime) : 1f;
+            for (int ballIndex = 0; ballIndex < registeredBalls.Count; ballIndex++)
             {
-                var b = balls[i];
-                if (!b.active) continue;
-                b.transform.position = (Vector2)b.transform.position + b.velocity * earliestT;
-                if (dragFactor != 1f) b.velocity *= dragFactor;
+                DeterministicBall ball = registeredBalls[ballIndex];
+                if (!ball.active) continue;
+                ball.transform.position = (Vector2)ball.transform.position + ball.velocity * earliestCollisionTime;
+                if (dragFactor != 1f) ball.velocity *= dragFactor;
             }
 
-            // Pocket any that fell in during this advance
-            for (int i = 0; i < balls.Count; i++)
+            // 4) pocket detection (during this advanced slice)
+            for (int ballIndex = 0; ballIndex < registeredBalls.Count; ballIndex++)
             {
-                var b = balls[i];
-                if (!b.active || !b.pocketable) continue;
-                if (IsInPocket(b.transform.position, b.radius, out _))
+                DeterministicBall ball = registeredBalls[ballIndex];
+                if (!ball.active || !ball.pocketable) continue;
+                if (IsBallInPocket(ball.transform.position, ball.ballRadius, out _))
                 {
-                    if (debug) Debug.Log($"Ball pocketed at pos {b.transform.position}");
-                    b.PocketOut();
+                    if (enableDebugLogs) Debug.Log($"Ball pocketed at pos {ball.transform.position}");
+                    ball.PocketOut();
                 }
             }
 
-            // 3) Resolve
-            if (earliestT < remaining - 1e-12f)
+            // 5) resolve earliest event (if any occurred before the end of the slice)
+            if (earliestCollisionTime < remainingTime - MIN_VELOCITY_THRESHOLD)
             {
-                if (wallHitBallIdx >= 0)
+                if (wallCollisionBallIndex >= 0)
                 {
-                    var b = balls[wallHitBallIdx];
-                    if (b.active)
+                    DeterministicBall impactedBall = registeredBalls[wallCollisionBallIndex];
+                    if (impactedBall.active)
                     {
-                        float vn = Vector2.Dot(b.velocity, wallNormal);
-                        Vector2 vN = vn * wallNormal;
-                        Vector2 vT = b.velocity - vN;
-                        b.velocity = vT - vN * wallBounciness;
+                        // reflect normal component and preserve tangential component, apply wall restitution
+                        float normalSpeed = Vector2.Dot(impactedBall.velocity, wallCollisionNormal);
+                        Vector2 normalVelocityComponent = normalSpeed * wallCollisionNormal;
+                        Vector2 tangentialVelocityComponent = impactedBall.velocity - normalVelocityComponent;
+                        impactedBall.velocity = tangentialVelocityComponent - normalVelocityComponent * wallBounciness;
 
-                        b.transform.position = (Vector2)b.transform.position + wallNormal * slopEpsilon;
-                        if (debug) Debug.Log($"Wall collision: ball {wallHitBallIdx} at t={earliestT}, normal {wallNormal}, new vel {b.velocity}");
+                        // nudge off the wall slightly to avoid immediate re-collision
+                        impactedBall.transform.position = (Vector2)impactedBall.transform.position + wallCollisionNormal * separationNudge;
+
+                        if (enableDebugLogs) Debug.Log($"Wall collision: ball {wallCollisionBallIndex} at t={earliestCollisionTime}, normal {wallCollisionNormal}, new vel {impactedBall.velocity}");
                     }
                 }
-                else if (pairI >= 0 && pairJ >= 0)
+                else if (ballPairIndexA >= 0 && ballPairIndexB >= 0)
                 {
-                    var A = balls[pairI];
-                    var B = balls[pairJ];
-                    if (A.active && B.active)
+                    DeterministicBall ballA = registeredBalls[ballPairIndexA];
+                    DeterministicBall ballB = registeredBalls[ballPairIndexB];
+                    if (ballA.active && ballB.active)
                     {
-                        if (debug) Debug.Log($"Ball collision: pair ({pairI},{pairJ}) at t={earliestT} normal {pairNormal}");
-                        ResolveBallBall(A, B, pairNormal, ballBounciness);
+                        if (enableDebugLogs) Debug.Log($"Ball collision: pair ({ballPairIndexA},{ballPairIndexB}) at t={earliestCollisionTime} normal {ballPairCollisionNormal}");
 
-                        A.transform.position = (Vector2)A.transform.position + pairNormal * slopEpsilon;
-                        B.transform.position = (Vector2)B.transform.position - pairNormal * slopEpsilon;
+                        ResolveEqualMassBallCollision(ballA, ballB, ballPairCollisionNormal, ballBounciness);
 
-                        if (debug) Debug.Log($"After resolve: vA={A.velocity}, vB={B.velocity}");
+                        // minimal separation along normal to avoid immediate re-detection
+                        ballA.transform.position = (Vector2)ballA.transform.position + ballPairCollisionNormal * separationNudge;
+                        ballB.transform.position = (Vector2)ballB.transform.position - ballPairCollisionNormal * separationNudge;
+
+                        if (enableDebugLogs) Debug.Log($"After resolve: vA={ballA.velocity}, vB={ballB.velocity}");
                     }
                 }
             }
 
-            // 4) Consume time (safe epsilon if zero)
-            remaining -= Mathf.Max(earliestT, 1e-12f);
+            // 6) consume the advanced time slice
+            remainingTime -= Mathf.Max(earliestCollisionTime, MIN_VELOCITY_THRESHOLD);
         }
-    }
-
-    // --- Time of impact: circle vs expanded AABB ---
-    private static bool TimeToAABB(
-        Vector2 p, Vector2 v, float r,
-        float minX, float maxX, float minY, float maxY,
-        float maxTime, out float t, out Vector2 normal)
-    {
-        t = maxTime; normal = Vector2.zero;
-
-        if (Mathf.Abs(v.x) > 1e-12f)
-        {
-            if (v.x < 0f) // left wall
-            {
-                float tx = (minX + r - p.x) / v.x;
-                if (tx >= 0f && tx <= t) { t = tx; normal = Vector2.right; }
-            }
-            else // right wall
-            {
-                float tx = (maxX - r - p.x) / v.x;
-                if (tx >= 0f && tx <= t) { t = tx; normal = Vector2.left; }
-            }
-        }
-
-        if (Mathf.Abs(v.y) > 1e-12f)
-        {
-            if (v.y < 0f) // bottom wall
-            {
-                float ty = (minY + r - p.y) / v.y;
-                if (ty >= 0f && ty <= t) { t = ty; normal = Vector2.up; }
-            }
-            else // top wall
-            {
-                float ty = (maxY - r - p.y) / v.y;
-                if (ty >= 0f && ty <= t) { t = ty; normal = Vector2.down; }
-            }
-        }
-
-        return normal != Vector2.zero && t <= maxTime;
-    }
-
-    // --- Time of impact: moving circle vs moving circle ---
-    private static bool TimeToBall(
-        Vector2 p1, Vector2 v1, float r1,
-        Vector2 p2, Vector2 v2, float r2,
-        float maxTime, out float t, out Vector2 normal)
-    {
-        t = maxTime; normal = Vector2.zero;
-
-        Vector2 s = p1 - p2;       // relative pos (A - B)
-        Vector2 v = v1 - v2;       // relative vel (A wrt B)
-        float R = r1 + r2;
-
-        float a = Vector2.Dot(v, v);
-        if (a <= 1e-12f) return false; // no relative motion
-
-        float b = 2f * Vector2.Dot(s, v);
-        float c = Vector2.Dot(s, s) - R * R;
-
-        float disc = b * b - 4f * a * c;
-
-        // Debug logging to see why collisions don't occur
-        if (Instance != null && Instance.debug)
-        {
-            Debug.Log($"TimeToBall check: s={s} v={v} R={R} a={a} b={b} c={c} disc={disc}");
-        }
-
-        if (disc < 0f) return false;
-
-        float sqrtD = Mathf.Sqrt(disc);
-        float t0 = (-b - sqrtD) / (2f * a);
-        float t1 = (-b + sqrtD) / (2f * a);
-
-        // Debug roots
-        if (Instance != null && Instance.debug)
-        {
-            Debug.Log($"roots: t0={t0}, t1={t1}, maxTime={maxTime}");
-        }
-
-        // Use earliest non-negative root within window
-        float cand = float.PositiveInfinity;
-        if (t0 >= 0f && t0 <= maxTime) cand = t0;
-        else if (t1 >= 0f && t1 <= maxTime) cand = t1;
-        else return false;
-
-        t = cand;
-
-        // Normal from B -> A at impact
-        Vector2 c1 = p1 + v1 * t;
-        Vector2 c2 = p2 + v2 * t;
-        Vector2 n = c1 - c2;
-        float len = n.magnitude;
-        if (len <= 1e-9f) return false;
-        normal = n / len;
-
-        if (Instance != null && Instance.debug)
-        {
-            Debug.Log($"TimeToBall returning t={t}, normal={normal}");
-        }
-
-        return true;
-    }
-
-    // --- Equal-mass elastic collision with bounciness on normal component ---
-    private static void ResolveBallBall(DeterministicBall A, DeterministicBall B, Vector2 normal, float bounciness)
-    {
-        Vector2 n = normal;
-        Vector2 t = new Vector2(-n.y, n.x);
-
-        float A_n = Vector2.Dot(A.velocity, n);
-        float B_n = Vector2.Dot(B.velocity, n);
-        float A_t = Vector2.Dot(A.velocity, t);
-        float B_t = Vector2.Dot(B.velocity, t);
-
-        // Equal-mass elastic swap of normal components, with bounciness
-        float A_n_after = B_n * bounciness;
-        float B_n_after = A_n * bounciness;
-
-        A.velocity = n * A_n_after + t * A_t;
-        B.velocity = n * B_n_after + t * B_t;
     }
 
 #if UNITY_EDITOR
-    void OnDrawGizmos()
+    private void OnDrawGizmos()
     {
-        // Table AABB
+        // draw table bounds
         Gizmos.color = Color.green;
-        Vector3 a = new Vector3(minX, minY, 0), b = new Vector3(maxX, minY, 0);
-        Vector3 c = new Vector3(maxX, maxY, 0), d = new Vector3(minX, maxY, 0);
-        Gizmos.DrawLine(a, b); Gizmos.DrawLine(b, c); Gizmos.DrawLine(c, d); Gizmos.DrawLine(d, a);
+        Vector3 bottomLeft = new Vector3(minimumTableX, minimumTableY, 0f);
+        Vector3 bottomRight = new Vector3(maximumTableX, minimumTableY, 0f);
+        Vector3 topRight = new Vector3(maximumTableX, maximumTableY, 0f);
+        Vector3 topLeft = new Vector3(minimumTableX, maximumTableY, 0f);
 
-        // Pockets
+        Gizmos.DrawLine(bottomLeft, bottomRight);
+        Gizmos.DrawLine(bottomRight, topRight);
+        Gizmos.DrawLine(topRight, topLeft);
+        Gizmos.DrawLine(topLeft, bottomLeft);
+
+        // draw pockets
         Gizmos.color = Color.black;
-        foreach (var p in pockets)
-            Gizmos.DrawWireSphere(p.center, p.radius);
+        foreach (var pocket in pocketList)
+        {
+            Gizmos.DrawWireSphere(pocket.center, pocket.radius);
+        }
     }
 #endif
+
+    /// <summary>
+    /// Calculates earliest time (<= maxSimulationTime) when a moving circle will contact the axis-aligned
+    /// bounding box expanded by the circle radius. Returns true if a collision occurs within maxSimulationTime.
+    /// </summary>
+    private static bool CalculateTimeToAABBCollision(
+        Vector2 ballPosition, Vector2 ballVelocity, float ballRadius,
+        float tableMinX, float tableMaxX, float tableMinY, float tableMaxY,
+        float maxSimulationTime, out float timeToCollision, out Vector2 collisionNormal)
+    {
+        // NOTE: kept name for clarity; method forwards to the internal implementation below.
+        return CalculateTimeToAABBCollision_Internal(ballPosition, ballVelocity, ballRadius,
+                                                     tableMinX, tableMaxX, tableMinY, tableMaxY,
+                                                     maxSimulationTime, out timeToCollision, out collisionNormal);
+    }
+
+    private static bool CalculateTimeToAABBCollision_Internal(
+        Vector2 ballPosition, Vector2 ballVelocity, float ballRadius,
+        float tableMinX, float tableMaxX, float tableMinY, float tableMaxY,
+        float maxSimulationTime, out float timeToCollision, out Vector2 collisionNormal)
+    {
+        timeToCollision = maxSimulationTime;
+        collisionNormal = Vector2.zero;
+
+        if (Mathf.Abs(ballVelocity.x) > MIN_VELOCITY_THRESHOLD)
+        {
+            if (ballVelocity.x < 0f) // moving left → possible left wall hit
+            {
+                float timeToLeftWall = (tableMinX + ballRadius - ballPosition.x) / ballVelocity.x;
+                if (timeToLeftWall >= 0f && timeToLeftWall <= timeToCollision)
+                {
+                    timeToCollision = timeToLeftWall;
+                    collisionNormal = Vector2.right;
+                }
+            }
+            else // moving right → possible right wall hit
+            {
+                float timeToRightWall = (tableMaxX - ballRadius - ballPosition.x) / ballVelocity.x;
+                if (timeToRightWall >= 0f && timeToRightWall <= timeToCollision)
+                {
+                    timeToCollision = timeToRightWall;
+                    collisionNormal = Vector2.left;
+                }
+            }
+        }
+
+        if (Mathf.Abs(ballVelocity.y) > MIN_VELOCITY_THRESHOLD)
+        {
+            if (ballVelocity.y < 0f) // moving down → possible bottom wall hit
+            {
+                float timeToBottomWall = (tableMinY + ballRadius - ballPosition.y) / ballVelocity.y;
+                if (timeToBottomWall >= 0f && timeToBottomWall <= timeToCollision)
+                {
+                    timeToCollision = timeToBottomWall;
+                    collisionNormal = Vector2.up;
+                }
+            }
+            else // moving up → possible top wall hit
+            {
+                float timeToTopWall = (tableMaxY - ballRadius - ballPosition.y) / ballVelocity.y;
+                if (timeToTopWall >= 0f && timeToTopWall <= timeToCollision)
+                {
+                    timeToCollision = timeToTopWall;
+                    collisionNormal = Vector2.down;
+                }
+            }
+        }
+
+        return collisionNormal != Vector2.zero && timeToCollision <= maxSimulationTime;
+    }
+
+    /// <summary>
+    /// Calculates earliest time (<= maxSimulationTime) when two moving circles will touch.
+    /// Uses quadratic formula on relative motion. Returns true and normal (B -> A) if collision occurs.
+    /// </summary>
+    private static bool CalculateTimeToBallCollision(
+        Vector2 ballAPosition, Vector2 ballAVelocity, float ballARadius,
+        Vector2 ballBPosition, Vector2 ballBVelocity, float ballBRadius,
+        float maxSimulationTime, out float timeToCollision, out Vector2 collisionNormal)
+    {
+        return CalculateTimeToBallCollision_Internal(ballAPosition, ballAVelocity, ballARadius,
+                                                     ballBPosition, ballBVelocity, ballBRadius,
+                                                     maxSimulationTime, out timeToCollision, out collisionNormal);
+    }
+
+    private static bool CalculateTimeToBallCollision_Internal(
+        Vector2 ballAPosition, Vector2 ballAVelocity, float ballARadius,
+        Vector2 ballBPosition, Vector2 ballBVelocity, float ballBRadius,
+        float maxSimulationTime, out float timeToCollision, out Vector2 collisionNormal)
+    {
+        timeToCollision = maxSimulationTime;
+        collisionNormal = Vector2.zero;
+
+        Vector2 relativePosition = ballAPosition - ballBPosition;    // s
+        Vector2 relativeVelocity = ballAVelocity - ballBVelocity;    // v
+        float combinedRadius = ballARadius + ballBRadius;            // R
+
+        float quadraticA = Vector2.Dot(relativeVelocity, relativeVelocity);
+        if (quadraticA <= MIN_VELOCITY_THRESHOLD) return false; // no relative motion
+
+        float quadraticB = 2f * Vector2.Dot(relativePosition, relativeVelocity);
+        float quadraticC = Vector2.Dot(relativePosition, relativePosition) - combinedRadius * combinedRadius;
+
+        float discriminant = quadraticB * quadraticB - 4f * quadraticA * quadraticC;
+        if (discriminant < 0f) return false; // no real roots → no collision
+
+        float sqrtDiscriminant = Mathf.Sqrt(discriminant);
+        float root0 = (-quadraticB - sqrtDiscriminant) / (2f * quadraticA);
+        float root1 = (-quadraticB + sqrtDiscriminant) / (2f * quadraticA);
+
+        float earliestValidRoot = float.PositiveInfinity;
+        if (root0 >= 0f && root0 <= maxSimulationTime) earliestValidRoot = root0;
+        else if (root1 >= 0f && root1 <= maxSimulationTime) earliestValidRoot = root1;
+        else return false;
+
+        timeToCollision = earliestValidRoot;
+
+        Vector2 positionAtCollisionA = ballAPosition + ballAVelocity * timeToCollision;
+        Vector2 positionAtCollisionB = ballBPosition + ballBVelocity * timeToCollision;
+        Vector2 normalVector = positionAtCollisionA - positionAtCollisionB;
+        float normalLength = normalVector.magnitude;
+        if (normalLength <= MIN_DIRECTION_EPSILON) return false;
+
+        collisionNormal = normalVector / normalLength; // direction from B -> A
+        return true;
+    }
+
+    public static void ResolveEqualMassBallCollision(DeterministicBall ballA, DeterministicBall ballB, Vector2 collisionNormal, float restitution)
+    {
+        Vector2 normal = collisionNormal.normalized;
+        Vector2 tangent = new Vector2(-normal.y, normal.x);
+
+        float velocityNormalA = Vector2.Dot(ballA.velocity, normal);
+        float velocityNormalB = Vector2.Dot(ballB.velocity, normal);
+        float velocityTangentA = Vector2.Dot(ballA.velocity, tangent);
+        float velocityTangentB = Vector2.Dot(ballB.velocity, tangent);
+
+        // swap normal components (equal mass) and apply restitution
+        float velocityNormalAAfter = velocityNormalB * restitution;
+        float velocityNormalBAfter = velocityNormalA * restitution;
+
+        ballA.velocity = normal * velocityNormalAAfter + tangent * velocityTangentA;
+        ballB.velocity = normal * velocityNormalBAfter + tangent * velocityTangentB;
+    }
+
 }

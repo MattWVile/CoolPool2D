@@ -151,18 +151,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7964174ad37b84781742a4492008d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minX: -4.68
-  maxX: 6.67
-  minY: -2.88
-  maxY: 2.92
-  pockets: []
+  minimumTableX: -4.68
+  maximumTableX: 6.67
+  minimumTableY: -2.88
+  maximumTableY: 2.92
+  pocketList: []
   dragPerSecond: 0.5
   ballBounciness: 0.9
   wallBounciness: 0.9
-  maxEventsPerFrame: 256
-  slopEpsilon: 0.00001
-  sleepSpeed: 0
-  debug: 1
+  maxCollisionEventsPerFrame: 256
+  separationNudge: 0.00001
+  sleepVelocityThreshold: 0
+  enableDebugLogs: 1
 --- !u!4 &124450167
 Transform:
   m_ObjectHideFlags: 0
@@ -1905,7 +1905,7 @@ MonoBehaviour:
   distanceFromTarget: -4
   target: {fileID: 0}
   AimingAngle: 0
-  shotStrength: 5
+  shotStrength: 50
   aimingSpeed: 1
 --- !u!1 &1827407676
 GameObject:
