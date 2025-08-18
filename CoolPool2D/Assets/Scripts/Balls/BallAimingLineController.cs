@@ -4,6 +4,12 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class BallAimingLineController : MonoBehaviour
 {
+    private enum HitCategory { 
+        None, 
+        Wall, 
+        Ball 
+    }
+
     private const float MIN_DIRECTION_EPSILON = 1e-9f;
     private const float MIN_VELOCITY_THRESHOLD = 1e-12f;
 
@@ -453,8 +459,6 @@ public class BallAimingLineController : MonoBehaviour
         reflectedDirectionNormalized = newDirUnnormalized.normalized;
         newPositionAfterNudge = contactCenter + hitNormal * separationNudge + reflectedDirectionNormalized * stepOffset;
     }
-
-    private enum HitCategory { None, Wall, Ball }
 
     private static bool CalculateDistanceToBallCollision(Vector2 ballPosition, Vector2 directionNormalized, float ballRadius, Vector2 otherPosition, float otherRadius, float maxDistance, out float distance, out Vector2 collisionNormal)
     {
