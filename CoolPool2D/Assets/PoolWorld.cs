@@ -7,6 +7,9 @@ using UnityEngine;
 /// </summary>
 public class PoolWorld : MonoBehaviour
 {
+
+    private const float MIN_DIRECTION_EPSILON = 1e-9f;
+    private const float MIN_VELOCITY_THRESHOLD = 1e-12f;
     public static PoolWorld Instance { get; private set; }
 
     [Header("Table Bounds (Axis-Aligned, world units)")]
@@ -42,6 +45,9 @@ public class PoolWorld : MonoBehaviour
 
     /// <summary>List of all deterministic balls registered with the world.</summary>
     internal readonly List<DeterministicBall> registeredBalls = new List<DeterministicBall>();
+
+
+
 
     private void Awake()
     {
@@ -169,7 +175,7 @@ public class PoolWorld : MonoBehaviour
             }
 
             // 5) resolve earliest event (if any occurred before the end of the slice)
-            if (earliestCollisionTime < remainingTime - 1e-12f)
+            if (earliestCollisionTime < remainingTime - MIN_VELOCITY_THRESHOLD)
             {
                 if (wallCollisionBallIndex >= 0)
                 {
@@ -208,11 +214,9 @@ public class PoolWorld : MonoBehaviour
             }
 
             // 6) consume the advanced time slice
-            remainingTime -= Mathf.Max(earliestCollisionTime, 1e-12f);
+            remainingTime -= Mathf.Max(earliestCollisionTime, MIN_VELOCITY_THRESHOLD);
         }
     }
-
-    #region Collision Time Calculations
 
 #if UNITY_EDITOR
     private void OnDrawGizmos()
@@ -261,7 +265,7 @@ public class PoolWorld : MonoBehaviour
         timeToCollision = maxSimulationTime;
         collisionNormal = Vector2.zero;
 
-        if (Mathf.Abs(ballVelocity.x) > 1e-12f)
+        if (Mathf.Abs(ballVelocity.x) > MIN_VELOCITY_THRESHOLD)
         {
             if (ballVelocity.x < 0f) // moving left → possible left wall hit
             {
@@ -283,7 +287,7 @@ public class PoolWorld : MonoBehaviour
             }
         }
 
-        if (Mathf.Abs(ballVelocity.y) > 1e-12f)
+        if (Mathf.Abs(ballVelocity.y) > MIN_VELOCITY_THRESHOLD)
         {
             if (ballVelocity.y < 0f) // moving down → possible bottom wall hit
             {
@@ -335,7 +339,7 @@ public class PoolWorld : MonoBehaviour
         float combinedRadius = ballARadius + ballBRadius;            // R
 
         float quadraticA = Vector2.Dot(relativeVelocity, relativeVelocity);
-        if (quadraticA <= 1e-12f) return false; // no relative motion
+        if (quadraticA <= MIN_VELOCITY_THRESHOLD) return false; // no relative motion
 
         float quadraticB = 2f * Vector2.Dot(relativePosition, relativeVelocity);
         float quadraticC = Vector2.Dot(relativePosition, relativePosition) - combinedRadius * combinedRadius;
@@ -358,21 +362,13 @@ public class PoolWorld : MonoBehaviour
         Vector2 positionAtCollisionB = ballBPosition + ballBVelocity * timeToCollision;
         Vector2 normalVector = positionAtCollisionA - positionAtCollisionB;
         float normalLength = normalVector.magnitude;
-        if (normalLength <= 1e-9f) return false;
+        if (normalLength <= MIN_DIRECTION_EPSILON) return false;
 
         collisionNormal = normalVector / normalLength; // direction from B -> A
         return true;
     }
 
-    #endregion
-
-    #region Collision Resolution
-
-    /// <summary>
-    /// Resolve collision for equal-mass balls by swapping normal components and preserving tangential components.
-    /// Applies bounciness (restitution) on the normal components.
-    /// </summary>
-    private static void ResolveEqualMassBallCollision(DeterministicBall ballA, DeterministicBall ballB, Vector2 collisionNormal, float restitution)
+    public static void ResolveEqualMassBallCollision(DeterministicBall ballA, DeterministicBall ballB, Vector2 collisionNormal, float restitution)
     {
         Vector2 normal = collisionNormal.normalized;
         Vector2 tangent = new Vector2(-normal.y, normal.x);
@@ -390,5 +386,4 @@ public class PoolWorld : MonoBehaviour
         ballB.velocity = normal * velocityNormalBAfter + tangent * velocityTangentB;
     }
 
-    #endregion
 }

@@ -4,6 +4,9 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class BallAimingLineController : MonoBehaviour
 {
+    private const float MIN_DIRECTION_EPSILON = 1e-9f;
+    private const float MIN_VELOCITY_THRESHOLD = 1e-12f;
+
     [Header("Prediction Settings (per ball)")]
     [SerializeField] private int maxReflections = 5;
     [SerializeField] private float maxRayDistance = 60f;
@@ -30,10 +33,6 @@ public class BallAimingLineController : MonoBehaviour
     private BallAimingLineController previewOwner = null;
 
     public bool isCueBall => transform.CompareTag("CueBall");
-
-    private const float MIN_DIRECTION_EPSILON = 1e-9f;
-    private const float MIN_VELOCITY_THRESHOLD = 1e-12f;
-
 
     void Awake()
     {
@@ -192,12 +191,12 @@ public class BallAimingLineController : MonoBehaviour
             {
                 consumedBalls.Add(hitBall);
 
-                Vector2 velA = currentDirection;
-                Vector2 velB = (Vector2)hitBall.velocity;
+                Vector2 veocitylA = currentDirection;
+                Vector2 velocityB = (Vector2)hitBall.velocity;
 
                 Vector2 collisionNormal = hitNormal.normalized;
 
-                ResolveEqualMassBallCollision(velA, velB, collisionNormal, world.ballBounciness, out Vector2 velAAfter, out Vector2 velBAfter);
+                ResolveEqualMassBallCollision(veocitylA, velocityB, collisionNormal, world.ballBounciness, out Vector2 velAAfter, out Vector2 velBAfter);
 
                 currentPosition = contactCenter + collisionNormal * separationNudge;
                 currentDirection = (velAAfter.sqrMagnitude > MIN_VELOCITY_THRESHOLD) ? velAAfter.normalized : Vector2.Reflect(currentDirection, collisionNormal);
