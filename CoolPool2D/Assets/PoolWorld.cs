@@ -16,7 +16,7 @@ public class PoolWorld : MonoBehaviour
     public static PoolWorld Instance { get; private set; }
 
     [System.Serializable]
-    public struct Pocket { public Vector2 center; public float radius; }
+    public struct Pocket { public Vector2 center; public float radius; public PocketController pocketController;}
 
     [Header("Pockets (optional)")]
     public List<Pocket> pocketList = new List<Pocket>();
@@ -56,7 +56,7 @@ public class PoolWorld : MonoBehaviour
         pocketList.Clear();
         foreach (var pocketCtrl in FindObjectsOfType<PocketController>())
         {
-            pocketList.Add(new Pocket { center = pocketCtrl.transform.position, radius = pocketCtrl.radius });
+            pocketList.Add(new Pocket { center = pocketCtrl.transform.position, radius = pocketCtrl.radius , pocketController = pocketCtrl});
         }
 
         // Build rails from colliders in the scene (one-time cost)
@@ -73,21 +73,21 @@ public class PoolWorld : MonoBehaviour
     /// <summary>
     /// Returns true and the pocket index if the given ball center is inside any pocket's effective area.
     /// </summary>
-    public bool IsBallInPocket(Vector2 ballCenter, float ballRadius, out int pocketIndex)
+    private bool IsBallInPocket(Vector2 pos, float radius, out Pocket pocket)
     {
-        for (int pocketIdx = 0; pocketIdx < pocketList.Count; pocketIdx++)
+        foreach (var p in pocketList)
         {
-            float pocketRadius = pocketList[pocketIdx].radius;
-            // check if center is within (pocketRadius - ballRadius)
-            if ((ballCenter - pocketList[pocketIdx].center).sqrMagnitude <= (pocketRadius - ballRadius) * (pocketRadius - ballRadius))
+            float distSqr = (pos - p.center).sqrMagnitude;
+            if (distSqr <= (p.radius + radius) * (p.radius + radius))
             {
-                pocketIndex = pocketIdx;
+                pocket = p;
                 return true;
             }
         }
-        pocketIndex = -1;
+        pocket = default;
         return false;
     }
+
 
     /// <summary>
     /// Main deterministic simulation driver. Advances time and resolves the earliest events iteratively.
@@ -180,10 +180,15 @@ public class PoolWorld : MonoBehaviour
             {
                 DeterministicBall ball = registeredBalls[ballIndex];
                 if (!ball.active || !ball.pocketable) continue;
-                if (IsBallInPocket(ball.transform.position, ball.ballRadius, out _))
+
+                if (IsBallInPocket(ball.transform.position, ball.ballRadius, out Pocket pocket))
                 {
-                    if (enableDebugLogs) Debug.Log($"Ball pocketed at pos {ball.transform.position}");
-                    ball.PocketOut();
+                    if (enableDebugLogs) Debug.Log(
+                        $"Ball pocketed at pos {ball.transform.position} into pocket {pocket.pocketController}"
+                    );
+
+                    // If your PocketOut needs pocket context:
+                    ball.PocketBall(pocket.pocketController);
                 }
             }
 
@@ -432,5 +437,17 @@ public class PoolWorld : MonoBehaviour
                 }
             }
         }
+    }
+
+    public DeterministicBall GetNextTarget()
+    {
+        foreach (var ball in registeredBalls)
+        {
+            if (ball.active && ball.pocketable)
+            {
+                return ball;
+            }
+        }
+        throw new System.NullReferenceException("No active pocketable balls found.");
     }
 }

@@ -101,6 +101,7 @@ MonoBehaviour:
   ballRadius: 0
   velocity: {x: 0, y: 0}
   pocketable: 1
+  isShootable: 1
   active: 1
 --- !u!114 &-1842012759573698116
 MonoBehaviour:
@@ -119,7 +120,7 @@ MonoBehaviour:
   stepOffset: 0.01
   lineRendererWidthMultiplier: 0.2
   lineRendererStartRoundness: 5
-  lineRendererColourHex: '#A6A6A6'
+  cueBallLineRendererColourHex: '#BBBBC5'
   lineRendererColour: {r: 0, g: 0, b: 0, a: 0}
   defaultTempObjectMaxReflections: 3
   defaultTempObjectMaxRayDistance: 30

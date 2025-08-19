@@ -17,7 +17,7 @@ public class RailColliderMarker : MonoBehaviour
     //            ScoreTypePoints = ball.BallPoints,
     //            IsFoul = false
     //        };
-    //        EventBus.Publish(ballCollidedWithRailEvent);
+    //EventBus.Publish(ballCollidedWithRailEvent);
     //    }
     //}
 }

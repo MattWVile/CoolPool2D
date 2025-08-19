@@ -13,9 +13,9 @@ public class PocketController : MonoBehaviour
 
     }
 
-    public void OnTriggerEnter2D(Collider2D other)
+    public void PublishBallPocketedEvent(GameObject pocketedBall)
     {
-        if (GameManager.Instance.ballDictionary.TryGetValue(other.gameObject, out Ball ball))
+        if (GameManager.Instance.ballDictionary.TryGetValue(pocketedBall.gameObject, out Ball ball))
         {
             var ballPocketedEvent = new BallPocketedEvent
             {
