@@ -25,12 +25,12 @@ public class CueMovement : MonoBehaviour
     {
         SetPosition();
         HandleInput();
-        BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
-        if (lineController != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
-           {
-                var aimingAngleVector = new Vector2(Mathf.Cos(AimingAngle), Mathf.Sin(AimingAngle));
-            lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
-        }
+        //BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
+        //if (lineController != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
+        //   {
+        //        var aimingAngleVector = new Vector2(Mathf.Cos(AimingAngle), Mathf.Sin(AimingAngle));
+        //    lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
+        //}
     }
 
     private void HandleInput()

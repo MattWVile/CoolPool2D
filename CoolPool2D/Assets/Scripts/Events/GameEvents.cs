@@ -33,7 +33,7 @@ public class BallHasBeenShotEvent : BaseGameEvent
 public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
 {
     public Rail Rail { get; set; }
-    public new RailController Sender { get; set; }
+    public new RailColliderMarker Sender { get; set; }
     public Ball Ball { get; set; }
     public string ScoreTypeHeader { get; set; }
     public float ScoreTypePoints { get; set; }
