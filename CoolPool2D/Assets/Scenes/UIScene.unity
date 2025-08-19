@@ -302,7 +302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pocket: 4
-  radius: 0.66
+  radius: 0.38
 --- !u!1 &275362491
 GameObject:
   m_ObjectHideFlags: 0
