@@ -3,6 +3,13 @@ using UnityEngine;
 
 public class CueMovement : MonoBehaviour
 {
+
+    //private coolAimingAngle = -2.741603f
+    //private coolAimingAngle = -2.741603f
+    //private coolAimingAngle = -2.741603f
+    //private coolAimingAngle = -2.741603f
+    //private coolAimingAngle = -2.741603f
+
     public SpriteRenderer spriteRenderer;
     public float distanceFromTarget = 4f; // Distance of the cue from the cue ball
     public GameObject target; // The target ball
@@ -13,6 +20,7 @@ public class CueMovement : MonoBehaviour
 
     private float? isChargingStart = null;
 
+    //private coolAimingAngle = -2.741603f
     private float chargeTime => isChargingStart != null
         ? Mathf.Clamp(Time.time - isChargingStart.Value, 0, 1)
         : 0;
@@ -25,12 +33,12 @@ public class CueMovement : MonoBehaviour
     {
         SetPosition();
         HandleInput();
-        //BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
-        //if (lineController != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
-        //   {
-        //        var aimingAngleVector = new Vector2(Mathf.Cos(AimingAngle), Mathf.Sin(AimingAngle));
-        //    lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
-        //}
+        BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
+        if (lineController != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
+        {
+            var aimingAngleVector = new Vector2(Mathf.Cos(AimingAngle), Mathf.Sin(AimingAngle));
+            lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
+        }
     }
 
     private void HandleInput()

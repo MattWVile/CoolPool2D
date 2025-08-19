@@ -10,9 +10,9 @@ public struct RailSegment
 
 public class PoolWorld : MonoBehaviour
 {
+    // NOTE: We no longer define MIN_DIRECTION_EPSILON / MIN_VELOCITY_THRESHOLD here
+    // to avoid duplicating them — use the shared values from SharedDeterministicPhysics.
 
-    private const float MIN_DIRECTION_EPSILON = 1e-9f;
-    private const float MIN_VELOCITY_THRESHOLD = 1e-12f;
     public static PoolWorld Instance { get; private set; }
 
     [System.Serializable]
@@ -46,9 +46,6 @@ public class PoolWorld : MonoBehaviour
     [Header("Table Walls")]
     public Dictionary<Rail, List<RailSegment>> railSegments = new();
 
-
-
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -61,6 +58,8 @@ public class PoolWorld : MonoBehaviour
         {
             pocketList.Add(new Pocket { center = pocketCtrl.transform.position, radius = pocketCtrl.radius });
         }
+
+        // Build rails from colliders in the scene (one-time cost)
         BuildRailSegmentsFromColliders();
     }
 
@@ -113,13 +112,21 @@ public class PoolWorld : MonoBehaviour
             int ballPairIndexB = -1;
             Vector2 ballPairCollisionNormal = Vector2.zero;
 
-            // 1) find earliest wall collision across all balls
+            // 1) find earliest wall (rail) collision across all balls
             for (int ballIndex = 0; ballIndex < registeredBalls.Count; ballIndex++)
             {
                 DeterministicBall candidateBall = registeredBalls[ballIndex];
                 if (!candidateBall.active || candidateBall.velocity.sqrMagnitude < sleepVelocityThresholdSq) continue;
 
-                if (CalculateTimeToRailCollision((Vector2)candidateBall.transform.position, candidateBall.velocity,candidateBall.ballRadius, railSegments, remainingTime, out float candidateTime, out Vector2 candidateNormal))
+                // Use shared physics to find the earliest rail hit
+                if (SharedDeterministicPhysics.CalculateTimeToRailCollision(
+                    (Vector2)candidateBall.transform.position,
+                    candidateBall.velocity,
+                    candidateBall.ballRadius,
+                    railSegments,
+                    remainingTime,
+                    out float candidateTime,
+                    out Vector2 candidateNormal))
                 {
                     if (candidateTime < earliestCollisionTime)
                     {
@@ -131,7 +138,7 @@ public class PoolWorld : MonoBehaviour
                 }
             }
 
-            // 2) find earliest ball-vs-ball collision across all pairs
+            // 2) find earliest ball-vs-ball collision across all pairs (keeps original quadratic logic)
             for (int indexA = 0; indexA < registeredBalls.Count; indexA++)
             {
                 DeterministicBall ballA = registeredBalls[indexA];
@@ -181,14 +188,20 @@ public class PoolWorld : MonoBehaviour
             }
 
             // 5) resolve earliest event (if any occurred before the end of the slice)
-            if (earliestCollisionTime < remainingTime - MIN_VELOCITY_THRESHOLD)
+            if (earliestCollisionTime < remainingTime - SharedDeterministicPhysics.MIN_VELOCITY_THRESHOLD)
             {
                 if (wallCollisionBallIndex >= 0)
                 {
                     DeterministicBall impactedBall = registeredBalls[wallCollisionBallIndex];
                     if (impactedBall.active)
                     {
-                        // reflect normal component and preserve tangential component, apply wall restitution
+                        // Use shared reflection to compute new direction and nudge position
+                        SharedDeterministicPhysics.ComputeWallReflection(impactedBall.velocity, wallCollisionNormal, wallBounciness,
+                            (Vector2)impactedBall.transform.position, separationNudge, SharedDeterministicPhysics.MIN_VELOCITY_THRESHOLD,
+                            out Vector2 reflectedDirection, out Vector2 newPositionAfterNudge);
+
+                        // reflectedDirection is normalized; we need to set velocity magnitude appropriately (preserve speed tangent & bounce normal proportion)
+                        // However to keep behavior identical to previous code, compute exact velocity reflection:
                         float normalSpeed = Vector2.Dot(impactedBall.velocity, wallCollisionNormal);
                         Vector2 normalVelocityComponent = normalSpeed * wallCollisionNormal;
                         Vector2 tangentialVelocityComponent = impactedBall.velocity - normalVelocityComponent;
@@ -196,8 +209,6 @@ public class PoolWorld : MonoBehaviour
 
                         // nudge off the wall slightly to avoid immediate re-collision
                         impactedBall.transform.position = (Vector2)impactedBall.transform.position + wallCollisionNormal * separationNudge;
-
-                        //if (enableDebugLogs) Debug.Log($"Wall collision: ball {wallCollisionBallIndex} at t={earliestCollisionTime}, normal {wallCollisionNormal}, new vel {impactedBall.velocity}");
                     }
                 }
                 else if (ballPairIndexA >= 0 && ballPairIndexB >= 0)
@@ -206,28 +217,27 @@ public class PoolWorld : MonoBehaviour
                     DeterministicBall ballB = registeredBalls[ballPairIndexB];
                     if (ballA.active && ballB.active)
                     {
-                        //if (enableDebugLogs) Debug.Log($"Ball collision: pair ({ballPairIndexA},{ballPairIndexB}) at t={earliestCollisionTime} normal {ballPairCollisionNormal}");
-
-                        ResolveEqualMassBallCollision(ballA, ballB, ballPairCollisionNormal, ballBounciness);
+                        // Use shared ResolveEqualMassBallCollision (vector version) and assign velocities
+                        SharedDeterministicPhysics.ResolveEqualMassBallCollision(ballA.velocity, ballB.velocity, ballPairCollisionNormal, ballBounciness, out Vector2 vAAfter, out Vector2 vBAfter);
+                        ballA.velocity = vAAfter;
+                        ballB.velocity = vBAfter;
 
                         // minimal separation along normal to avoid immediate re-detection
                         ballA.transform.position = (Vector2)ballA.transform.position + ballPairCollisionNormal * separationNudge;
                         ballB.transform.position = (Vector2)ballB.transform.position - ballPairCollisionNormal * separationNudge;
-
-                        //if (enableDebugLogs) Debug.Log($"After resolve: vA={ballA.velocity}, vB={ballB.velocity}");
                     }
                 }
             }
 
             // 6) consume the advanced time slice
-            remainingTime -= Mathf.Max(earliestCollisionTime, MIN_VELOCITY_THRESHOLD);
+            remainingTime -= Mathf.Max(earliestCollisionTime, SharedDeterministicPhysics.MIN_VELOCITY_THRESHOLD);
         }
     }
 
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
-        // draw pockets (existing)
+        // draw pockets
         Gizmos.color = Color.black;
         foreach (var pocket in pocketList)
         {
@@ -247,7 +257,6 @@ public class PoolWorld : MonoBehaviour
 
                 foreach (var seg in segList)
                 {
-                    // choose color by rail (customize as you like)
                     Color segColor = Color.white;
                     try
                     {
@@ -269,13 +278,12 @@ public class PoolWorld : MonoBehaviour
                     Vector3 b3 = new Vector3(seg.end.x, seg.end.y, 0f);
                     Gizmos.DrawLine(a3, b3);
 
-                    // endpoint markers
                     Gizmos.DrawWireSphere(a3, endpointMarkerRadius);
                     Gizmos.DrawWireSphere(b3, endpointMarkerRadius);
 
                     // draw segment normal at midpoint
                     Vector2 segVec = seg.end - seg.start;
-                    if (segVec.sqrMagnitude > MIN_DIRECTION_EPSILON)
+                    if (segVec.sqrMagnitude > SharedDeterministicPhysics.MIN_DIRECTION_EPSILON)
                     {
                         Vector2 mid = seg.start + segVec * 0.5f;
                         Vector2 normal = new Vector2(-segVec.y, segVec.x).normalized; // perpendicular
@@ -289,7 +297,6 @@ public class PoolWorld : MonoBehaviour
         }
 
         // ---------- draw predicted collisions for each ball ----------
-        // How far ahead to look for a collision when visualizing (seconds). Tweak as needed.
         float lookaheadSeconds = 1.0f;
         const float impactMarkerRadiusMultiplier = 0.5f;
         foreach (var ball in registeredBalls)
@@ -303,7 +310,7 @@ public class PoolWorld : MonoBehaviour
 
             // draw velocity vector lightly
             Vector2 vel = ball.velocity;
-            if (vel.sqrMagnitude > MIN_DIRECTION_EPSILON)
+            if (vel.sqrMagnitude > SharedDeterministicPhysics.MIN_DIRECTION_EPSILON)
             {
                 Vector3 pos3 = new Vector3(pos.x, pos.y, 0f);
                 Vector3 future3 = pos3 + new Vector3(vel.x, vel.y, 0f) * lookaheadSeconds;
@@ -312,9 +319,9 @@ public class PoolWorld : MonoBehaviour
             }
 
             // only test active balls with meaningful velocity
-            if (!ball.active || ball.velocity.sqrMagnitude <= MIN_DIRECTION_EPSILON) continue;
+            if (!ball.active || ball.velocity.sqrMagnitude <= SharedDeterministicPhysics.MIN_DIRECTION_EPSILON) continue;
 
-            if (CalculateTimeToRailCollision(pos, ball.velocity, radius, railSegments, lookaheadSeconds, out float t, out Vector2 normal))
+            if (SharedDeterministicPhysics.CalculateTimeToRailCollision(pos, ball.velocity, radius, railSegments, lookaheadSeconds, out float t, out Vector2 normal))
             {
                 // predicted impact point
                 Vector2 impact = pos + ball.velocity * t;
@@ -341,182 +348,11 @@ public class PoolWorld : MonoBehaviour
     }
 #endif
 
-    // ------------------ Replace old AABB-based method with this ------------------
-    private bool CalculateTimeToRailCollision(Vector2 ballPosition, Vector2 ballVelocity, float ballRadius, Dictionary<Rail, List<RailSegment>> rails, float maxSimulationTime, out float timeToCollision, out Vector2 collisionNormal)
-    {
-        timeToCollision = maxSimulationTime;
-        collisionNormal = Vector2.zero;
-        bool hit = false;
-
-        if (rails == null || rails.Count == 0) return false;
-
-        // iterate every rail segment
-        foreach (var kv in rails)
-        {
-            var segList = kv.Value;
-            if (segList == null) continue;
-            foreach (var seg in segList)
-            {
-                if (CalculateTimeToSegmentCollision(
-                    ballPosition, ballVelocity, ballRadius,
-                    seg.start, seg.end,
-                    maxSimulationTime, out float candidateTime, out Vector2 candidateNormal))
-                {
-                    if (candidateTime < timeToCollision)
-                    {
-                        timeToCollision = candidateTime;
-                        collisionNormal = candidateNormal;
-                        hit = true;
-                    }
-                }
-            }
-        }
-
-        return hit;
-    }
-
-    // Helper: test swept collision between moving point (ball center) and a segment treated as a capsule (line core + endpoint caps).
-    private static bool CalculateTimeToSegmentCollision(Vector2 ballPosition, Vector2 ballVelocity, float ballRadius, Vector2 segA, Vector2 segB, float maxSimulationTime, out float timeToCollision, out Vector2 collisionNormal)
-    {
-        timeToCollision = maxSimulationTime;
-        collisionNormal = Vector2.zero;
-        bool found = false;
-
-        Vector2 seg = segB - segA;
-        float segLenSq = seg.sqrMagnitude;
-        if (segLenSq <= MIN_DIRECTION_EPSILON) return false; // degenerate segment
-
-        Vector2 segUnit = seg / Mathf.Sqrt(segLenSq);
-        Vector2 segNormal = new Vector2(-segUnit.y, segUnit.x); // perpendicular (arbitrary orientation)
-
-        // --- 1) collision with the infinite line containing the segment (then check projection) ---
-        float distToLine = Vector2.Dot(ballPosition - segA, segNormal); // signed distance along segNormal
-        float relVelAlongNormal = Vector2.Dot(ballVelocity, segNormal);
-
-        if (Mathf.Abs(relVelAlongNormal) > MIN_VELOCITY_THRESHOLD)
-        {
-            // times when center-line distance equals ±ballRadius
-            // t = (±ballRadius - distToLine) / relVelAlongNormal
-            float t1 = (ballRadius - distToLine) / relVelAlongNormal;
-            float t2 = (-ballRadius - distToLine) / relVelAlongNormal;
-
-            // we want the earliest t >= 0
-            float tLine = float.PositiveInfinity;
-            if (t1 >= 0f && t1 <= maxSimulationTime) tLine = Mathf.Min(tLine, t1);
-            if (t2 >= 0f && t2 <= maxSimulationTime) tLine = Mathf.Min(tLine, t2);
-
-            if (!float.IsPositiveInfinity(tLine))
-            {
-                // check that the contact point projects onto the segment
-                Vector2 posAtT = ballPosition + ballVelocity * tLine;
-                // point on line at minimal distance from posAtT (without offset)
-                float projParam = Vector2.Dot(posAtT - segA, seg) / segLenSq; // 0..1 relative parameter
-                if (projParam >= 0f && projParam <= 1f)
-                {
-                    // compute the exact closest point on segment and normal
-                    Vector2 closestPoint = segA + projParam * seg;
-                    Vector2 normalVec = posAtT - closestPoint;
-                    float nlen = normalVec.magnitude;
-                    if (nlen > MIN_DIRECTION_EPSILON)
-                    {
-                        Vector2 normalDir = normalVec / nlen;
-                        // normalDir points from segment -> ball; that's what we want
-                        if (tLine < timeToCollision)
-                        {
-                            timeToCollision = tLine;
-                            collisionNormal = normalDir;
-                            found = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        // --- 2) collisions with segment endpoints (caps) ---
-        // Solve |(ballPosition + ballVelocity * t) - endpoint|^2 = ballRadius^2
-        // Quadratic in t: (v·v) t^2 + 2(s·v) t + (s·s - r^2) = 0  where s = ballPosition - endpoint
-        float vDotV = Vector2.Dot(ballVelocity, ballVelocity);
-
-        // endpoint A
-        {
-            Vector2 s = ballPosition - segA;
-            float c = Vector2.Dot(s, s) - ballRadius * ballRadius;
-            if (vDotV > MIN_VELOCITY_THRESHOLD) // moving relative to endpoint
-            {
-                float b = 2f * Vector2.Dot(s, ballVelocity);
-                float disc = b * b - 4f * vDotV * c;
-                if (disc >= 0f)
-                {
-                    float sqrtD = Mathf.Sqrt(disc);
-                    float r0 = (-b - sqrtD) / (2f * vDotV);
-                    float r1 = (-b + sqrtD) / (2f * vDotV);
-                    float tCandidate = float.PositiveInfinity;
-                    if (r0 >= 0f && r0 <= maxSimulationTime) tCandidate = Mathf.Min(tCandidate, r0);
-                    if (r1 >= 0f && r1 <= maxSimulationTime) tCandidate = Mathf.Min(tCandidate, r1);
-                    if (!float.IsPositiveInfinity(tCandidate) && tCandidate < timeToCollision)
-                    {
-                        Vector2 posAtT = ballPosition + ballVelocity * tCandidate;
-                        Vector2 normalVec = posAtT - segA;
-                        float nlen = normalVec.magnitude;
-                        if (nlen > MIN_DIRECTION_EPSILON)
-                        {
-                            collisionNormal = normalVec / nlen;
-                            timeToCollision = tCandidate;
-                            found = true;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // not moving (or extremely slow) -> only collide if already overlapping (shouldn't happen in normal sim)
-                if (Mathf.Abs(c) <= 0f)
-                {
-                    // ignore: near-instant overlap handled elsewhere
-                }
-            }
-        }
-
-        // endpoint B
-        {
-            Vector2 s = ballPosition - segB;
-            float c = Vector2.Dot(s, s) - ballRadius * ballRadius;
-            if (vDotV > MIN_VELOCITY_THRESHOLD)
-            {
-                float b = 2f * Vector2.Dot(s, ballVelocity);
-                float disc = b * b - 4f * vDotV * c;
-                if (disc >= 0f)
-                {
-                    float sqrtD = Mathf.Sqrt(disc);
-                    float r0 = (-b - sqrtD) / (2f * vDotV);
-                    float r1 = (-b + sqrtD) / (2f * vDotV);
-                    float tCandidate = float.PositiveInfinity;
-                    if (r0 >= 0f && r0 <= maxSimulationTime) tCandidate = Mathf.Min(tCandidate, r0);
-                    if (r1 >= 0f && r1 <= maxSimulationTime) tCandidate = Mathf.Min(tCandidate, r1);
-                    if (!float.IsPositiveInfinity(tCandidate) && tCandidate < timeToCollision)
-                    {
-                        Vector2 posAtT = ballPosition + ballVelocity * tCandidate;
-                        Vector2 normalVec = posAtT - segB;
-                        float nlen = normalVec.magnitude;
-                        if (nlen > MIN_DIRECTION_EPSILON)
-                        {
-                            collisionNormal = normalVec / nlen;
-                            timeToCollision = tCandidate;
-                            found = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        return found && timeToCollision <= maxSimulationTime;
-    }
-
-    /// <summary>
-    /// Calculates earliest time (<= maxSimulationTime) when two moving circles will touch.
-    /// Uses quadratic formula on relative motion. Returns true and normal (B -> A) if collision occurs.
-    /// </summary>
-    private static bool CalculateTimeToBallCollision(Vector2 ballAPosition, Vector2 ballAVelocity, float ballARadius, Vector2 ballBPosition, Vector2 ballBVelocity, float ballBRadius, float maxSimulationTime, out float timeToCollision, out Vector2 collisionNormal)
+    // Ball-vs-ball collision detection (kept internal; unchanged)
+    private static bool CalculateTimeToBallCollision(
+        Vector2 ballAPosition, Vector2 ballAVelocity, float ballARadius,
+        Vector2 ballBPosition, Vector2 ballBVelocity, float ballBRadius,
+        float maxSimulationTime, out float timeToCollision, out Vector2 collisionNormal)
     {
         timeToCollision = maxSimulationTime;
         collisionNormal = Vector2.zero;
@@ -526,7 +362,7 @@ public class PoolWorld : MonoBehaviour
         float combinedRadius = ballARadius + ballBRadius;            // R
 
         float quadraticA = Vector2.Dot(relativeVelocity, relativeVelocity);
-        if (quadraticA <= MIN_VELOCITY_THRESHOLD) return false; // no relative motion
+        if (quadraticA <= SharedDeterministicPhysics.MIN_VELOCITY_THRESHOLD) return false; // no relative motion
 
         float quadraticB = 2f * Vector2.Dot(relativePosition, relativeVelocity);
         float quadraticC = Vector2.Dot(relativePosition, relativePosition) - combinedRadius * combinedRadius;
@@ -549,28 +385,10 @@ public class PoolWorld : MonoBehaviour
         Vector2 positionAtCollisionB = ballBPosition + ballBVelocity * timeToCollision;
         Vector2 normalVector = positionAtCollisionA - positionAtCollisionB;
         float normalLength = normalVector.magnitude;
-        if (normalLength <= MIN_DIRECTION_EPSILON) return false;
+        if (normalLength <= SharedDeterministicPhysics.MIN_DIRECTION_EPSILON) return false;
 
         collisionNormal = normalVector / normalLength; // direction from B -> A
         return true;
-    }
-
-    public static void ResolveEqualMassBallCollision(DeterministicBall ballA, DeterministicBall ballB, Vector2 collisionNormal, float restitution)
-    {
-        Vector2 normal = collisionNormal.normalized;
-        Vector2 tangent = new Vector2(-normal.y, normal.x);
-
-        float velocityNormalA = Vector2.Dot(ballA.velocity, normal);
-        float velocityNormalB = Vector2.Dot(ballB.velocity, normal);
-        float velocityTangentA = Vector2.Dot(ballA.velocity, tangent);
-        float velocityTangentB = Vector2.Dot(ballB.velocity, tangent);
-
-        // swap normal components (equal mass) and apply restitution
-        float velocityNormalAAfter = velocityNormalB * restitution;
-        float velocityNormalBAfter = velocityNormalA * restitution;
-
-        ballA.velocity = normal * velocityNormalAAfter + tangent * velocityTangentA;
-        ballB.velocity = normal * velocityNormalBAfter + tangent * velocityTangentB;
     }
 
     private void BuildRailSegmentsFromColliders()
@@ -581,8 +399,8 @@ public class PoolWorld : MonoBehaviour
         var markers = FindObjectsOfType<RailColliderMarker>();
         foreach (var marker in markers)
         {
-            var col = marker.GetComponent<Collider2D>();
-            if (col == null)
+            var collider = marker.GetComponent<Collider2D>();
+            if (collider == null)
             {
                 if (enableDebugLogs) Debug.LogWarning($"RailColliderMarker on {marker.gameObject.name} has no Collider2D.");
                 continue;
@@ -603,7 +421,7 @@ public class PoolWorld : MonoBehaviour
             }
 
             // Support PolygonCollider2D (may have multiple paths)
-            if (col is PolygonCollider2D poly)
+            if (collider is PolygonCollider2D poly)
             {
                 int pathCount = poly.pathCount;
                 for (int path = 0; path < pathCount; path++)
