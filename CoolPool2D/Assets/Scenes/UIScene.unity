@@ -219,7 +219,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pocket: 0
-  radius: 0.38
+  radius: 0.3
 --- !u!1 &243062864
 GameObject:
   m_ObjectHideFlags: 0
@@ -302,7 +302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pocket: 4
-  radius: 0.38
+  radius: 0.3
 --- !u!1 &275362491
 GameObject:
   m_ObjectHideFlags: 0
@@ -424,8 +424,8 @@ Transform:
   m_GameObject: {fileID: 322025660}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.99, y: 0.0392333, z: 0.04504037}
-  m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
+  m_LocalPosition: {x: 1.83, y: 0.0392333, z: 0.04504037}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2124217144}
@@ -781,7 +781,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 5.59
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -806,7 +806,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -14.67}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1305,7 +1305,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pocket: 1
-  radius: 0.38
+  radius: 0.3
 --- !u!1 &1469342011
 GameObject:
   m_ObjectHideFlags: 0
@@ -1483,7 +1483,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pocket: 3
-  radius: 0.38
+  radius: 0.3
 --- !u!1 &1746868100
 GameObject:
   m_ObjectHideFlags: 0
@@ -1624,7 +1624,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pocket: 5
-  radius: 0.38
+  radius: 0.3
 --- !u!1 &1824203223
 GameObject:
   m_ObjectHideFlags: 0
@@ -1773,7 +1773,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pocket: 2
-  radius: 0.38
+  radius: 0.3
 --- !u!1 &1858511321
 GameObject:
   m_ObjectHideFlags: 0
