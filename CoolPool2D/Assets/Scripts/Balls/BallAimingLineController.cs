@@ -4,14 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class BallAimingLineController : MonoBehaviour
 {
-    private enum HitCategory { 
-        None, 
-        Wall, 
-        Ball 
-    }
-
-    private const float MIN_DIRECTION_EPSILON = 1e-9f;
-    private const float MIN_VELOCITY_THRESHOLD = 1e-12f;
+    private enum HitCategory { None, Wall, Ball }
 
     [Header("Prediction Settings (per ball)")]
     [SerializeField] private int maxReflections = 5;
@@ -145,10 +138,6 @@ public class BallAimingLineController : MonoBehaviour
             return;
         }
 
-        float tableMinX = world.minimumTableX;
-        float tableMaxX = world.maximumTableX;
-        float tableMinY = world.minimumTableY;
-        float tableMaxY = world.maximumTableY;
         float wallBounciness = world.wallBounciness;
         float separationNudge = world.separationNudge;
 
@@ -163,14 +152,15 @@ public class BallAimingLineController : MonoBehaviour
             HitCategory hitCategory = HitCategory.None;
             DeterministicBall hitBall = null;
 
-            if (TryFindWallHit(currentPosition, currentDirection, ballRadius, tableMinX, tableMaxX, tableMinY, tableMaxY,
-                maxDistance, out float wallDistance, out Vector2 wallNormal))
+            // --- find rail hit ---
+            if (TryFindRailHit(currentPosition, currentDirection, ballRadius, world, maxDistance, out float railDistance, out Vector2 railNormal))
             {
-                bestDistance = wallDistance;
-                hitNormal = wallNormal;
+                bestDistance = railDistance;
+                hitNormal = railNormal;
                 hitCategory = HitCategory.Wall;
             }
 
+            // --- find ball hit ---
             if (TryFindBallHit(currentPosition, currentDirection, ballRadius, world, selfDeterministicBall, consumedBalls,
                 maxDistance, out float ballDistance, out Vector2 ballNormal, out DeterministicBall ballHit))
             {
@@ -197,15 +187,14 @@ public class BallAimingLineController : MonoBehaviour
             {
                 consumedBalls.Add(hitBall);
 
-                Vector2 veocitylA = currentDirection;
+                Vector2 velocityA = currentDirection; // direction used as A's velocity
                 Vector2 velocityB = (Vector2)hitBall.velocity;
-
                 Vector2 collisionNormal = hitNormal.normalized;
 
-                ResolveEqualMassBallCollision(veocitylA, velocityB, collisionNormal, world.ballBounciness, out Vector2 velAAfter, out Vector2 velBAfter);
+                SharedDeterministicPhysics.ResolveEqualMassBallCollision(velocityA, velocityB, collisionNormal, world.ballBounciness, out Vector2 velAAfter, out Vector2 velBAfter);
 
                 currentPosition = contactCenter + collisionNormal * separationNudge;
-                currentDirection = (velAAfter.sqrMagnitude > MIN_VELOCITY_THRESHOLD) ? velAAfter.normalized : Vector2.Reflect(currentDirection, collisionNormal);
+                currentDirection = (velAAfter.sqrMagnitude > SharedDeterministicPhysics.MIN_VELOCITY_THRESHOLD) ? velAAfter.normalized : Vector2.Reflect(currentDirection, collisionNormal);
                 currentPosition += currentDirection * stepOffset;
 
                 if (previewOwner == null)
@@ -214,7 +203,7 @@ public class BallAimingLineController : MonoBehaviour
                     if (preview != null && !newPreviews.Contains(preview)) newPreviews.Add(preview);
 
                     Vector2 objectStart = contactCenter - collisionNormal * separationNudge;
-                    Vector2 objectDir = (velBAfter.sqrMagnitude > MIN_VELOCITY_THRESHOLD) ? velBAfter.normalized : Vector2.zero;
+                    Vector2 objectDir = (velBAfter.sqrMagnitude > SharedDeterministicPhysics.MIN_VELOCITY_THRESHOLD) ? velBAfter.normalized : Vector2.zero;
                     if (objectDir != Vector2.zero && preview != null)
                     {
                         preview.previewOwner = preview.previewOwner ?? this;
@@ -228,7 +217,7 @@ public class BallAimingLineController : MonoBehaviour
             }
             else // wall
             {
-                ComputeWallReflection(currentDirection, hitNormal, wallBounciness, contactCenter, separationNudge,
+                SharedDeterministicPhysics.ComputeWallReflection(currentDirection, hitNormal, wallBounciness, contactCenter, separationNudge,
                     stepOffset, out Vector2 newDir, out Vector2 newPos);
                 currentDirection = newDir;
                 currentPosition = newPos;
@@ -301,70 +290,23 @@ public class BallAimingLineController : MonoBehaviour
         }
     }
 
-    private bool TryFindWallHit(Vector2 position, Vector2 direction, float radius, float minX, float maxX, float minY, float maxY, float maxDistance, out float distanceToWall, out Vector2 wallNormal)
+    // New: find earliest rail collision (uses shared SharedDeterministicPhysics)
+    private bool TryFindRailHit(Vector2 position, Vector2 direction, float radius, PoolWorld world, float maxDistance, out float distanceToRail, out Vector2 railNormal)
     {
-        distanceToWall = float.PositiveInfinity;
-        wallNormal = Vector2.zero;
+        distanceToRail = float.PositiveInfinity;
+        railNormal = Vector2.zero;
+        if (world == null || world.railSegments == null || world.railSegments.Count == 0) return false;
 
-        if (Mathf.Abs(direction.x) > MIN_DIRECTION_EPSILON)
+        // We sweep the ball center along direction * t and ask deterministic physics to find earliest
+        if (SharedDeterministicPhysics.CalculateTimeToRailCollision(position, direction.normalized, radius, world.railSegments, maxDistance, out float t, out Vector2 normal))
         {
-            if (direction.x < 0f)
+            if (t >= 0f && t <= maxDistance)
             {
-                float t = (minX + radius - position.x) / direction.x;
-                if (t >= 0f && t < distanceToWall) distanceToWall = t;
-            }
-            else
-            {
-                float t = (maxX - radius - position.x) / direction.x;
-                if (t >= 0f && t < distanceToWall) distanceToWall = t;
+                distanceToRail = t;
+                railNormal = normal;
+                return true;
             }
         }
-
-        if (Mathf.Abs(direction.y) > MIN_DIRECTION_EPSILON)
-        {
-            if (direction.y < 0f)
-            {
-                float t = (minY + radius - position.y) / direction.y;
-                if (t >= 0f && t < distanceToWall) distanceToWall = t;
-            }
-            else
-            {
-                float t = (maxY - radius - position.y) / direction.y;
-                if (t >= 0f && t < distanceToWall) distanceToWall = t;
-            }
-        }
-
-        if (float.IsInfinity(distanceToWall) || distanceToWall > maxDistance) return false;
-
-        // choose correct normal by recomputing the same candidate distances and matching
-        if (Mathf.Abs(direction.x) > MIN_DIRECTION_EPSILON)
-        {
-            if (direction.x < 0f)
-            {
-                float t = (minX + radius - position.x) / direction.x;
-                if (Mathf.Approximately(t, distanceToWall)) { wallNormal = Vector2.right; return true; }
-            }
-            else
-            {
-                float t = (maxX - radius - position.x) / direction.x;
-                if (Mathf.Approximately(t, distanceToWall)) { wallNormal = Vector2.left; return true; }
-            }
-        }
-
-        if (Mathf.Abs(direction.y) > MIN_DIRECTION_EPSILON)
-        {
-            if (direction.y < 0f)
-            {
-                float t = (minY + radius - position.y) / direction.y;
-                if (Mathf.Approximately(t, distanceToWall)) { wallNormal = Vector2.up; return true; }
-            }
-            else
-            {
-                float t = (maxY - radius - position.y) / direction.y;
-                if (Mathf.Approximately(t, distanceToWall)) { wallNormal = Vector2.down; return true; }
-            }
-        }
-
         return false;
     }
 
@@ -411,7 +353,6 @@ public class BallAimingLineController : MonoBehaviour
         if (permanent != null && !permanent.isTemporaryPreview)
         {
             permanent.previewOwner = permanent.previewOwner ?? owner;
-            // ensure visuals match object sprite
             var sr = targetTransform.GetComponent<SpriteRenderer>();
             if (sr != null) permanent.SetLineColor(sr.color);
             return permanent;
@@ -433,7 +374,6 @@ public class BallAimingLineController : MonoBehaviour
         var targetSR = targetTransform.GetComponent<SpriteRenderer>();
         if (targetSR != null) newPreview.SetLineColor(targetSR.color);
 
-        // After setting fields, ensure the renderer uses them
         newPreview.ApplyVisualSettingsToRenderer();
 
         return newPreview;
@@ -446,20 +386,6 @@ public class BallAimingLineController : MonoBehaviour
         lineRenderer.SetPosition(pointIndex++, new Vector3(worldPoint.x, worldPoint.y, transform.position.z));
     }
 
-    private void ComputeWallReflection(Vector2 incomingDirection, Vector2 hitNormal, float wallBounciness, Vector2 contactCenter, float separationNudge, float stepOffset, out Vector2 reflectedDirectionNormalized, out Vector2 newPositionAfterNudge)
-    {
-        float normalComponent = Vector2.Dot(incomingDirection, hitNormal);
-        Vector2 normalVector = normalComponent * hitNormal;
-        Vector2 tangentialVector = incomingDirection - normalVector;
-
-        Vector2 newDirUnnormalized = tangentialVector - normalVector * wallBounciness;
-        if (newDirUnnormalized.sqrMagnitude <= MIN_VELOCITY_THRESHOLD)
-            newDirUnnormalized = Vector2.Reflect(incomingDirection, hitNormal);
-
-        reflectedDirectionNormalized = newDirUnnormalized.normalized;
-        newPositionAfterNudge = contactCenter + hitNormal * separationNudge + reflectedDirectionNormalized * stepOffset;
-    }
-
     private static bool CalculateDistanceToBallCollision(Vector2 ballPosition, Vector2 directionNormalized, float ballRadius, Vector2 otherPosition, float otherRadius, float maxDistance, out float distance, out Vector2 collisionNormal)
     {
         distance = maxDistance;
@@ -469,21 +395,16 @@ public class BallAimingLineController : MonoBehaviour
         Vector2 rayDirection = directionNormalized;
         float combinedRadius = ballRadius + otherRadius;
 
-        //quadratic equation
-
         float quadA = Vector2.Dot(rayDirection, rayDirection);
         float quadB = 2f * Vector2.Dot(relativePosition, rayDirection);
         float quadC = Vector2.Dot(relativePosition, relativePosition) - combinedRadius * combinedRadius;
 
         float discriminant = quadB * quadB - 4f * quadA * quadC;
-
         if (discriminant < 0f) return false;
 
         float sqrtDiscriminant = Mathf.Sqrt(discriminant);
         float solution0 = (-quadB - sqrtDiscriminant) / (2f * quadA);
         float solution1 = (-quadB + sqrtDiscriminant) / (2f * quadA);
-
-        //quadratic equation
 
         float earliestSolution = float.PositiveInfinity;
         if (solution0 >= 0f && solution0 <= maxDistance) earliestSolution = solution0;
@@ -493,27 +414,10 @@ public class BallAimingLineController : MonoBehaviour
         Vector2 positionAtCollision = ballPosition + rayDirection * earliestSolution;
         Vector2 collisionVector = positionAtCollision - otherPosition;
         float collisionLength = collisionVector.magnitude;
-        if (collisionLength <= MIN_DIRECTION_EPSILON) return false;
+        if (collisionLength <= SharedDeterministicPhysics.MIN_DIRECTION_EPSILON) return false;
 
         collisionNormal = collisionVector / collisionLength;
         distance = earliestSolution;
         return true;
-    }
-
-    private static void ResolveEqualMassBallCollision(Vector2 velocityA, Vector2 velocityB, Vector2 collisionNormal, float restitution, out Vector2 velocityAAfter, out Vector2 velocityBAfter)
-    {
-        Vector2 normalUnit = collisionNormal.normalized;
-        Vector2 tangentUnit = new Vector2(-normalUnit.y, normalUnit.x);
-
-        float velocityANormal = Vector2.Dot(velocityA, normalUnit);
-        float velocityBNormal = Vector2.Dot(velocityB, normalUnit);
-        float velocityATangent = Vector2.Dot(velocityA, tangentUnit);
-        float velocityBTangent = Vector2.Dot(velocityB, tangentUnit);
-
-        float velocityANormalAfter = velocityBNormal * restitution;
-        float velocityBNormalAfter = velocityANormal * restitution;
-
-        velocityAAfter = normalUnit * velocityANormalAfter + tangentUnit * velocityATangent;
-        velocityBAfter = normalUnit * velocityBNormalAfter + tangentUnit * velocityBTangent;
     }
 }

@@ -4,9 +4,18 @@ public class PocketController : MonoBehaviour
 {
     public Pocket pocket;
 
-    public void OnTriggerEnter2D(Collider2D other)
+    public float radius = 1f;
+
+    private void OnDrawGizmos()
     {
-        if (GameManager.Instance.ballDictionary.TryGetValue(other.gameObject, out Ball ball))
+        Gizmos.color = Color.black;
+        Gizmos.DrawWireSphere(transform.position, radius);
+
+    }
+
+    public void PublishBallPocketedEvent(GameObject pocketedBall)
+    {
+        if (GameManager.Instance.ballDictionary.TryGetValue(pocketedBall.gameObject, out Ball ball))
         {
             var ballPocketedEvent = new BallPocketedEvent
             {

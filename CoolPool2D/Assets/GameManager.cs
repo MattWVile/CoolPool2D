@@ -150,8 +150,8 @@ public class GameManager : MonoBehaviour
         Debug.Log("Preparing next turn.");
         try
         {
-            var target = FindObjectOfType<Shootable>().gameObject;
-            possibleTargets.Add(target);
+            var target = PoolWorld.Instance.GetNextTarget();
+            possibleTargets.Add(target.gameObject);
         }
         catch (System.NullReferenceException)
         {

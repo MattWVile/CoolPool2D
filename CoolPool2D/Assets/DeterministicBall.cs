@@ -3,9 +3,10 @@
 public class DeterministicBall : MonoBehaviour
 {
     [Header("Ball")]
-    public float ballRadius;   // tune to your art scale
+    public float ballRadius;
     public Vector2 velocity = Vector2.zero;
     public bool pocketable = true;
+    public bool isShootable = false;
 
     [HideInInspector] public bool active = true;
 
@@ -25,10 +26,9 @@ public class DeterministicBall : MonoBehaviour
         active = false;
     }
 
-    public void PocketOut()
+    public void PocketBall(PocketController pocketController)
     {
-        active = false;
-        gameObject.SetActive(false);
+        pocketController.PublishBallPocketedEvent(gameObject);
     }
 
     // Fire with angle in radians and speed (units/sec)
