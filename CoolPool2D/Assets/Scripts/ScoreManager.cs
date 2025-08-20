@@ -47,12 +47,11 @@ public class ScoreManager : MonoBehaviour
                 break;
             case "BlackBall":
                 scoreTypeHeader = "Black Ball";
-                isFoul = @event is BallPocketedEvent;
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
         }
-        scoreTypeHeader += @event is BallPocketedEvent ? " Pot" : " Bounce";
+        scoreTypeHeader += @event.ScoreTypeHeader;
         AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
     }
 

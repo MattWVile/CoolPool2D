@@ -27,7 +27,7 @@ public class PoolWorld : MonoBehaviour
     [Tooltip("Ball-ball normal bounciness (1 = perfectly elastic).")]
     public float ballBounciness = 1f;
     [Tooltip("Cushion normal bounciness (1 = perfectly elastic).")]
-    public float wallBounciness = 1f;
+    public float railBounciness = 1f;
 
     [Header("Solver Controls")]
     [Tooltip("Max collision events processed per frame.")]
@@ -103,16 +103,16 @@ public class PoolWorld : MonoBehaviour
             // earliest collision within remainingTime (default: end of slice)
             float earliestCollisionTime = remainingTime;
 
-            // wall collision candidate
-            int wallCollisionBallIndex = -1;
-            Vector2 wallCollisionNormal = Vector2.zero;
+            // rail collision candidate
+            int railCollisionBallIndex = -1;
+            Vector2 railCollisionNormal = Vector2.zero;
 
             // ball-vs-ball collision candidate
             int ballPairIndexA = -1;
             int ballPairIndexB = -1;
             Vector2 ballPairCollisionNormal = Vector2.zero;
 
-            // 1) find earliest wall (rail) collision across all balls
+            // 1) find earliest rail (rail) collision across all balls
             for (int ballIndex = 0; ballIndex < registeredBalls.Count; ballIndex++)
             {
                 DeterministicBall candidateBall = registeredBalls[ballIndex];
@@ -131,9 +131,11 @@ public class PoolWorld : MonoBehaviour
                     if (candidateTime < earliestCollisionTime)
                     {
                         earliestCollisionTime = candidateTime;
-                        wallCollisionBallIndex = ballIndex;
-                        wallCollisionNormal = candidateNormal;
+                        railCollisionBallIndex = ballIndex;
+                        railCollisionNormal = candidateNormal;
                         ballPairIndexA = ballPairIndexB = -1;
+                        // TODO get rail object from railSegments
+
                     }
                 }
             }
@@ -159,7 +161,7 @@ public class PoolWorld : MonoBehaviour
                             ballPairIndexA = indexA;
                             ballPairIndexB = indexB;
                             ballPairCollisionNormal = candidateNormal;
-                            wallCollisionBallIndex = -1;
+                            railCollisionBallIndex = -1;
                         }
                     }
                 }
@@ -188,32 +190,34 @@ public class PoolWorld : MonoBehaviour
                     );
 
                     // If your PocketOut needs pocket context:
-                    ball.PocketBall(pocket.pocketController);
+                    pocket.pocketController.PublishBallPocketedEvent(ball.gameObject);
                 }
             }
 
             // 5) resolve earliest event (if any occurred before the end of the slice)
             if (earliestCollisionTime < remainingTime - SharedDeterministicPhysics.MIN_VELOCITY_THRESHOLD)
             {
-                if (wallCollisionBallIndex >= 0)
+                if (railCollisionBallIndex >= 0)
                 {
-                    DeterministicBall impactedBall = registeredBalls[wallCollisionBallIndex];
+                    DeterministicBall impactedBall = registeredBalls[railCollisionBallIndex];
                     if (impactedBall.active)
                     {
                         // Use shared reflection to compute new direction and nudge position
-                        SharedDeterministicPhysics.ComputeWallReflection(impactedBall.velocity, wallCollisionNormal, wallBounciness,
+                        SharedDeterministicPhysics.ComputeWallReflection(impactedBall.velocity, railCollisionNormal, railBounciness,
                             (Vector2)impactedBall.transform.position, separationNudge, SharedDeterministicPhysics.MIN_VELOCITY_THRESHOLD,
                             out Vector2 reflectedDirection, out Vector2 newPositionAfterNudge);
 
                         // reflectedDirection is normalized; we need to set velocity magnitude appropriately (preserve speed tangent & bounce normal proportion)
                         // However to keep behavior identical to previous code, compute exact velocity reflection:
-                        float normalSpeed = Vector2.Dot(impactedBall.velocity, wallCollisionNormal);
-                        Vector2 normalVelocityComponent = normalSpeed * wallCollisionNormal;
+                        float normalSpeed = Vector2.Dot(impactedBall.velocity, railCollisionNormal);
+                        Vector2 normalVelocityComponent = normalSpeed * railCollisionNormal;
                         Vector2 tangentialVelocityComponent = impactedBall.velocity - normalVelocityComponent;
-                        impactedBall.velocity = tangentialVelocityComponent - normalVelocityComponent * wallBounciness;
+                        impactedBall.velocity = tangentialVelocityComponent - normalVelocityComponent * railBounciness;
 
-                        // nudge off the wall slightly to avoid immediate re-collision
-                        impactedBall.transform.position = (Vector2)impactedBall.transform.position + wallCollisionNormal * separationNudge;
+                        // nudge off the rail slightly to avoid immediate re-collision
+                        impactedBall.transform.position = (Vector2)impactedBall.transform.position + railCollisionNormal * separationNudge;
+                        // TODO railImpacted.PublishBallPocketedEvent(ball.gameObject);
+
                     }
                 }
                 else if (ballPairIndexA >= 0 && ballPairIndexB >= 0)
@@ -353,7 +357,7 @@ public class PoolWorld : MonoBehaviour
     }
 #endif
 
-    // Ball-vs-ball collision detection (kept internal; unchanged)
+    // Ball-vs-ball collision detection
     private static bool CalculateTimeToBallCollision(
         Vector2 ballAPosition, Vector2 ballAVelocity, float ballARadius,
         Vector2 ballBPosition, Vector2 ballBVelocity, float ballBRadius,

@@ -138,7 +138,7 @@ public class BallAimingLineController : MonoBehaviour
             return;
         }
 
-        float wallBounciness = world.wallBounciness;
+        float railBounciness = world.railBounciness;
         float separationNudge = world.separationNudge;
 
         DeterministicBall selfDeterministicBall = null;
@@ -215,9 +215,9 @@ public class BallAimingLineController : MonoBehaviour
                 if (maxDistance <= 0f) break;
                 continue;
             }
-            else // wall
+            else // rail
             {
-                SharedDeterministicPhysics.ComputeWallReflection(currentDirection, hitNormal, wallBounciness, contactCenter, separationNudge,
+                SharedDeterministicPhysics.ComputeWallReflection(currentDirection, hitNormal, railBounciness, contactCenter, separationNudge,
                     stepOffset, out Vector2 newDir, out Vector2 newPos);
                 currentDirection = newDir;
                 currentPosition = newPos;

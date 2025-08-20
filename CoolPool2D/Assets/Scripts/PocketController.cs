@@ -22,9 +22,9 @@ public class PocketController : MonoBehaviour
                 Ball = ball,
                 Pocket = pocket,
                 Sender = this,
-                ScoreTypeHeader = "Ball Pocketed",
+                ScoreTypeHeader = " pot",
                 ScoreTypePoints = ball.BallPoints,
-                IsFoul = false
+                IsFoul = "CueBall" == pocketedBall.tag
             };
             EventBus.Publish(ballPocketedEvent);
         }
