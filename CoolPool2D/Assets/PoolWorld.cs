@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using static UnityEngine.Rendering.HableCurve;
 
 public struct RailSegment
 {
     public Vector2 start;
     public Vector2 end;
-    public Rail rail;
+    public RailLocation rail;
 }
 
 public class PoolWorld : MonoBehaviour
@@ -16,10 +18,22 @@ public class PoolWorld : MonoBehaviour
     public static PoolWorld Instance { get; private set; }
 
     [System.Serializable]
-    public struct Pocket { public Vector2 center; public float radius; public PocketController pocketController;}
+    public struct PocketStruct { public Vector2 center; public float radius; public PocketController pocketController; }
+    public List<PocketStruct> pocketList = new List<PocketStruct>();
 
-    [Header("Pockets (optional)")]
-    public List<Pocket> pocketList = new List<Pocket>();
+
+    [Header("Table Walls")]
+    public Dictionary<RailLocation, RailData> railDictionary = new();
+
+    public struct RailData
+    {
+        public RailController Controller;
+        public List<RailSegment> Segments;
+    }
+
+    public Dictionary<RailLocation, List<RailSegment>> railSegmentsDictionary = new();
+
+    private RailLocation lastCollidedRail = RailLocation.NoRail; // last rail hit by a ball
 
     [Header("Physics")]
     [Tooltip("Coefficient for exponential drag per second (0 = no drag).")]
@@ -43,8 +57,7 @@ public class PoolWorld : MonoBehaviour
     /// <summary>List of all deterministic balls registered with the world.</summary>
     internal readonly List<DeterministicBall> registeredBalls = new List<DeterministicBall>();
 
-    [Header("Table Walls")]
-    public Dictionary<Rail, List<RailSegment>> railSegments = new();
+
 
     private void Awake()
     {
@@ -54,13 +67,14 @@ public class PoolWorld : MonoBehaviour
 
         // Populate pocketList from PocketController GameObjects
         pocketList.Clear();
-        foreach (var pocketCtrl in FindObjectsOfType<PocketController>())
+        foreach (var pocketController in FindObjectsOfType<PocketController>())
         {
-            pocketList.Add(new Pocket { center = pocketCtrl.transform.position, radius = pocketCtrl.radius , pocketController = pocketCtrl});
+            pocketList.Add(new PocketStruct { center = pocketController.transform.position, radius = pocketController.radius, pocketController = pocketController });
         }
 
-        // Build rails from colliders in the scene (one-time cost)
         BuildRailSegmentsFromColliders();
+
+
     }
 
     private void Update()
@@ -73,18 +87,18 @@ public class PoolWorld : MonoBehaviour
     /// <summary>
     /// Returns true and the pocket index if the given ball center is inside any pocket's effective area.
     /// </summary>
-    private bool IsBallInPocket(Vector2 pos, float radius, out Pocket pocket)
+    private bool IsBallInPocket(Vector2 pos, float radius, out PocketStruct pocketStruct)
     {
-        foreach (var p in pocketList)
+        foreach (var pocket in pocketList)
         {
-            float distSqr = (pos - p.center).sqrMagnitude;
-            if (distSqr <= (p.radius + radius) * (p.radius + radius))
+            float distSqr = (pos - pocket.center).sqrMagnitude;
+            if (distSqr <= (pocket.radius + radius) * (pocket.radius + radius))
             {
-                pocket = p;
+                pocketStruct = pocket;
                 return true;
             }
         }
-        pocket = default;
+        pocketStruct = default;
         return false;
     }
 
@@ -119,14 +133,8 @@ public class PoolWorld : MonoBehaviour
                 if (!candidateBall.active || candidateBall.velocity.sqrMagnitude < sleepVelocityThresholdSq) continue;
 
                 // Use shared physics to find the earliest rail hit
-                if (SharedDeterministicPhysics.CalculateTimeToRailCollision(
-                    (Vector2)candidateBall.transform.position,
-                    candidateBall.velocity,
-                    candidateBall.ballRadius,
-                    railSegments,
-                    remainingTime,
-                    out float candidateTime,
-                    out Vector2 candidateNormal))
+                var railCollision = SharedDeterministicPhysics.CalculateTimeToRailCollision((Vector2)candidateBall.transform.position, candidateBall.velocity, candidateBall.ballRadius, railSegmentsDictionary, remainingTime, out float candidateTime, out Vector2 candidateNormal);
+                if (railCollision != RailLocation.NoRail)
                 {
                     if (candidateTime < earliestCollisionTime)
                     {
@@ -134,8 +142,7 @@ public class PoolWorld : MonoBehaviour
                         railCollisionBallIndex = ballIndex;
                         railCollisionNormal = candidateNormal;
                         ballPairIndexA = ballPairIndexB = -1;
-                        // TODO get rail object from railSegments
-
+                        lastCollidedRail = railCollision;
                     }
                 }
             }
@@ -183,7 +190,7 @@ public class PoolWorld : MonoBehaviour
                 DeterministicBall ball = registeredBalls[ballIndex];
                 if (!ball.active || !ball.pocketable) continue;
 
-                if (IsBallInPocket(ball.transform.position, ball.ballRadius, out Pocket pocket))
+                if (IsBallInPocket(ball.transform.position, ball.ballRadius, out PocketStruct pocket))
                 {
                     if (enableDebugLogs) Debug.Log(
                         $"Ball pocketed at pos {ball.transform.position} into pocket {pocket.pocketController}"
@@ -216,7 +223,9 @@ public class PoolWorld : MonoBehaviour
 
                         // nudge off the rail slightly to avoid immediate re-collision
                         impactedBall.transform.position = (Vector2)impactedBall.transform.position + railCollisionNormal * separationNudge;
-                        // TODO railImpacted.PublishBallPocketedEvent(ball.gameObject);
+
+                        railDictionary[lastCollidedRail].Controller.PublishBallCollidedWithRailEvent(impactedBall.gameObject);
+                        lastCollidedRail = RailLocation.NoRail; // reset after processing
 
                     }
                 }
@@ -254,14 +263,14 @@ public class PoolWorld : MonoBehaviour
         }
 
         // ---------- draw rails ----------
-        if (railSegments != null)
+        if (railDictionary != null)
         {
             const float endpointMarkerRadius = 0.02f;
             const float normalLength = 0.15f;
 
-            foreach (var kv in railSegments)
+            foreach (var kv in railDictionary)
             {
-                var segList = kv.Value;
+                var segList = kv.Value.Segments;
                 if (segList == null) continue;
 
                 foreach (var seg in segList)
@@ -271,12 +280,12 @@ public class PoolWorld : MonoBehaviour
                     {
                         switch (seg.rail)
                         {
-                            case Rail.TopRight: segColor = Color.cyan; break;
-                            case Rail.TopLeft: segColor = Color.magenta; break;
-                            case Rail.MiddleRight: segColor = Color.yellow; break;
-                            case Rail.MiddleLeft: segColor = Color.grey; break;
-                            case Rail.BottomRight: segColor = Color.blue; break;
-                            case Rail.BottomLeft: segColor = Color.red; break;
+                            case RailLocation.TopRight: segColor = Color.cyan; break;
+                            case RailLocation.TopLeft: segColor = Color.magenta; break;
+                            case RailLocation.MiddleRight: segColor = Color.yellow; break;
+                            case RailLocation.MiddleLeft: segColor = Color.grey; break;
+                            case RailLocation.BottomRight: segColor = Color.blue; break;
+                            case RailLocation.BottomLeft: segColor = Color.red; break;
                             default: segColor = Color.white; break;
                         }
                     }
@@ -330,7 +339,7 @@ public class PoolWorld : MonoBehaviour
             // only test active balls with meaningful velocity
             if (!ball.active || ball.velocity.sqrMagnitude <= SharedDeterministicPhysics.MIN_DIRECTION_EPSILON) continue;
 
-            if (SharedDeterministicPhysics.CalculateTimeToRailCollision(pos, ball.velocity, radius, railSegments, lookaheadSeconds, out float t, out Vector2 normal))
+            if (SharedDeterministicPhysics.CalculateTimeToRailCollision(pos, ball.velocity, radius, railSegmentsDictionary, lookaheadSeconds, out float t, out Vector2 normal) != RailLocation.NoRail)
             {
                 // predicted impact point
                 Vector2 impact = pos + ball.velocity * t;
@@ -402,31 +411,35 @@ public class PoolWorld : MonoBehaviour
 
     private void BuildRailSegmentsFromColliders()
     {
-        railSegments.Clear();
+        railDictionary.Clear();
 
         // Find all markers in scene; you can also use a parent root or tags if preferred.
-        var markers = FindObjectsOfType<RailColliderMarker>();
-        foreach (var marker in markers)
+        var railControllers = FindObjectsOfType<RailController>();
+        foreach (var railController in railControllers)
         {
-            var collider = marker.GetComponent<Collider2D>();
+            var collider = railController.GetComponent<Collider2D>();
             if (collider == null)
             {
-                if (enableDebugLogs) Debug.LogWarning($"RailColliderMarker on {marker.gameObject.name} has no Collider2D.");
+                if (enableDebugLogs) Debug.LogWarning($"RailColliderMarker on {railController.gameObject.name} has no Collider2D.");
                 continue;
             }
+            //if(railList.Contains(railController.railLocation))
+            if (!railDictionary.ContainsKey(railController.railLocation))
+            {
+                railDictionary[railController.railLocation] = new RailData { Controller = railController, Segments = new List<RailSegment>() };
 
-            if (!railSegments.ContainsKey(marker.rail))
-                railSegments[marker.rail] = new List<RailSegment>();
+            }
 
-            var list = railSegments[marker.rail];
+            var list = railDictionary[railController.railLocation].Segments;
 
             // Helper to add a segment given two local points (in collider/transform local space)
             void AddSegmentFromLocalPoints(Vector2 aLocal, Vector2 bLocal)
             {
                 // Transform local collider points into world space
-                Vector2 aWorld = marker.transform.TransformPoint(aLocal);
-                Vector2 bWorld = marker.transform.TransformPoint(bLocal);
-                list.Add(new RailSegment { start = aWorld, end = bWorld, rail = marker.rail });
+                Vector2 aWorld = railController.transform.TransformPoint(aLocal);
+                Vector2 bWorld = railController.transform.TransformPoint(bLocal);
+                list.Add(new RailSegment { start = aWorld, end = bWorld, rail = railController.railLocation });
+                railSegmentsDictionary[railController.railLocation] = railDictionary[railController.railLocation].Segments;
             }
 
             // Support PolygonCollider2D (may have multiple paths)

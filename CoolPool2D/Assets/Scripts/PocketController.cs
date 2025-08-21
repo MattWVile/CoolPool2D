@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PocketController : MonoBehaviour
 {
-    public Pocket pocket;
+    public PocketLocation PocketLocation;
 
     public float radius = 1f;
 
@@ -20,7 +20,7 @@ public class PocketController : MonoBehaviour
             var ballPocketedEvent = new BallPocketedEvent
             {
                 Ball = ball,
-                Pocket = pocket,
+                PocketLocation = PocketLocation,
                 Sender = this,
                 ScoreTypeHeader = " pot",
                 ScoreTypePoints = ball.BallPoints,

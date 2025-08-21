@@ -146,7 +146,6 @@ public class BallSpawner : MonoBehaviour
         GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/DeterministicCueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
         Ball ball = new Ball("CueBall" + " " + cueBallIndex, ballGameObject);
         ballGameObject.name = ball.BallName;
-        ball.BallPoints = 0;
         return ball;
     }
 }

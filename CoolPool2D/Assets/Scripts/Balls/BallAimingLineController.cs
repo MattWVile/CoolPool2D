@@ -295,10 +295,10 @@ public class BallAimingLineController : MonoBehaviour
     {
         distanceToRail = float.PositiveInfinity;
         railNormal = Vector2.zero;
-        if (world == null || world.railSegments == null || world.railSegments.Count == 0) return false;
+        if (world == null || world.railSegmentsDictionary == null || world.railSegmentsDictionary.Count == 0) return false;
 
         // We sweep the ball center along direction * t and ask deterministic physics to find earliest
-        if (SharedDeterministicPhysics.CalculateTimeToRailCollision(position, direction.normalized, radius, world.railSegments, maxDistance, out float t, out Vector2 normal))
+        if (SharedDeterministicPhysics.CalculateTimeToRailCollision(position, direction.normalized, radius, world.railSegmentsDictionary, maxDistance, out float t, out Vector2 normal) != RailLocation.NoRail)
         {
             if (t >= 0f && t <= maxDistance)
             {

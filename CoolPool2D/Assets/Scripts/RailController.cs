@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class RailColliderMarker : MonoBehaviour
+public class RailController : MonoBehaviour
 {
-    public Rail rail;
+    public RailLocation railLocation;
 
 
     public void PublishBallCollidedWithRailEvent(GameObject ballThatHitRail)
@@ -12,7 +12,7 @@ public class RailColliderMarker : MonoBehaviour
             var ballCollidedWithRailEvent = new BallCollidedWithRailEvent
             {
                 Ball = ball,
-                Rail = rail,
+                RailLocation = railLocation,
                 Sender = this,
                 ScoreTypeHeader = "Ball Collided With Rail",
                 ScoreTypePoints = ball.BallPoints,

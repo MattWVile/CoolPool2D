@@ -57,6 +57,7 @@ public class ScoreManager : MonoBehaviour
 
     private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
     {
+        //TO DO: fouling logic doesn't work atm
         ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeName == scoreTypeHeader);
         if (scoreType == null)
         {
