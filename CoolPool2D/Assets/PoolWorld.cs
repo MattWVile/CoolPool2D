@@ -480,7 +480,7 @@ public class PoolWorld : MonoBehaviour
     {
         foreach (var ball in registeredBalls)
         {
-            if (ball.active && ball.pocketable)
+            if (ball.active && ball.isShootable)
             {
                 return ball;
             }

@@ -33,6 +33,7 @@ public class CueMovement : MonoBehaviour
     {
         SetPosition();
         HandleInput();
+        // Error
         BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
         if (lineController != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
         {
