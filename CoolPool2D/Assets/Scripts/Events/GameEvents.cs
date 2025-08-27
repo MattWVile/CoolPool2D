@@ -17,10 +17,10 @@ public class GenericGameEvent : BaseGameEvent
     public string Message { get; set; }
 }
 
-//public class BallStoppedEvent : BaseGameEvent
-//{
-//    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
-//}
+public class BallStoppedEvent : BaseGameEvent
+{
+    public new DeterministicBall Sender { get; set; } // overridden Sender to specify the sender type
+}
 public class BallHasBeenShotEvent : BaseGameEvent
 {
     public new CueMovement Sender { get; set; } // overridden Sender to specify the sender type

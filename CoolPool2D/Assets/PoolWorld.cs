@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using static UnityEngine.Rendering.HableCurve;
 
 public struct RailSegment
 {
@@ -175,15 +173,7 @@ public class PoolWorld : MonoBehaviour
             }
 
             // 3) advance all balls up to earliestCollisionTime and apply drag
-            float dragFactor = (dragPerSecond > 0f) ? Mathf.Exp(-dragPerSecond * earliestCollisionTime) : 1f;
-            for (int ballIndex = 0; ballIndex < registeredBalls.Count; ballIndex++)
-            {
-                DeterministicBall ball = registeredBalls[ballIndex];
-                if (!ball.active) continue;
-                ball.transform.position = (Vector2)ball.transform.position + ball.velocity * earliestCollisionTime;
-                if (dragFactor != 1f) ball.velocity *= dragFactor;
-            }
-
+            MoveBallsAndSimulateDrag(earliestCollisionTime);
             // 4) pocket detection (during this advanced slice)
             for (int ballIndex = 0; ballIndex < registeredBalls.Count; ballIndex++)
             {
@@ -452,6 +442,36 @@ public class PoolWorld : MonoBehaviour
                     for (int i = 0; i < pts.Length - 1; i++)
                         AddSegmentFromLocalPoints(pts[i], pts[i + 1]);
                 }
+            }
+        }
+    }
+
+    private void MoveBallsAndSimulateDrag(float earliestCollisionTime)
+    {
+        float dragFactor = (dragPerSecond > 0f) ? Mathf.Exp(-dragPerSecond * earliestCollisionTime) : 1f;
+        for (int ballIndex = 0; ballIndex < registeredBalls.Count; ballIndex++)
+        {
+            DeterministicBall ball = registeredBalls[ballIndex];
+            if (!ball.active) continue;
+            ball.transform.position = (Vector2)ball.transform.position + ball.velocity * earliestCollisionTime;
+
+            // If velocity is very low, ramp up drag to quickly bring to rest
+            if (Mathf.Abs(ball.velocity.x) < .25f && Mathf.Abs(ball.velocity.y) < .25f)
+            {
+                float strongDragFactor = Mathf.Exp(-4f * earliestCollisionTime);
+                ball.velocity *= strongDragFactor;
+
+                if (ball.velocity.magnitude < 0.005f)
+                    ball.velocity = Vector2.zero;
+            }
+            else if (Mathf.Abs(ball.velocity.x) < 1f && Mathf.Abs(ball.velocity.y) < 1f)
+            {
+                float strongDragFactor = Mathf.Exp(-1.05f * earliestCollisionTime);
+                ball.velocity *= strongDragFactor;
+            }
+            else
+            {
+                if (dragFactor != 1f) ball.velocity *= dragFactor;
             }
         }
     }
