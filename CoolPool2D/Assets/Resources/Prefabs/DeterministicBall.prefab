@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3092828180257088002}
   m_Layer: 8
   m_Name: DeterministicBall
-  m_TagString: Untagged
+  m_TagString: ObjectBall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -101,6 +101,7 @@ MonoBehaviour:
   ballRadius: 0
   velocity: {x: 0, y: 0}
   pocketable: 1
+  isShootable: 0
   active: 1
 --- !u!114 &3092828180257088002
 MonoBehaviour:
@@ -119,5 +120,7 @@ MonoBehaviour:
   stepOffset: 0.01
   lineRendererWidthMultiplier: 0.2
   lineRendererStartRoundness: 5
-  lineRendererColourHex: '#BBBBC5'
+  cueBallLineRendererColourHex: '#BBBBC5'
   lineRendererColour: {r: 0, g: 0, b: 0, a: 0}
+  defaultTempObjectMaxReflections: 3
+  defaultTempObjectMaxRayDistance: 30
