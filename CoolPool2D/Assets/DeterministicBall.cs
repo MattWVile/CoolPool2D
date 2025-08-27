@@ -25,12 +25,6 @@ public class DeterministicBall : MonoBehaviour
         if (PoolWorld.Instance != null) PoolWorld.Instance.registeredBalls.Remove(this);
         active = false;
     }
-
-    public void PocketBall(PocketController pocketController)
-    {
-        pocketController.PublishBallPocketedEvent(gameObject);
-    }
-
     // Fire with angle in radians and speed (units/sec)
     public void Shoot(float angleRad, float speed)
     {

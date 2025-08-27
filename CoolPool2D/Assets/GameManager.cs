@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     public GameObject cue;
     public List<GameObject> possibleTargets;
     public List<GameObject> ballGameObjects;
-    public List<Rigidbody2D> ballRbs;
+    public List<DeterministicBall> deterministicBalls;
     public Dictionary<GameObject, Ball> ballDictionary = new Dictionary<GameObject, Ball>();
     public GameStateManager gameStateManager;
 
@@ -40,10 +40,10 @@ public class GameManager : MonoBehaviour
             gameStateManager.SubmitEndOfState(GameState.Aiming);
         });
 
-        //EventBus.Subscribe<BallStoppedEvent>((@event) =>
-        //{
-        //    gameStateManager.SubmitEndOfState(GameState.Shooting);
-        //});
+        EventBus.Subscribe<BallStoppedEvent>((@event) =>
+        {
+            gameStateManager.SubmitEndOfState(GameState.Shooting);
+        });
 
         EventBus.Subscribe<NewGameStateEvent>((@event) =>
         {
@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour
     {
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
-        ballRbs.Clear();
+        deterministicBalls.Clear();
         ballDictionary.Clear();
         amountOfCueBallsSpawned = 0;
         // Update the game state
@@ -95,7 +95,7 @@ public class GameManager : MonoBehaviour
         ballDictionary.Add(cueBall.BallGameObject, cueBall);
 
         ballGameObjects = ballDictionary.Keys.ToList();
-        ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
+        deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
     }
 
     public void SpawnBlackBallAndCueBall()
@@ -109,13 +109,13 @@ public class GameManager : MonoBehaviour
         amountOfCueBallsSpawned++;
 
         ballGameObjects = ballDictionary.Keys.ToList();
-        ballRbs = ballGameObjects.Select(ball => ball.GetComponent<Rigidbody2D>()).ToList();
+        deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
     }
 
     private void HandlePocketedBall(BallPocketedEvent @event)
     {
         ballGameObjects.Remove(@event.Ball.BallGameObject);
-        ballRbs.Remove(@event.Ball.BallGameObject.GetComponent<Rigidbody2D>());
+        deterministicBalls.Remove(@event.Ball.BallGameObject.GetComponent<DeterministicBall>());
         ballDictionary.Remove(@event.Ball.BallGameObject);
         Destroy(@event.Ball.BallGameObject);
     }
@@ -125,8 +125,9 @@ public class GameManager : MonoBehaviour
         Debug.Log("HandleAimingState");
         var target = possibleTargets.First();
         if (target == null)
-            //target = FindObjectOfType<Shootable>().gameObject;
+        {
             target = FindObjectOfType<DeterministicBall>().gameObject;
+        }
         possibleTargets.Add(target);
         cue.GetComponent<CueMovement>().Enable(target);
     }
@@ -172,7 +173,7 @@ public class GameManager : MonoBehaviour
     private void AddBallToLists(GameObject ballToAdd)
     {
         ballGameObjects.Add(ballToAdd);
-        ballRbs.Add(ballToAdd.GetComponent<Rigidbody2D>());
+        deterministicBalls.Add(ballToAdd.GetComponent<DeterministicBall>());
         var ball = new Ball(ballToAdd.name, ballToAdd);
         ballDictionary.Add(ballToAdd, ball);
     }
@@ -184,12 +185,11 @@ public class GameManager : MonoBehaviour
         {
             yield return new WaitForSeconds(0.5f);
         }
-        //StopBallRotation();
-        //EventBus.Publish(new BallStoppedEvent());
+        EventBus.Publish(new BallStoppedEvent());
     }
 
     private bool AllBallsStopped()
     {
-        return ballRbs.All(rb => rb.velocity.magnitude < 0.1f);
+        return deterministicBalls.All(rb => rb.velocity.magnitude < 0.1f);
     }
 }

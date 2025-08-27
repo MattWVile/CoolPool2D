@@ -1,4 +1,5 @@
-public enum Rail {
+public enum RailLocation {
+    NoRail,
     TopLeft,
     TopRight,
     MiddleLeft,
@@ -6,7 +7,8 @@ public enum Rail {
     BottomLeft,
     BottomRight
 }
-public enum Pocket {
+public enum PocketLocation {
+    NoPocket,
     TopLeft,
     TopRight,
     TopMiddle,

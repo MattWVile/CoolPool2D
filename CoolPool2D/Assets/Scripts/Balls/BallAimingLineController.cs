@@ -138,7 +138,7 @@ public class BallAimingLineController : MonoBehaviour
             return;
         }
 
-        float wallBounciness = world.wallBounciness;
+        float railBounciness = world.railBounciness;
         float separationNudge = world.separationNudge;
 
         DeterministicBall selfDeterministicBall = null;
@@ -215,9 +215,9 @@ public class BallAimingLineController : MonoBehaviour
                 if (maxDistance <= 0f) break;
                 continue;
             }
-            else // wall
+            else // rail
             {
-                SharedDeterministicPhysics.ComputeWallReflection(currentDirection, hitNormal, wallBounciness, contactCenter, separationNudge,
+                SharedDeterministicPhysics.ComputeWallReflection(currentDirection, hitNormal, railBounciness, contactCenter, separationNudge,
                     stepOffset, out Vector2 newDir, out Vector2 newPos);
                 currentDirection = newDir;
                 currentPosition = newPos;
@@ -295,10 +295,10 @@ public class BallAimingLineController : MonoBehaviour
     {
         distanceToRail = float.PositiveInfinity;
         railNormal = Vector2.zero;
-        if (world == null || world.railSegments == null || world.railSegments.Count == 0) return false;
+        if (world == null || world.railSegmentsDictionary == null || world.railSegmentsDictionary.Count == 0) return false;
 
         // We sweep the ball center along direction * t and ask deterministic physics to find earliest
-        if (SharedDeterministicPhysics.CalculateTimeToRailCollision(position, direction.normalized, radius, world.railSegments, maxDistance, out float t, out Vector2 normal))
+        if (SharedDeterministicPhysics.CalculateTimeToRailCollision(position, direction.normalized, radius, world.railSegmentsDictionary, maxDistance, out float t, out Vector2 normal) != RailLocation.NoRail)
         {
             if (t >= 0f && t <= maxDistance)
             {

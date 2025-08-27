@@ -47,17 +47,17 @@ public class ScoreManager : MonoBehaviour
                 break;
             case "BlackBall":
                 scoreTypeHeader = "Black Ball";
-                isFoul = @event is BallPocketedEvent;
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
         }
-        scoreTypeHeader += @event is BallPocketedEvent ? " Pot" : " Bounce";
+        scoreTypeHeader += @event.ScoreTypeHeader;
         AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
     }
 
     private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
     {
+        //TO DO: fouling logic doesn't work atm
         ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeName == scoreTypeHeader);
         if (scoreType == null)
         {

@@ -8,20 +8,21 @@ public static class SharedDeterministicPhysics
 
     // Sweep a ball center along ballVelocity and test against all rail segments (capsule tests).
     // Returns earliest hit time <= maxSimulationTime and the collision normal (segment -> ball).
-    public static bool CalculateTimeToRailCollision(
+    public static RailLocation CalculateTimeToRailCollision(
         Vector2 ballPosition, Vector2 ballVelocity, float ballRadius,
-        Dictionary<Rail, List<RailSegment>> rails,
+        Dictionary<RailLocation, List<RailSegment>> rails,
         float maxSimulationTime, out float timeToCollision, out Vector2 collisionNormal)
     {
+
+        RailLocation collidedRail = default;
         timeToCollision = maxSimulationTime;
         collisionNormal = Vector2.zero;
-        bool hit = false;
 
-        if (rails == null || rails.Count == 0) return false;
+        if (rails == null || rails.Count == 0) return collidedRail;
 
-        foreach (var kv in rails)
+        foreach (var railKV in rails)
         {
-            var segList = kv.Value;
+            var segList = railKV.Value;
             if (segList == null) continue;
             foreach (var seg in segList)
             {
@@ -34,13 +35,12 @@ public static class SharedDeterministicPhysics
                     {
                         timeToCollision = candidateTime;
                         collisionNormal = candidateNormal;
-                        hit = true;
+                        collidedRail = railKV.Key;
                     }
                 }
             }
         }
-
-        return hit;
+        return collidedRail;
     }
 
     // Swept circle vs capsule (segment + caps).

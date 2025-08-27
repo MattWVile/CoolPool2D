@@ -17,10 +17,10 @@ public class GenericGameEvent : BaseGameEvent
     public string Message { get; set; }
 }
 
-//public class BallStoppedEvent : BaseGameEvent
-//{
-//    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
-//}
+public class BallStoppedEvent : BaseGameEvent
+{
+    public new DeterministicBall Sender { get; set; } // overridden Sender to specify the sender type
+}
 public class BallHasBeenShotEvent : BaseGameEvent
 {
     public new CueMovement Sender { get; set; } // overridden Sender to specify the sender type
@@ -32,8 +32,8 @@ public class BallHasBeenShotEvent : BaseGameEvent
 //}
 public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
 {
-    public Rail Rail { get; set; }
-    public new RailColliderMarker Sender { get; set; }
+    public RailLocation RailLocation { get; set; }
+    public new RailController Sender { get; set; }
     public Ball Ball { get; set; }
     public string ScoreTypeHeader { get; set; }
     public float ScoreTypePoints { get; set; }
@@ -56,7 +56,7 @@ public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
 
 public class BallPocketedEvent : BaseGameEvent, IScorableEvent
 {
-    public Pocket Pocket { get; set; }
+    public PocketLocation PocketLocation { get; set; }
     public new PocketController Sender { get; set; }
     public Ball Ball { get; set; }
     public string ScoreTypeHeader { get; set; }

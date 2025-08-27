@@ -154,7 +154,7 @@ MonoBehaviour:
   pocketList: []
   dragPerSecond: 0.5
   ballBounciness: 0.9
-  wallBounciness: 0.9
+  railBounciness: 1
   maxCollisionEventsPerFrame: 256
   separationNudge: 0.00001
   sleepVelocityThreshold: 0
@@ -218,7 +218,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdc5a21cb7eadd34faeb50bb01722a75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pocket: 0
+  PocketLocation: 1
   radius: 0.3
 --- !u!1 &243062864
 GameObject:
@@ -301,7 +301,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdc5a21cb7eadd34faeb50bb01722a75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pocket: 4
+  PocketLocation: 5
   radius: 0.3
 --- !u!1 &275362491
 GameObject:
@@ -397,7 +397,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8297c7338d3708349800ab21a101db11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rail: 2
+  railLocation: 3
 --- !u!1 &322025660
 GameObject:
   m_ObjectHideFlags: 0
@@ -579,7 +579,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8297c7338d3708349800ab21a101db11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rail: 5
+  railLocation: 6
 --- !u!1 &508518186
 GameObject:
   m_ObjectHideFlags: 0
@@ -674,7 +674,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8297c7338d3708349800ab21a101db11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rail: 0
+  railLocation: 1
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1079,7 +1079,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8297c7338d3708349800ab21a101db11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rail: 4
+  railLocation: 5
 --- !u!1 &897729863
 GameObject:
   m_ObjectHideFlags: 0
@@ -1222,7 +1222,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8297c7338d3708349800ab21a101db11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rail: 3
+  railLocation: 4
 --- !u!1 &1135304238
 GameObject:
   m_ObjectHideFlags: 0
@@ -1304,7 +1304,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdc5a21cb7eadd34faeb50bb01722a75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pocket: 1
+  PocketLocation: 2
   radius: 0.3
 --- !u!1 &1469342011
 GameObject:
@@ -1340,7 +1340,7 @@ MonoBehaviour:
   possibleTargets:
   - {fileID: 0}
   ballGameObjects: []
-  ballRbs: []
+  deterministicBalls: []
   gameStateManager: {fileID: 1469342014}
   amountOfCueBallsSpawned: 0
 --- !u!4 &1469342013
@@ -1482,7 +1482,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdc5a21cb7eadd34faeb50bb01722a75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pocket: 3
+  PocketLocation: 4
   radius: 0.3
 --- !u!1 &1746868100
 GameObject:
@@ -1578,7 +1578,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8297c7338d3708349800ab21a101db11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rail: 1
+  railLocation: 2
 --- !u!1 &1784321149
 GameObject:
   m_ObjectHideFlags: 0
@@ -1623,7 +1623,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdc5a21cb7eadd34faeb50bb01722a75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pocket: 5
+  PocketLocation: 6
   radius: 0.3
 --- !u!1 &1824203223
 GameObject:
@@ -1772,7 +1772,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdc5a21cb7eadd34faeb50bb01722a75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pocket: 2
+  PocketLocation: 3
   radius: 0.3
 --- !u!1 &1858511321
 GameObject:
