@@ -16,25 +16,48 @@ public class GenericGameEvent : BaseGameEvent
 {
     public string Message { get; set; }
 }
-
-public class BallStoppedEvent : BaseGameEvent
-{
-    public new DeterministicBall Sender { get; set; } // overridden Sender to specify the sender type
-}
 public class BallHasBeenShotEvent : BaseGameEvent
 {
     public new CueMovement Sender { get; set; } // overridden Sender to specify the sender type
     public GameObject Target { get; set; }
 }
+
+public class BallStoppedEvent : BaseGameEvent
+{
+    public new DeterministicBall Sender { get; set; } // overridden Sender to specify the sender type
+}
+
 //public class BallIsBeingMovedEvent : BaseGameEvent
 //{
 //    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
 //}
+
+
 public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
 {
     public RailLocation RailLocation { get; set; }
     public new RailController Sender { get; set; }
     public Ball Ball { get; set; }
+    public string ScoreTypeHeader { get; set; }
+    public float ScoreTypePoints { get; set; }
+    public bool IsFoul { get; set; }
+}
+
+public class BallPocketedEvent : BaseGameEvent, IScorableEvent
+{
+    public PocketLocation PocketLocation { get; set; }
+    public new PocketController Sender { get; set; }
+    public Ball Ball { get; set; }
+    public string ScoreTypeHeader { get; set; }
+    public float ScoreTypePoints { get; set; }
+    public bool IsFoul { get; set; }
+}
+
+public class BallKissedEvent : BaseGameEvent, IScorableEvent
+{
+    public new PoolWorld Sender { get; set; }
+    public Ball Ball { get; set; }
+    public Ball CollisionBall { get; set; }
     public string ScoreTypeHeader { get; set; }
     public float ScoreTypePoints { get; set; }
     public bool IsFoul { get; set; }
@@ -53,16 +76,6 @@ public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
 //{
 //    public new BallController Sender { get; set; } // overridden Sender to specify the sender type
 //}
-
-public class BallPocketedEvent : BaseGameEvent, IScorableEvent
-{
-    public PocketLocation PocketLocation { get; set; }
-    public new PocketController Sender { get; set; }
-    public Ball Ball { get; set; }
-    public string ScoreTypeHeader { get; set; }
-    public float ScoreTypePoints { get; set; }
-    public bool IsFoul { get; set; }
-}
 
 public class NewGameStateEvent : BaseGameEvent {
     public new GameStateManager Sender { get; set; } // overridden Sender to specify the sender type

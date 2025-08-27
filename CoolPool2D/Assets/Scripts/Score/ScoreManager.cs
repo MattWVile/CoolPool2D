@@ -51,13 +51,19 @@ public class ScoreManager : MonoBehaviour
             default:
                 throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
         }
-        scoreTypeHeader += @event.ScoreTypeHeader;
-        AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
+        if (@event is BallKissedEvent)
+        {
+            scoreTypeHeader = @event.ScoreTypeHeader;
+        }
+        else
+        {
+            scoreTypeHeader += @event.ScoreTypeHeader;
+        }
+            AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
     }
 
     private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
     {
-        //TO DO: fouling logic doesn't work atm
         ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeName == scoreTypeHeader);
         if (scoreType == null)
         {
@@ -77,6 +83,10 @@ public class ScoreManager : MonoBehaviour
         }
 
         UIManager.Instance.AddToShotScore(scoreType.ScoreTypePoints);
+        if (scoreType.ScoreTypeName.Contains("kissed") && scoreType.NumberOfThisScoreType <= 1)
+        {
+            return;
+        }
         UIManager.Instance.AddScoreType(scoreTypeHeader);
     }
 
