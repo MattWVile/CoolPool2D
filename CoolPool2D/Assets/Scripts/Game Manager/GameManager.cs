@@ -11,7 +11,6 @@ public class GameManager : MonoBehaviour
     public List<GameObject> possibleTargets;
     public List<GameObject> ballGameObjects;
     public List<DeterministicBall> deterministicBalls;
-    public Dictionary<GameObject, Ball> ballDictionary = new Dictionary<GameObject, Ball>();
     public GameStateManager gameStateManager;
 
     public int amountOfCueBallsSpawned = 0;
@@ -72,7 +71,7 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        SpawnBlackBallAndCueBall();
+        SpawnSpecificBallAndCueBall(BallColour.Purple);
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
 
@@ -81,7 +80,6 @@ public class GameManager : MonoBehaviour
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
         deterministicBalls.Clear();
-        ballDictionary.Clear();
         amountOfCueBallsSpawned = 0;
         // Update the game state
         gameStateManager.SetGameState(GameState.GameStart);
@@ -89,35 +87,32 @@ public class GameManager : MonoBehaviour
 
     public void SpawnBallTriangleAndCueBall()
     {
-        ballDictionary = BallSpawner.SpawnBallsInTriangle();
+        //ballDictionary = BallSpawner.SpawnBallsInTriangle();
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
         amountOfCueBallsSpawned++;
-        ballDictionary.Add(cueBall.BallGameObject, cueBall);
+        ballGameObjects.Add(cueBall);
 
-        ballGameObjects = ballDictionary.Keys.ToList();
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
     }
 
-    public void SpawnBlackBallAndCueBall()
+    public void SpawnSpecificBallAndCueBall(BallColour ballColour)
     {
-        var blackBall = BallSpawner.SpawnSpecificBall("BlackBall", "Triangle Center");
-        ballDictionary.Add(blackBall.BallGameObject, blackBall);
+        var specificBall = BallSpawner.SpawnSpecificBall(ballColour, "Triangle Center");
+        ballGameObjects.Add(specificBall);
 
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-        ballDictionary.Add(cueBall.BallGameObject, cueBall);
+        ballGameObjects.Add(cueBall);
 
         amountOfCueBallsSpawned++;
 
-        ballGameObjects = ballDictionary.Keys.ToList();
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
     }
 
     private void HandlePocketedBall(BallPocketedEvent @event)
     {
-        ballGameObjects.Remove(@event.Ball.BallGameObject);
-        deterministicBalls.Remove(@event.Ball.BallGameObject.GetComponent<DeterministicBall>());
-        ballDictionary.Remove(@event.Ball.BallGameObject);
-        Destroy(@event.Ball.BallGameObject);
+        ballGameObjects.Remove(@event.BallData.gameObject);
+        deterministicBalls.Remove(@event.BallData.gameObject.GetComponent<DeterministicBall>());
+        Destroy(@event.BallData.gameObject);
     }
 
     private void HandleAimingState()
@@ -157,8 +152,8 @@ public class GameManager : MonoBehaviour
         catch (System.NullReferenceException)
         {
             Debug.Log("No shootable found. placing one.");
-            var newCueBallGameObject = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned).BallGameObject;
-            AddBallToLists(newCueBallGameObject);
+            var newCueBallGameObject = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
+            AddBallToLists(BallColour.White, newCueBallGameObject);
         }
 
         StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
@@ -170,12 +165,10 @@ public class GameManager : MonoBehaviour
         gameStateManager.SubmitEndOfState(gameState);
     }
 
-    private void AddBallToLists(GameObject ballToAdd)
+    private void AddBallToLists(BallColour ballColour, GameObject ballToAdd)
     {
         ballGameObjects.Add(ballToAdd);
         deterministicBalls.Add(ballToAdd.GetComponent<DeterministicBall>());
-        var ball = new Ball(ballToAdd.name, ballToAdd);
-        ballDictionary.Add(ballToAdd, ball);
     }
 
     private IEnumerator CheckIfAllBallsStopped()

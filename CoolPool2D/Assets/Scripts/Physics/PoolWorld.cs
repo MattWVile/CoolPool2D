@@ -488,16 +488,16 @@ public class PoolWorld : MonoBehaviour
 
     private void PublishBallKissedEvent(DeterministicBall ballA, DeterministicBall ballB )
     {
-        GameManager.Instance.ballDictionary.TryGetValue(ballA.gameObject, out Ball ball1);
-        GameManager.Instance.ballDictionary.TryGetValue(ballB.gameObject, out Ball ball2);
+        BallData ball1Data = ballA.gameObject.GetComponent<BallData>();
+        BallData ball2Data = ballB.gameObject.GetComponent<BallData>();
         {
             var ballKissedEvent = new BallKissedEvent
             {
                 Sender = this,
-                Ball = ball1,
-                CollisionBall = ball2,
-                ScoreTypeHeader = $"{ball1.BallName} kissed {ball2.BallName}",
-                ScoreTypePoints = ball1.BallPoints + ball2.BallPoints,
+                BallData = ball1Data,
+                CollisionBallData = ball2Data,
+                ScoreTypeHeader = $"{ball1Data.BallColour} kissed {ball2Data.BallColour}",
+                ScoreTypePoints = ball1Data.BallPoints + ball2Data.BallPoints,
                 IsFoul = false
             };
             EventBus.Publish(ballKissedEvent);

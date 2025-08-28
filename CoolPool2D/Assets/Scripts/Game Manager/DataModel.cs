@@ -24,3 +24,16 @@ public enum GameState {
     PrepareNextTurn,
     GameStart
 }
+
+public enum BallColour
+{
+    Red,
+    Yellow,
+    Blue,
+    Purple,
+    Maroon,
+    Green,
+    Orange,
+    Black,
+    White
+}

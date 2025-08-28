@@ -33,7 +33,7 @@ public class ScoreManager : MonoBehaviour
         float scoreTypePoints = @event.ScoreTypePoints;
         bool isFoul = @event.IsFoul;
 
-        switch (@event.Ball.BallGameObject.tag)
+        switch (@event.BallData.gameObject.tag)
         {
             case "CueBall":
                 scoreTypeHeader = "Cue Ball";
@@ -49,7 +49,7 @@ public class ScoreManager : MonoBehaviour
                 scoreTypeHeader = "Black Ball";
                 break;
             default:
-                throw new InvalidOperationException($"Unexpected ball tag: {@event.Ball.BallGameObject.tag}");
+                throw new InvalidOperationException($"Unexpected ball tag: {@event.BallData.gameObject.tag}");
         }
         if (@event is BallKissedEvent)
         {
