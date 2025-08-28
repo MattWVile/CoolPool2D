@@ -34,7 +34,7 @@ public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
 {
     public RailLocation RailLocation { get; set; }
     public new RailController Sender { get; set; }
-    public Ball Ball { get; set; }
+    public BallData Ball { get; set; }
     public string ScoreTypeHeader { get; set; }
     public float ScoreTypePoints { get; set; }
     public bool IsFoul { get; set; }
@@ -58,7 +58,7 @@ public class BallPocketedEvent : BaseGameEvent, IScorableEvent
 {
     public PocketLocation PocketLocation { get; set; }
     public new PocketController Sender { get; set; }
-    public Ball Ball { get; set; }
+    public BallData Ball { get; set; }
     public string ScoreTypeHeader { get; set; }
     public float ScoreTypePoints { get; set; }
     public bool IsFoul { get; set; }

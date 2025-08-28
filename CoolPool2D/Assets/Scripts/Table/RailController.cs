@@ -7,7 +7,7 @@ public class RailController : MonoBehaviour
 
     public void PublishBallCollidedWithRailEvent(GameObject ballThatHitRail)
     {
-        if (GameManager.Instance.ballDictionary.TryGetValue(ballThatHitRail.gameObject, out Ball ball))
+        if (GameManager.Instance.ballDictionary.TryGetValue(ballThatHitRail.gameObject, out BallData ball))
         {
             var ballCollidedWithRailEvent = new BallCollidedWithRailEvent
             {

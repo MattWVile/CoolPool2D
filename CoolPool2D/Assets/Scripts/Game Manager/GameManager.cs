@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     public List<GameObject> possibleTargets;
     public List<GameObject> ballGameObjects;
     public List<DeterministicBall> deterministicBalls;
-    public Dictionary<GameObject, Ball> ballDictionary = new Dictionary<GameObject, Ball>();
+    public Dictionary<GameObject, BallData> ballDictionary = new Dictionary<GameObject, BallData>();
     public GameStateManager gameStateManager;
 
     public int amountOfCueBallsSpawned = 0;
@@ -100,7 +100,7 @@ public class GameManager : MonoBehaviour
 
     public void SpawnBlackBallAndCueBall()
     {
-        var blackBall = BallSpawner.SpawnSpecificBall("BlackBall", "Triangle Center");
+        var blackBall = BallSpawner.SpawnSpecificBall(BallColour.Black, "Triangle Center");
         ballDictionary.Add(blackBall.BallGameObject, blackBall);
 
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
@@ -158,7 +158,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("No shootable found. placing one.");
             var newCueBallGameObject = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned).BallGameObject;
-            AddBallToLists(newCueBallGameObject);
+            AddBallToLists(BallColour.White, newCueBallGameObject);
         }
 
         StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
@@ -170,12 +170,12 @@ public class GameManager : MonoBehaviour
         gameStateManager.SubmitEndOfState(gameState);
     }
 
-    private void AddBallToLists(GameObject ballToAdd)
+    private void AddBallToLists(BallColour ballColour, GameObject ballToAdd)
     {
         ballGameObjects.Add(ballToAdd);
         deterministicBalls.Add(ballToAdd.GetComponent<DeterministicBall>());
-        var ball = new Ball(ballToAdd.name, ballToAdd);
-        ballDictionary.Add(ballToAdd, ball);
+        var ballData = new BallData(ballColour, ballToAdd);
+        ballDictionary.Add(ballToAdd, ballData);
     }
 
     private IEnumerator CheckIfAllBallsStopped()

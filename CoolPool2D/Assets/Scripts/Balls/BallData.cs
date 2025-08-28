@@ -1,15 +1,15 @@
 using UnityEngine;
 
-public class Ball
+public class BallData
 {
-    public string BallName { get; set; }
+    public BallColour BallColour { get; set; }
     public GameObject BallGameObject { get; set; }
     public float BallPoints { get; set; }
     public float BallMultiplier { get; set; }
 
-    public Ball(string ballName, GameObject ballGameObject, float ballPoints = 100, float ballMultiplier = 1)
+    public BallData(BallColour ballColour, GameObject ballGameObject, float ballPoints = 100, float ballMultiplier = 1)
     {
-        BallName = ballName;
+        BallColour = ballColour;
         BallGameObject = ballGameObject;
         BallPoints = ballPoints;
         BallMultiplier = ballMultiplier;
