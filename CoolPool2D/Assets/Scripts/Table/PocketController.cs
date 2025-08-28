@@ -15,15 +15,15 @@ public class PocketController : MonoBehaviour
 
     public void PublishBallPocketedEvent(GameObject pocketedBall)
     {
-        if (GameManager.Instance.ballDictionary.TryGetValue(pocketedBall.gameObject, out BallData ball))
+        BallData ballData = pocketedBall.gameObject.GetComponent<BallData>();
         {
             var ballPocketedEvent = new BallPocketedEvent
             {
-                Ball = ball,
+                BallData = ballData,
                 PocketLocation = PocketLocation,
                 Sender = this,
                 ScoreTypeHeader = " pot",
-                ScoreTypePoints = ball.BallPoints,
+                ScoreTypePoints = ballData.BallPoints,
                 IsFoul = "CueBall" == pocketedBall.tag
             };
             EventBus.Publish(ballPocketedEvent);

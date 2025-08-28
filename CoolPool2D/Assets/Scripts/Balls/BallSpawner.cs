@@ -15,78 +15,77 @@ public class BallSpawner : MonoBehaviour
     public static Vector2 ClothDimensionsVector = ClothBounds.size;
     public static Vector2 TriangleCenterVector = new Vector2(ClothCenterVector.x + ClothDimensionsVector.x / 5, ClothCenterVector.y);
 
-    public static Dictionary<GameObject, BallData> SpawnBallsInTriangle()
-    {
-        var balls = new Dictionary<GameObject, BallData>();
-        var firstBallOfLineVector = Vector2.zero;
-        var ballRadius = Resources.Load("Prefabs/ObjectBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
-        int ballIndex = 1;
+    //public static Dictionary<GameObject, BallData> SpawnBallsInTriangle()
+    //{
+    //    var balls = new Dictionary<GameObject, BallData>();
+    //    var firstBallOfLineVector = Vector2.zero;
+    //    var ballRadius = Resources.Load("Prefabs/ObjectBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
+    //    int ballIndex = 1;
 
-        var ballSpawnVector = TriangleCenterVector;
-        ballSpawnVector.x += ballRadius * 3.45f;
+    //    var ballSpawnVector = TriangleCenterVector;
+    //    ballSpawnVector.x += ballRadius * 3.45f;
 
-        for (int ballRow = 1; ballRow < 6; ballRow++)
-        {
-            if (ballRow != 1)
-            {
-                firstBallOfLineVector.x += ballRadius * 1.73f;
-            }
+    //    for (int ballRow = 1; ballRow < 6; ballRow++)
+    //    {
+    //        if (ballRow != 1)
+    //        {
+    //            firstBallOfLineVector.x += ballRadius * 1.73f;
+    //        }
 
-            for (int ballNumber = 1; ballNumber <= ballRow; ballNumber++)
-            {
-                if ((ballNumber == 1) && (ballRow != 1))
-                {
-                    firstBallOfLineVector.y += ballRadius;
-                    ballSpawnVector = firstBallOfLineVector;
-                }
-                else if (ballRow != 1)
-                {
-                    ballSpawnVector.y -= ballRadius * 2;
-                }
-                else
-                {
-                    firstBallOfLineVector = ballSpawnVector;
-                }
-                var ball = SpawnTriangleBall(ballSpawnVector, ballIndex);
-                balls.Add(ball.BallGameObject, ball);
-                ballIndex++;
-            }
-        }
-        return balls;
-    }
+    //        for (int ballNumber = 1; ballNumber <= ballRow; ballNumber++)
+    //        {
+    //            if ((ballNumber == 1) && (ballRow != 1))
+    //            {
+    //                firstBallOfLineVector.y += ballRadius;
+    //                ballSpawnVector = firstBallOfLineVector;
+    //            }
+    //            else if (ballRow != 1)
+    //            {
+    //                ballSpawnVector.y -= ballRadius * 2;
+    //            }
+    //            else
+    //            {
+    //                firstBallOfLineVector = ballSpawnVector;
+    //            }
+    //            var ball = SpawnTriangleBall(ballSpawnVector, ballIndex);
+    //            balls.Add(ball.BallGameObject, ball);
+    //            ballIndex++;
+    //        }
+    //    }
+    //    return balls;
+    //}
 
-    private static BallData SpawnTriangleBall(Vector2 spawnPosition, int ballIndex)
-    {
-        if (ballIndex > 15) ballIndex = new System.Random().Next(1, 15);
-        var ballTypeColour = ballSpawnPattern[ballIndex - 1];
+    //private static BallData SpawnTriangleBall(Vector2 spawnPosition, int ballIndex)
+    //{
+    //    if (ballIndex > 15) ballIndex = new System.Random().Next(1, 15);
+    //    var ballTypeColour = ballSpawnPattern[ballIndex - 1];
 
-        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/ObjectBall"), spawnPosition, Quaternion.identity) as GameObject;
+    //    GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/ObjectBall"), spawnPosition, Quaternion.identity) as GameObject;
 
-        if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
+    //    if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
 
-        BallData ball = new BallData(ballTypeColour, ballGameObject);
+    //    BallData ball = new BallData(ballTypeColour, ballGameObject);
 
-        ballGameObject.tag = ballTypeColour.ToString();
-        ballGameObject.name = ballTypeColour.ToString();
-        switch (ballTypeColour)
-        {
-            case BallColour.Red:
-                ballGameObject.GetComponent<SpriteRenderer>().color = Color.red;
-                break;
-            case BallColour.Yellow:
-                ballGameObject.GetComponent<SpriteRenderer>().color = Color.yellow;
-                break;
-            case BallColour.Black:
-                ballGameObject.GetComponent<SpriteRenderer>().color = Color.black;
-                ball.BallPoints = 500;
-                break;
-            default:
-                throw new InvalidOperationException($"Unexpected ball type: {ballTypeColour}");
-        }
-        return ball;
-    }
+    //    ballGameObject.tag = ballTypeColour.ToString();
+    //    ballGameObject.name = ballTypeColour.ToString();
+    //    switch (ballTypeColour)
+    //    {
+    //        case BallColour.Red:
+    //            ballGameObject.GetComponent<SpriteRenderer>().color = Color.red;
+    //            break;
+    //        case BallColour.Yellow:
+    //            ballGameObject.GetComponent<SpriteRenderer>().color = Color.yellow;
+    //            break;
+    //        case BallColour.Black:
+    //            ballGameObject.GetComponent<SpriteRenderer>().color = Color.black;
+    //            break;
+    //        default:
+    //            throw new InvalidOperationException($"Unexpected ball type: {ballTypeColour}");
+    //    }
+    //    return ball;
+    //}
 
-    public static BallData SpawnSpecificBall(BallColour ballColour, String spawnPositionSelector)
+    public static GameObject SpawnSpecificBall(BallColour ballColour, String spawnPositionSelector)
     {
         Vector2 spawnPosition;
         switch (spawnPositionSelector)
@@ -100,30 +99,24 @@ public class BallSpawner : MonoBehaviour
             default:
                 throw new InvalidOperationException($"Unexpected spawn position selector: {spawnPositionSelector}");
         }
-        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/DeterministicBall"), spawnPosition, Quaternion.identity) as GameObject;
 
+        GameObject ballGameObject = Instantiate(Resources.Load($"Prefabs/{ballColour}Ball"), spawnPosition, Quaternion.identity) as GameObject;
+        //switch (ballColour)
+        //{
+        //    case BallColour.Red:
+        //        break;
+        //    case BallColour.Yellow:
+        //        ballGameObject = Instantiate(Resources.Load("Prefabs/RedBall"), spawnPosition, Quaternion.identity) as GameObject;
+        //        break;
+        //    case BallColour.Black:
+        //        ballGameObject = Instantiate(Resources.Load("Prefabs/RedBall"), spawnPosition, Quaternion.identity) as GameObject;
+        //        break;
+        //    default:
+        //        throw new InvalidOperationException($"Unexpected ball type: {ballColour}");
+        //}        
+        
         if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
-
-        BallData ball = new BallData(ballColour, ballGameObject);
-
-        ballGameObject.tag = ballColour.ToString();
-        ballGameObject.name = ballColour.ToString();
-        switch (ballColour)
-        {
-            case BallColour.Red:
-                ballGameObject.GetComponent<SpriteRenderer>().color = Color.red;
-                break;
-            case BallColour.Yellow:
-                ballGameObject.GetComponent<SpriteRenderer>().color = Color.yellow;
-                break;
-            case BallColour.Black:
-                ballGameObject.GetComponent<SpriteRenderer>().color = Color.black;
-                ball.BallPoints = 500;
-                break;
-            default:
-                throw new InvalidOperationException($"Unexpected ball type: {ballColour}");
-        }
-        return ball;
+        return ballGameObject;
     }
 
 
@@ -141,11 +134,9 @@ public class BallSpawner : MonoBehaviour
         return spawnPosition;
     }
 
-    public static BallData SpawnCueBall(int cueBallIndex)
+    public static GameObject SpawnCueBall(int cueBallIndex)
     {
         GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/DeterministicCueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
-        BallData ball = new BallData(BallColour.White, ballGameObject);
-        ballGameObject.name = "Cue ball";
-        return ball;
+        return ballGameObject;
     }
 }
