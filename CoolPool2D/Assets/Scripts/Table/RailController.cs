@@ -14,7 +14,7 @@ public class RailController : MonoBehaviour
                 Ball = ball,
                 RailLocation = railLocation,
                 Sender = this,
-                ScoreTypeHeader = "Ball Collided With Rail",
+                ScoreTypeHeader = " collided With Rail",
                 ScoreTypePoints = ball.BallPoints,
                 IsFoul = false
             };

@@ -19,8 +19,7 @@ public class PoolWorld : MonoBehaviour
     public struct PocketStruct { public Vector2 center; public float radius; public PocketController pocketController; }
     public List<PocketStruct> pocketList = new List<PocketStruct>();
 
-
-    [Header("Table Walls")]
+    [Header("Table Rails")]
     public Dictionary<RailLocation, RailData> railDictionary = new();
 
     public struct RailData
@@ -54,8 +53,6 @@ public class PoolWorld : MonoBehaviour
 
     /// <summary>List of all deterministic balls registered with the world.</summary>
     internal readonly List<DeterministicBall> registeredBalls = new List<DeterministicBall>();
-
-
 
     private void Awake()
     {
@@ -167,6 +164,7 @@ public class PoolWorld : MonoBehaviour
                             ballPairIndexB = indexB;
                             ballPairCollisionNormal = candidateNormal;
                             railCollisionBallIndex = -1;
+                            PublishBallKissedEvent(ballA, ballB);
                         }
                     }
                 }
@@ -487,4 +485,23 @@ public class PoolWorld : MonoBehaviour
         }
         throw new System.NullReferenceException("No active pocketable balls found.");
     }
+
+    private void PublishBallKissedEvent(DeterministicBall ballA, DeterministicBall ballB )
+    {
+        GameManager.Instance.ballDictionary.TryGetValue(ballA.gameObject, out Ball ball1);
+        GameManager.Instance.ballDictionary.TryGetValue(ballB.gameObject, out Ball ball2);
+        {
+            var ballKissedEvent = new BallKissedEvent
+            {
+                Sender = this,
+                Ball = ball1,
+                CollisionBall = ball2,
+                ScoreTypeHeader = $"{ball1.BallName} kissed {ball2.BallName}",
+                ScoreTypePoints = ball1.BallPoints + ball2.BallPoints,
+                IsFoul = false
+            };
+            EventBus.Publish(ballKissedEvent);
+        }
+    }
+
 }
