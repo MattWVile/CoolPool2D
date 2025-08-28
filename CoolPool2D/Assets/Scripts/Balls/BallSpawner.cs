@@ -5,9 +5,9 @@ using Unity.VisualScripting;
 
 public class BallSpawner : MonoBehaviour
 {
-    private static readonly List<BallColour> ballSpawnPattern = new List<BallColour>
-    {BallColour.Red, BallColour.Yellow, BallColour.Blue, BallColour.Purple, BallColour.Orange, BallColour.Maroon, BallColour.Green,
-     BallColour.Red, BallColour.Yellow, BallColour.Blue, BallColour.Purple, BallColour.Orange, BallColour.Maroon, BallColour.Green};
+    //private static readonly List<BallColour> ballSpawnPattern = new List<BallColour>
+    //{BallColour.Red, BallColour.Yellow, BallColour.Blue, BallColour.Purple, BallColour.Orange, BallColour.Maroon, BallColour.Green,
+    // BallColour.Red, BallColour.Yellow, BallColour.Blue, BallColour.Purple, BallColour.Orange, BallColour.Maroon, BallColour.Green};
 
     public static Vector2 cueBallInitialPosition = new Vector2(-1.91f, 0.0384333f);
     public static Bounds ClothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
@@ -101,20 +101,7 @@ public class BallSpawner : MonoBehaviour
         }
 
         GameObject ballGameObject = Instantiate(Resources.Load($"Prefabs/{ballColour}Ball"), spawnPosition, Quaternion.identity) as GameObject;
-        //switch (ballColour)
-        //{
-        //    case BallColour.Red:
-        //        break;
-        //    case BallColour.Yellow:
-        //        ballGameObject = Instantiate(Resources.Load("Prefabs/RedBall"), spawnPosition, Quaternion.identity) as GameObject;
-        //        break;
-        //    case BallColour.Black:
-        //        ballGameObject = Instantiate(Resources.Load("Prefabs/RedBall"), spawnPosition, Quaternion.identity) as GameObject;
-        //        break;
-        //    default:
-        //        throw new InvalidOperationException($"Unexpected ball type: {ballColour}");
-        //}        
-        
+
         if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
         return ballGameObject;
     }
@@ -122,7 +109,7 @@ public class BallSpawner : MonoBehaviour
 
     public static Vector2 GetRandomSpawnPosition()
     {
-        var ballRadius = Resources.Load("Prefabs/ObjectBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
+        var ballRadius = Resources.Load("Prefabs/DeterministicBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
         var clothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
         var clothDimensionsVector = clothBounds.size;
         var clothCenterVector = clothBounds.center;
@@ -136,7 +123,7 @@ public class BallSpawner : MonoBehaviour
 
     public static GameObject SpawnCueBall(int cueBallIndex)
     {
-        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/DeterministicCueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
+        GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
         return ballGameObject;
     }
 }

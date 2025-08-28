@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3257443262695396514}
   - component: {fileID: -1842012759573698116}
   m_Layer: 0
-  m_Name: DeterministicCueBall
+  m_Name: CueBall
   m_TagString: CueBall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
