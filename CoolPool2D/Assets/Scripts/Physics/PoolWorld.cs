@@ -490,13 +490,28 @@ public class PoolWorld : MonoBehaviour
     {
         BallData ball1Data = ballA.gameObject.GetComponent<BallData>();
         BallData ball2Data = ballB.gameObject.GetComponent<BallData>();
+        string scoreTypeHeader = $"{ball1Data.BallColour} kissed {ball2Data.BallColour}";
+        if (ball1Data.BallColour == BallColour.White)
+        {
+            scoreTypeHeader = $"Cue ball kissed {ball2Data.BallColour} ball";
+
+        }
+        else if (ball2Data.BallColour == BallColour.White)
+        {
+            scoreTypeHeader = $"{ball1Data.BallColour} ball kissed Cue ball";
+
+        }
+        else
+        {
+            scoreTypeHeader = $"{ball1Data.BallColour} ball kissed {ball2Data.BallColour} ball";
+        }
         {
             var ballKissedEvent = new BallKissedEvent
             {
                 Sender = this,
                 BallData = ball1Data,
                 CollisionBallData = ball2Data,
-                ScoreTypeHeader = $"{ball1Data.BallColour} kissed {ball2Data.BallColour}",
+                ScoreTypeHeader = scoreTypeHeader,
                 ScoreTypePoints = ball1Data.BallPoints + ball2Data.BallPoints,
                 IsFoul = false
             };
