@@ -164,7 +164,6 @@ public class PoolWorld : MonoBehaviour
                             ballPairIndexB = indexB;
                             ballPairCollisionNormal = candidateNormal;
                             railCollisionBallIndex = -1;
-                            PublishBallKissedEvent(ballA, ballB);
                         }
                     }
                 }
@@ -223,11 +222,14 @@ public class PoolWorld : MonoBehaviour
                     DeterministicBall ballB = registeredBalls[ballPairIndexB];
                     if (ballA.active && ballB.active)
                     {
+
                         // Use shared ResolveEqualMassBallCollision (vector version) and assign velocities
                         SharedDeterministicPhysics.ResolveEqualMassBallCollision(ballA.velocity, ballB.velocity, ballPairCollisionNormal, ballBounciness, out Vector2 vAAfter, out Vector2 vBAfter);
                         ballA.velocity = vAAfter;
                         ballB.velocity = vBAfter;
-
+                        PublishBallKissedEvent(ballA, ballB);
+                        ballA.initialVelocity = ballA.velocity;
+                        ballB.initialVelocity = ballB.velocity;
                         // minimal separation along normal to avoid immediate re-detection
                         ballA.transform.position = (Vector2)ballA.transform.position + ballPairCollisionNormal * separationNudge;
                         ballB.transform.position = (Vector2)ballB.transform.position - ballPairCollisionNormal * separationNudge;

@@ -2,19 +2,22 @@ using UnityEngine;
 
 public class SwapPositionAndVelocityOnBallHit : MonoBehaviour, IOnBallHitEffect
 {
-    public float nudgeFactor = 20f;
     public void OnBallHit(GameObject self, GameObject other)
     {
-        Vector2 tempPosition = self.transform.position;
-        Vector2 tempVelocity = self.GetComponent<DeterministicBall>().velocity;
+        BallData selfBallData = self.GetComponent<BallData>();
 
-        Vector2 smallNudge = other.GetComponent<DeterministicBall>().velocity / nudgeFactor;
-        Vector2 otherSmallNudge = tempVelocity /nudgeFactor;
+        DeterministicBall selfDeterministicBall = self.GetComponent<DeterministicBall>();
+        DeterministicBall otherDeterministicBall = other.GetComponent<DeterministicBall>();
 
-        self.transform.position = new Vector2(other.transform.position.x, other.transform.position.y) + smallNudge;
-        self.GetComponent<DeterministicBall>().velocity = other.GetComponent<DeterministicBall>().velocity;
+        if (selfBallData.effectTriggeredThisTurn)
+            return;
 
-        other.transform.position = tempPosition + otherSmallNudge;
-        other.GetComponent<DeterministicBall>().velocity = tempVelocity;
+        other.transform.position = selfDeterministicBall.stationaryPosition;
+        otherDeterministicBall.velocity = selfDeterministicBall.velocity;
+
+        self.transform.position = otherDeterministicBall.stationaryPosition;
+        selfDeterministicBall.velocity = otherDeterministicBall.initialVelocity * .9f;
+
+        selfBallData.effectTriggeredThisTurn = true;
     }
 }
