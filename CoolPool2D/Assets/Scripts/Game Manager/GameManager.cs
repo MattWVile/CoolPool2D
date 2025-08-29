@@ -71,7 +71,15 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        SpawnSpecificBallAndCueBall(BallColour.Purple);
+        SpawnSpecificBallAndCueBall(BallColour.Orange);
+        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
+        ballGameObjects.Add(specificBall);
+        specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
+        ballGameObjects.Add(specificBall);
+        specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
+        ballGameObjects.Add(specificBall);
+        specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
+        ballGameObjects.Add(specificBall);
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
 
@@ -97,13 +105,14 @@ public class GameManager : MonoBehaviour
 
     public void SpawnSpecificBallAndCueBall(BallColour ballColour)
     {
-        var specificBall = BallSpawner.SpawnSpecificBall(ballColour, "Triangle Center");
-        ballGameObjects.Add(specificBall);
 
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
         ballGameObjects.Add(cueBall);
 
         amountOfCueBallsSpawned++;
+
+        var specificBall = BallSpawner.SpawnSpecificBall(ballColour, "Triangle Center");
+        ballGameObjects.Add(specificBall);
 
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
     }
@@ -118,13 +127,13 @@ public class GameManager : MonoBehaviour
     private void HandleAimingState()
     {
         Debug.Log("HandleAimingState");
-        var target = possibleTargets.First();
-        if (target == null)
+        var targetGameObject = possibleTargets.First();
+        if (targetGameObject == null)
         {
-            target = FindObjectOfType<DeterministicBall>().gameObject;
+            targetGameObject = PoolWorld.Instance.GetNextTarget().gameObject;
         }
-        possibleTargets.Add(target);
-        cue.GetComponent<CueMovement>().Enable(target);
+        possibleTargets.Add(targetGameObject);
+        cue.GetComponent<CueMovement>().Enable(targetGameObject);
     }
 
     private void HandleShootingState()
