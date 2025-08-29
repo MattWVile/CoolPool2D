@@ -8,24 +8,41 @@ public class DeterministicBall : MonoBehaviour
     public bool pocketable = true;
     public bool isShootable = false;
 
+
+    public Vector2 initialVelocity = Vector2.zero;
+    public Vector2 stationaryPosition = Vector2.zero;
+
     [HideInInspector] public bool active = true;
+
+    public void Start()
+    {
+        stationaryPosition = (Vector2)transform.position;
+    }
 
     private void OnEnable()
     {
-
+        EventBus.Subscribe<BallStoppedEvent>(OnBallStopped);
         ballRadius = GetComponent<SpriteRenderer>().bounds.size.x / 2f;
         if (PoolWorld.Instance != null && !PoolWorld.Instance.registeredBalls.Contains(this))
+        {
             PoolWorld.Instance.registeredBalls.Add(this);
+        }
         active = true;
-
     }
 
     private void OnDisable()
     {
+
+        EventBus.Unsubscribe<BallStoppedEvent>(OnBallStopped);
         if (PoolWorld.Instance != null) PoolWorld.Instance.registeredBalls.Remove(this);
         active = false;
     }
     // Fire with angle in radians and speed (units/sec)
+    private void OnBallStopped(BallStoppedEvent ballStoppedEvent)
+    {
+        stationaryPosition = (Vector2)transform.position;
+    }
+
     public void Shoot(float angleRad, float speed)
     {
 
@@ -35,7 +52,7 @@ public class DeterministicBall : MonoBehaviour
             // tiny bump to ensure it's active
             velocity += new Vector2(1e-4f, 0f);
         }
-
+        initialVelocity = velocity; 
     }
 
 }

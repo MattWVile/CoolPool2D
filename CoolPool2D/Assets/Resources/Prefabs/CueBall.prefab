@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5827085982206608818}
   - component: {fileID: 3257443262695396514}
   - component: {fileID: -1842012759573698116}
+  - component: {fileID: -7387069153500131809}
   m_Layer: 0
   m_Name: CueBall
   m_TagString: CueBall
@@ -124,3 +125,18 @@ MonoBehaviour:
   lineRendererColour: {r: 0, g: 0, b: 0, a: 0}
   defaultTempObjectMaxReflections: 3
   defaultTempObjectMaxRayDistance: 30
+--- !u!114 &-7387069153500131809
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6997192344708437271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9da01b6659da38941a646c1b347b9487, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ballColour: 8
+  ballPoints: 100
+  ballMultiplier: 1

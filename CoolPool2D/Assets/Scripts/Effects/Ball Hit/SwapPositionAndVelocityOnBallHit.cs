@@ -4,13 +4,20 @@ public class SwapPositionAndVelocityOnBallHit : MonoBehaviour, IOnBallHitEffect
 {
     public void OnBallHit(GameObject self, GameObject other)
     {
-        Vector3 tempPosition = self.transform.position;
-        Vector2 tempVelocity = self.GetComponent<DeterministicBall>().velocity;
+        BallData selfBallData = self.GetComponent<BallData>();
 
-        self.transform.position = other.transform.position;
-        self.GetComponent<DeterministicBall>().velocity = other.GetComponent<DeterministicBall>().velocity;
+        DeterministicBall selfDeterministicBall = self.GetComponent<DeterministicBall>();
+        DeterministicBall otherDeterministicBall = other.GetComponent<DeterministicBall>();
 
-        other.transform.position = tempPosition;
-        other.GetComponent<DeterministicBall>().velocity = tempVelocity;
+        if (selfBallData.effectTriggeredThisTurn)
+            return;
+
+        other.transform.position = selfDeterministicBall.stationaryPosition;
+        otherDeterministicBall.velocity = selfDeterministicBall.velocity;
+
+        self.transform.position = otherDeterministicBall.stationaryPosition;
+        selfDeterministicBall.velocity = otherDeterministicBall.initialVelocity * .9f;
+
+        selfBallData.effectTriggeredThisTurn = true;
     }
 }

@@ -19,10 +19,10 @@ public class EffectEventHandler : MonoBehaviour
                 break;
         }
     }
-    private void HandleBallKissedEvent(BallKissedEvent e)
+    private void HandleBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
-        e.BallData.TriggerBallHitEffect(e.CollisionBallData.gameObject);
-        e.CollisionBallData.TriggerBallHitEffect(e.BallData.gameObject);
+        ballKissedEvent.BallData.TriggerBallHitEffect(ballKissedEvent.CollisionBallData.gameObject);
+        ballKissedEvent.CollisionBallData.TriggerBallHitEffect(ballKissedEvent.BallData.gameObject);
     }
 
 

@@ -8,6 +8,8 @@ public class BallData : MonoBehaviour
     public float ballPoints = 100f;
     public float ballMultiplier = 1f;
 
+    public bool effectTriggeredThisTurn = false;
+
     // Example: expose readonly properties if you want safe access
     public BallColour BallColour => ballColour;
     public float BallPoints => ballPoints;
