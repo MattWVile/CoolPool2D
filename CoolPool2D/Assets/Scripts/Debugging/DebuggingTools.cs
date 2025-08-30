@@ -3,13 +3,10 @@ using Debug = UnityEngine.Debug;
 
 public class DebuggingTools : MonoBehaviour
 {
-    private bool showLazer;
-    private CueMovement cueMovement;
     private GameObject cueBall;
 
     void Start()
     {
-        cueMovement = GameObject.FindFirstObjectByType<CueMovement>();
 
         //EventBus.Subscribe<BallPocketedEvent>(@event =>
         //    Debug.Log($"[DEBUG] [Event] BallPocketedEvent: {@event.Ball.gameObject.name} in {@event.Pocket}"));

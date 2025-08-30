@@ -71,14 +71,8 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        SpawnSpecificBallAndCueBall(BallColour.Orange);
-        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
-        ballGameObjects.Add(specificBall);
-        specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
-        ballGameObjects.Add(specificBall);
-        specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
-        ballGameObjects.Add(specificBall);
-        specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
+        SpawnSpecificBallAndCueBall(BallColour.Blue);
+        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Blue, "Random");
         ballGameObjects.Add(specificBall);
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }

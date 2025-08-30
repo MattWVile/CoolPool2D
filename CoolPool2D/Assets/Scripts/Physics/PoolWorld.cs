@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public struct RailSegment
@@ -54,11 +55,16 @@ public class PoolWorld : MonoBehaviour
     /// <summary>List of all deterministic balls registered with the world.</summary>
     internal readonly List<DeterministicBall> registeredBalls = new List<DeterministicBall>();
 
+    private Coroutine _timeScaleRoutine = null;
+    private float _originalFixedDeltaTime;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
             Debug.LogWarning("Multiple PoolWorld instances found. Using the last one.");
         Instance = this;
+
+        _originalFixedDeltaTime = Time.fixedDeltaTime;
 
         // Populate pocketList from PocketController GameObjects
         pocketList.Clear();
@@ -519,6 +525,93 @@ public class PoolWorld : MonoBehaviour
             };
             EventBus.Publish(ballKissedEvent);
         }
+    }
+    /// <summary>
+    /// Smoothly reduce Time.timeScale from current value to 0 over elapsed seconds,
+    /// using an ease-out curve (fast initially, slows near zero).
+    /// </summary>
+    public void SlowTimeToAFreeze(float timeToFreezeSeconds)
+    {
+        // clamp
+        timeToFreezeSeconds = Mathf.Max(0f, timeToFreezeSeconds);
+
+        // cancel running routine
+        if (_timeScaleRoutine != null)
+            StopCoroutine(_timeScaleRoutine);
+
+        _timeScaleRoutine = StartCoroutine(LerpTimeScaleCoroutine(Time.timeScale, 0f, timeToFreezeSeconds, easeOut: true));
+    }
+
+    /// <summary>
+    /// Smoothly restore Time.timeScale from current value (likely 0) to 1 over elapsed seconds,
+    /// using an ease-in curve (starts slow, then accelerates).
+    /// </summary>
+    public void RestoreTimeToNormal(float timeToRestoreSeconds)
+    {
+        timeToRestoreSeconds = Mathf.Max(0f, timeToRestoreSeconds);
+
+        if (_timeScaleRoutine != null)
+            StopCoroutine(_timeScaleRoutine);
+
+        _timeScaleRoutine = StartCoroutine(LerpTimeScaleCoroutine(Time.timeScale, 1f, timeToRestoreSeconds, easeOut: false));
+    }
+
+    /// <summary>
+    /// Core coroutine that drives Time.timeScale using unscaled time and easing.
+    /// </summary>
+    private IEnumerator LerpTimeScaleCoroutine(float from, float to, float duration, bool easeOut)
+    {
+        // If duration is zero, set immediately
+        if (duration <= Mathf.Epsilon)
+        {
+            Time.timeScale = to;
+            Time.fixedDeltaTime = _originalFixedDeltaTime * Time.timeScale;
+            _timeScaleRoutine = null;
+            yield break;
+        }
+
+        // Choose easing power. Larger -> more pronounced ease curve.
+        float freezeEasePower = 3f;   // ease-out for freeze (fast -> slow)
+        float restoreEasePower = 2.2f; // ease-in for restore (slow -> fast)
+        float easePower = easeOut ? freezeEasePower : restoreEasePower;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime; // use unscaled time
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            float easedT = easeOut ? EaseOut(t, easePower) : EaseIn(t, easePower);
+            float newScale = Mathf.Lerp(from, to, easedT);
+
+            // apply
+            Time.timeScale = Mathf.Clamp01(newScale);
+            Time.fixedDeltaTime = _originalFixedDeltaTime * Time.timeScale;
+
+            yield return null; // next frame (unaffected by timeScale because we used unscaledDeltaTime)
+        }
+
+        // ensure final value
+        Time.timeScale = Mathf.Clamp01(to);
+        Time.fixedDeltaTime = _originalFixedDeltaTime * Time.timeScale;
+        _timeScaleRoutine = null;
+    }
+
+    /// <summary>
+    /// Ease-out: starts fast, slows near the end.
+    /// </summary>
+    private static float EaseOut(float t, float power)
+    {
+        // 1 - (1 - t)^p produces an ease-out curve
+        return 1f - Mathf.Pow(1f - t, power);
+    }
+
+    /// <summary>
+    /// Ease-in: starts slow, accelerates near the end.
+    /// </summary>
+    private static float EaseIn(float t, float power)
+    {
+        return Mathf.Pow(t, power);
     }
 
 }
