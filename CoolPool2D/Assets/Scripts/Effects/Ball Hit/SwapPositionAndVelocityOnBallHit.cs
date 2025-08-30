@@ -9,7 +9,7 @@ public class SwapPositionAndVelocityOnBallHit : MonoBehaviour, IOnBallHitEffect
         DeterministicBall selfDeterministicBall = self.GetComponent<DeterministicBall>();
         DeterministicBall otherDeterministicBall = other.GetComponent<DeterministicBall>();
 
-        if (selfBallData.effectTriggeredThisTurn)
+        if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn == selfBallData.numberOfOnBallHitEffects)
             return;
 
         other.transform.position = selfDeterministicBall.stationaryPosition;
@@ -18,6 +18,6 @@ public class SwapPositionAndVelocityOnBallHit : MonoBehaviour, IOnBallHitEffect
         self.transform.position = otherDeterministicBall.stationaryPosition;
         selfDeterministicBall.velocity = otherDeterministicBall.initialVelocity * .9f;
 
-        selfBallData.effectTriggeredThisTurn = true;
+        selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn ++;
     }
 }

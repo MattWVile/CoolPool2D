@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
 
 public class DeterministicBall : MonoBehaviour
 {
@@ -41,6 +42,8 @@ public class DeterministicBall : MonoBehaviour
     private void OnBallStopped(BallStoppedEvent ballStoppedEvent)
     {
         stationaryPosition = (Vector2)transform.position;
+        // TODO move this to new TurnManager
+        gameObject.GetComponent<BallData>().numberOfOnBallHitEffectsTriggeredThisTurn = 0;
     }
 
     public void Shoot(float angleRad, float speed)

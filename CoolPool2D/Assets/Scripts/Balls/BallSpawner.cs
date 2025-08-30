@@ -3,6 +3,12 @@ using System;
 using UnityEngine;
 using Unity.VisualScripting;
 
+public enum BallSpawnLocations
+{
+    TriangleCenter,
+    NextToLowCenterPocket,
+    Random
+}
 public class BallSpawner : MonoBehaviour
 {
     //private static readonly List<BallColour> ballSpawnPattern = new List<BallColour>
@@ -14,6 +20,7 @@ public class BallSpawner : MonoBehaviour
     public static Vector2 ClothCenterVector = ClothBounds.center;
     public static Vector2 ClothDimensionsVector = ClothBounds.size;
     public static Vector2 TriangleCenterVector = new Vector2(ClothCenterVector.x + ClothDimensionsVector.x / 5, ClothCenterVector.y);
+    private static Vector2 NextToLowCenterPocketVector = new Vector2(1.804565f, -2.938997f);
 
     //public static Dictionary<GameObject, BallData> SpawnBallsInTriangle()
     //{
@@ -85,17 +92,21 @@ public class BallSpawner : MonoBehaviour
     //    return ball;
     //}
 
-    public static GameObject SpawnSpecificBall(BallColour ballColour, String spawnPositionSelector)
+    public static GameObject SpawnSpecificBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector)
     {
         Vector2 spawnPosition;
         switch (spawnPositionSelector)
         {
-            case "Triangle Center":
+            case BallSpawnLocations.TriangleCenter:
                 spawnPosition = TriangleCenterVector;
                 break;
-            case "Random":
+            case BallSpawnLocations.NextToLowCenterPocket:
+                spawnPosition = NextToLowCenterPocketVector;
+                break;
+            case BallSpawnLocations.Random:
                 spawnPosition = GetRandomSpawnPosition();
                 break;
+
             default:
                 throw new InvalidOperationException($"Unexpected spawn position selector: {spawnPositionSelector}");
         }

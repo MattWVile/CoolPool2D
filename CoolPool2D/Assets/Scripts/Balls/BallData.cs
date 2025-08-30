@@ -8,13 +8,20 @@ public class BallData : MonoBehaviour
     public float ballPoints = 100f;
     public float ballMultiplier = 1f;
 
-    public bool effectTriggeredThisTurn = false;
+    public int numberOfOnBallHitEffectsTriggeredThisTurn = 0;
+    public int numberOfOnBallHitEffects = 0;
 
     // Example: expose readonly properties if you want safe access
     public BallColour BallColour => ballColour;
     public float BallPoints => ballPoints;
     public float BallMultiplier => ballMultiplier;
 
+    public void Start()
+    {
+        var effects = GetComponents<IOnBallHitEffect>();
+        foreach (var effect in effects)
+            numberOfOnBallHitEffects ++;
+    }
     public void TriggerBallHitEffect(GameObject other)
     {
         var ballHitEffects = GetComponents<IOnBallHitEffect>();
