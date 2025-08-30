@@ -6,7 +6,7 @@ public class CueMovement : MonoBehaviour
     public SpriteRenderer spriteRenderer;
     public float distanceFromTarget = 4f; // Distance of the cue from the cue ball
     public GameObject target; // The target ball
-    private DeterministicBall targetBall; // The deterministic ball script
+    public DeterministicBall targetBall; // The deterministic ball script
     public float AimingAngle;
 
     public float shotStrength = 1f;
@@ -36,51 +36,10 @@ public class CueMovement : MonoBehaviour
             lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
         }
     }
-
-    //private void HandleInput()
-    //{
-    //    // Choose deltaTime depending on whether we're effectively frozen
-    //    float dt = (Time.timeScale > 0.001f) ? Time.deltaTime : Time.unscaledDeltaTime;
-
-    //    // Adjust aim speed (these key presses are frame independent)
-    //    if (Input.GetKeyDown(KeyCode.W))
-    //    {
-    //        aimingSpeed = Mathf.Min(aimingSpeed + 0.3f, 1f);
-    //    }
-    //    if (Input.GetKeyDown(KeyCode.S))
-    //    {
-    //        aimingSpeed = Mathf.Max(aimingSpeed - 0.3f, 0.1f);
-    //    }
-
-    //    // Rotate aim using dt (unscaled while frozen)
-    //    float cueMovement = Input.GetAxis("Horizontal");
-    //    AimingAngle += cueMovement * dt * aimingSpeed;
-
-    //    // Charging shot — use unscaled time to allow charging while frozen
-    //    if (Input.GetKey(KeyCode.Space))
-    //    {
-    //        if (isChargingStart != null) return;
-    //        // start using unscaled time so charges progress while timescale==0
-    //        isChargingStart = GetUnscaledTime();
-    //    }
-    //    else
-    //    {
-    //        if (isChargingStart == null) return;
-
-    //        // Shoot the ball when release space
-    //        if (targetBall != null)
-    //        {
-    //            // Use chargeTime (0..1) to determine shot strength if desired
-    //            float finalStrength = Mathf.Lerp(0.2f, shotStrength, chargeTime);
-    //            targetBall.Shoot(AimingAngle, finalStrength);
-    //        }
-
-    //        // publish shot event (existing code)
-    //        EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
-
-    //        isChargingStart = null;
-    //    }
-    //}
+    public void RunDisableRoutine(IEnumerator routine)
+    {
+        StartCoroutine(routine);
+    }
 
     public IEnumerator Disable(float delay = 0f)
     {
@@ -89,6 +48,7 @@ public class CueMovement : MonoBehaviour
         targetBall = null;
         spriteRenderer.enabled = false;
     }
+
     public void Enable(GameObject targetObj)
     {
         target = targetObj;
@@ -118,9 +78,6 @@ public class CueMovement : MonoBehaviour
             if (Input.GetKey(KeyCode.LeftArrow)) horizontal = -1f;
             else if (Input.GetKey(KeyCode.RightArrow)) horizontal = 1f;
         }
-
-        // Optional debug:
-        // Debug.Log($"Horizontal input: {horizontal}, dt: {dt}");
 
         // Rotate aim using dt (unscaled while frozen)
         AimingAngle += horizontal * dt * aimingSpeed;

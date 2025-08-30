@@ -613,5 +613,9 @@ public class PoolWorld : MonoBehaviour
     {
         return Mathf.Pow(t, power);
     }
+    public void RunFreezeCoroutine(IEnumerator routine)
+    {
+        StartCoroutine(routine);
+    }
 
 }
