@@ -1379,6 +1379,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cue: {fileID: 0}
+  cueMovement: {fileID: 0}
   possibleTargets:
   - {fileID: 0}
   ballGameObjects: []
@@ -1767,6 +1768,7 @@ MonoBehaviour:
   spriteRenderer: {fileID: 1824203224}
   distanceFromTarget: -4
   target: {fileID: 0}
+  targetBall: {fileID: 0}
   AimingAngle: 0
   shotStrength: 50
   aimingSpeed: 1

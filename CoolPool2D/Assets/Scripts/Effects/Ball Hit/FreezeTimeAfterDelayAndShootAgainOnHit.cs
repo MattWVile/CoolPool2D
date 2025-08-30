@@ -6,9 +6,9 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
     public float delaySeconds = 0.1f;           // small delay after hit before freezing
     public float freezeDuration = 3.0f;      // how long time stays frozen (real seconds)
     public float defaultShootSpeed = 50.0f;     // auto-shoot speed if player isn't charging
-    public float freezeTransitionDuration = 0.15f;    // fraction of hold to use for transitions (clamped)
+    public float freezeTransitionDuration = 0.3f;    // fraction of hold to use for transitions (clamped)
     public float minTransition = 0.05f;         // min transition time
-    public float maxTransition = 0.6f;          // max transition time
+    public float maxTransition = 0.8f;          // max transition time
 
 
     public GameManager gameManager;

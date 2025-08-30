@@ -157,9 +157,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd32a79ac8b7b0d409eae4ecc9928eb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  delaySeconds: 0.1
-  freezeHoldSeconds: 3
+  delaySeconds: 0.3
+  freezeDuration: 3.5
   defaultShootSpeed: 50
-  transitionFraction: 0.15
+  freezeTransitionDuration: 0.3
   minTransition: 0.05
-  maxTransition: 0.6
+  maxTransition: 1
+  gameManager: {fileID: 0}
+  cueMovement: {fileID: 0}
