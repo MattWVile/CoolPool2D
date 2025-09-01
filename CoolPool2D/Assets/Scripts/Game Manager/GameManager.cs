@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     public GameObject cue;
+    public CueMovement cueMovement;
     public List<GameObject> possibleTargets;
     public List<GameObject> ballGameObjects;
     public List<DeterministicBall> deterministicBalls;
@@ -31,6 +32,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         cue = GameObject.Find("Cue");
+        cueMovement = cue.GetComponent<CueMovement>();
 
         EventBus.Subscribe<BallPocketedEvent>(HandlePocketedBall);
 
@@ -71,16 +73,28 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        SpawnSpecificBallAndCueBall(BallColour.Orange);
-        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
-        ballGameObjects.Add(specificBall);
-        specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
-        ballGameObjects.Add(specificBall);
-        specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
-        ballGameObjects.Add(specificBall);
-        specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, "Random");
-        ballGameObjects.Add(specificBall);
+        SpawnSpecificBallAndCueBall(BallColour.Blue);
+        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Blue, BallSpawnLocations.Random);
+        AddBallToLists(BallColour.Blue, specificBall);
         gameStateManager.SubmitEndOfState(GameState.GameStart);
+    }
+
+    private void HandlePrepareNextTurnState()
+    {
+        Debug.Log("Preparing next turn.");
+        try
+        {
+            var target = PoolWorld.Instance.GetNextTarget();
+            possibleTargets.Add(target.gameObject);
+        }
+        catch (System.NullReferenceException)
+        {
+            Debug.Log("No shootable found. placing one.");
+            var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
+            AddBallToLists(BallColour.White, cueBall);
+        }
+
+        StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
     }
 
     public void ResetGame()
@@ -111,7 +125,7 @@ public class GameManager : MonoBehaviour
 
         amountOfCueBallsSpawned++;
 
-        var specificBall = BallSpawner.SpawnSpecificBall(ballColour, "Triangle Center");
+        var specificBall = BallSpawner.SpawnSpecificBall(ballColour, BallSpawnLocations.NextToLowCenterPocket);
         ballGameObjects.Add(specificBall);
 
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
@@ -133,14 +147,14 @@ public class GameManager : MonoBehaviour
             targetGameObject = PoolWorld.Instance.GetNextTarget().gameObject;
         }
         possibleTargets.Add(targetGameObject);
-        cue.GetComponent<CueMovement>().Enable(targetGameObject);
+        cueMovement.Enable(targetGameObject);
     }
 
     private void HandleShootingState()
     {
         Debug.Log("HandleShootingState");
         StartCoroutine(CheckIfAllBallsStopped());
-        StartCoroutine(cue.GetComponent<CueMovement>().Disable(0.2f));
+        cueMovement.RunDisableRoutine(cueMovement.Disable(0.05f));
     }
 
     private void HandleCalculatePointsState()
@@ -148,24 +162,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("Calculating points.");
         ScoreManager.Instance.CalculateTotalPoints();
         StartCoroutine(WaitThenEndState(.1f, GameState.CalculatePoints));
-    }
-
-    private void HandlePrepareNextTurnState()
-    {
-        Debug.Log("Preparing next turn.");
-        try
-        {
-            var target = PoolWorld.Instance.GetNextTarget();
-            possibleTargets.Add(target.gameObject);
-        }
-        catch (System.NullReferenceException)
-        {
-            Debug.Log("No shootable found. placing one.");
-            var newCueBallGameObject = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-            AddBallToLists(BallColour.White, newCueBallGameObject);
-        }
-
-        StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
     }
 
     private IEnumerator WaitThenEndState(float seconds, GameState gameState)
@@ -190,7 +186,7 @@ public class GameManager : MonoBehaviour
         EventBus.Publish(new BallStoppedEvent());
     }
 
-    private bool AllBallsStopped()
+    public bool AllBallsStopped()
     {
         return deterministicBalls.All(rb => rb.velocity.magnitude < 0.1f);
     }

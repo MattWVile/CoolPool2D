@@ -14,5 +14,6 @@ public class CopyVelocityToSameColourBallsOnHit : MonoBehaviour, IOnBallHitEffec
                 deterministicBall.velocity = self.GetComponent<DeterministicBall>().velocity;
             }
         }
+        self.GetComponent<BallData>().numberOfOnBallHitEffectsTriggeredThisTurn++;
     }
 }
