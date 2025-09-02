@@ -19,7 +19,7 @@ public class CueMovement : MonoBehaviour
         ? Mathf.Clamp(GetUnscaledTime() - isChargingStart.Value, 0f, 1f)
         : 0f;
 
-    public float aimingSpeed = 1f; // Speed of aiming adjustment
+    public float aimingSpeed = 1f; // (unused for mouse-based immediate aim but kept for compatibility)
 
     private void Update()
     {
@@ -36,6 +36,7 @@ public class CueMovement : MonoBehaviour
             lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
         }
     }
+
     public void RunDisableRoutine(IEnumerator routine)
     {
         StartCoroutine(routine);
@@ -52,14 +53,18 @@ public class CueMovement : MonoBehaviour
     public void Enable(GameObject targetObj)
     {
         target = targetObj;
-        // don't cache initialTargetPosition; follow the live target
-        targetBall = target.GetComponent<DeterministicBall>();
+        if (target != null) targetBall = target.GetComponent<DeterministicBall>();
+        else targetBall = null;
+
         spriteRenderer.enabled = true;
 
         // Initialize aiming angle to point from cue -> target so rotation starts sensibly
-        Vector2 dir = (target.transform.position - transform.position);
-        if (dir.sqrMagnitude > 1e-6f)
-            AimingAngle = Mathf.Atan2(dir.y, dir.x);
+        if (target != null)
+        {
+            Vector2 dir = (target.transform.position - transform.position);
+            if (dir.sqrMagnitude > 1e-6f)
+                AimingAngle = Mathf.Atan2(dir.y, dir.x);
+        }
 
         // if the player is already holding space, start charging using unscaled time
         if (Input.GetKey(KeyCode.Space) && isChargingStart == null)
@@ -68,19 +73,24 @@ public class CueMovement : MonoBehaviour
 
     private void HandleInput()
     {
-        // Choose dt depending on whether we're effectively frozen
-        float dt = (Time.timeScale > 0.001f) ? Time.deltaTime : Time.unscaledDeltaTime;
+        if (target == null) return;
 
-        // Prefer raw axis (no smoothing) and fallback to arrow keys for reliability
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        if (Mathf.Approximately(horizontal, 0f))
+        // --- MOUSE AIMING ---
+        // Compute mouse world position and point the aim from TARGET -> MOUSE
+        Camera cam = Camera.main ?? Camera.current;
+        if (cam != null)
         {
-            if (Input.GetKey(KeyCode.LeftArrow)) horizontal = -1f;
-            else if (Input.GetKey(KeyCode.RightArrow)) horizontal = 1f;
+            Vector3 mouseScreen = Input.mousePosition;
+            Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, cam.nearClipPlane));
+            // We only care about x,y plane
+            Vector2 mouseWorld = new Vector2(mouseWorld3.x, mouseWorld3.y);
+            Vector2 targetPos = target.transform.position;
+            Vector2 dir = mouseWorld - targetPos;
+            if (dir.sqrMagnitude > 1e-8f)
+            {
+                AimingAngle = Mathf.Atan2(dir.y, dir.x);
+            }
         }
-
-        // Rotate aim using dt (unscaled while frozen)
-        AimingAngle += horizontal * dt * aimingSpeed;
 
         // Charging shot — use unscaled time to allow charging while frozen
         if (Input.GetKey(KeyCode.Space))
@@ -116,6 +126,7 @@ public class CueMovement : MonoBehaviour
         // Rotate the cue to face the aim direction
         transform.rotation = Quaternion.Euler(0, 0, AimingAngle * Mathf.Rad2Deg);
     }
+
     public Vector2 getOffset(float distance, float angle)
     {
         float x = distance * Mathf.Cos(angle);
