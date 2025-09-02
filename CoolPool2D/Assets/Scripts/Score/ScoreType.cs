@@ -7,8 +7,6 @@ public class ScoreType
 
     public bool IsScoreFoul { get; set; }
 
-
-
     public ScoreType(string scoreTypeName, float scoreTypePoints, bool isScoreFoul = false, float scoreTypeMultiplierAddition = 0, float numberOfThisScoreType = 1f)
     {
         ScoreTypeName = scoreTypeName;

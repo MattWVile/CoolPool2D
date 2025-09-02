@@ -83,6 +83,7 @@ public class ScoreManager : MonoBehaviour
             }
             shotScore += scoreType.NumberOfThisScoreType * scoreType.ScoreTypePoints;
         }
+
         return shotScore;
     }
 

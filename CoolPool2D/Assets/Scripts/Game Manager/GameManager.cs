@@ -73,9 +73,9 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        SpawnSpecificBallAndCueBall(BallColour.Blue);
-        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Blue, BallSpawnLocations.Random);
-        AddBallToLists(BallColour.Blue, specificBall);
+        SpawnSpecificBallAndCueBall(BallColour.Orange);
+        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        AddBallToLists(BallColour.Orange, specificBall);
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
 
