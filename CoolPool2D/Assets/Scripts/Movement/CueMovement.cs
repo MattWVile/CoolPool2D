@@ -7,7 +7,10 @@ public class CueMovement : MonoBehaviour
     public float distanceFromTarget = 4f; // Distance of the cue from the cue ball
     public GameObject target; // The target ball
     public DeterministicBall targetBall; // The deterministic ball script
-    public float AimingAngle;
+    public float aimingAngle;
+    public bool fineAimingActive = false;
+
+    private Vector2 previousMouseLocation;
 
     public float shotStrength = 1f;
 
@@ -32,7 +35,7 @@ public class CueMovement : MonoBehaviour
         BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
         if (lineController != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
         {
-            var aimingAngleVector = new Vector2(Mathf.Cos(AimingAngle), Mathf.Sin(AimingAngle));
+            var aimingAngleVector = new Vector2(Mathf.Cos(aimingAngle), Mathf.Sin(aimingAngle));
             lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
         }
     }
@@ -63,7 +66,7 @@ public class CueMovement : MonoBehaviour
         {
             Vector2 dir = (target.transform.position - transform.position);
             if (dir.sqrMagnitude > 1e-6f)
-                AimingAngle = Mathf.Atan2(dir.y, dir.x);
+                aimingAngle = Mathf.Atan2(dir.y, dir.x);
         }
 
         // if the player is already holding space, start charging using unscaled time
@@ -80,15 +83,31 @@ public class CueMovement : MonoBehaviour
         Camera cam = Camera.main ?? Camera.current;
         if (cam != null)
         {
-            Vector3 mouseScreen = Input.mousePosition;
-            Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, cam.nearClipPlane));
-            // We only care about x,y plane
-            Vector2 mouseWorld = new Vector2(mouseWorld3.x, mouseWorld3.y);
-            Vector2 targetPos = target.transform.position;
-            Vector2 dir = mouseWorld - targetPos;
-            if (dir.sqrMagnitude > 1e-8f)
+            // if player inputs direction horizontal
+            float horizontal = Input.GetAxisRaw("Horizontal");
+            // fineAimingActive = true;
+            // if previousMouseLocation == currentMouseLocation
+            // fineAimingActive = false;
+            horizontal = 0f;
+            if (fineAimingActive)
             {
-                AimingAngle = Mathf.Atan2(dir.y, dir.x);
+                //use arrow keys to nudge aiming angle by a small amount
+                //if (Input.GetKey(KeyCode.LeftArrow)) horizontal = -1f;
+                //else if (Input.GetKey(KeyCode.RightArrow)) horizontal = 1f;
+            }
+            else
+            {
+                Vector3 mouseScreen = Input.mousePosition;
+                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, cam.nearClipPlane));
+                // We only care about x,y plane
+                previousMouseLocation = new Vector2(mouseWorld3.x, mouseWorld3.y);
+                Vector2 targetPos = target.transform.position;
+                Vector2 dir = previousMouseLocation - targetPos;
+                if (dir.sqrMagnitude > 1e-8f)
+                {
+                    aimingAngle = Mathf.Atan2(dir.y, dir.x);
+                }
+
             }
         }
 
@@ -106,7 +125,7 @@ public class CueMovement : MonoBehaviour
             if (targetBall != null)
             {
                 float finalStrength = Mathf.Lerp(0.2f, shotStrength, chargeTime);
-                targetBall.Shoot(AimingAngle, finalStrength);
+                targetBall.Shoot(aimingAngle, finalStrength);
             }
 
             EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
@@ -119,12 +138,12 @@ public class CueMovement : MonoBehaviour
         if (target == null) return;
 
         Vector2 targetWorld = target.transform.position;
-        var offset = getOffset(distanceFromTarget - (chargeTime * 3f), AimingAngle);
+        var offset = getOffset(distanceFromTarget - (chargeTime * 3f), aimingAngle);
         Vector2 cuePos = targetWorld + offset;
         transform.position = cuePos;
 
         // Rotate the cue to face the aim direction
-        transform.rotation = Quaternion.Euler(0, 0, AimingAngle * Mathf.Rad2Deg);
+        transform.rotation = Quaternion.Euler(0, 0, aimingAngle * Mathf.Rad2Deg);
     }
 
     public Vector2 getOffset(float distance, float angle)
