@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 
 public class CueMovement : MonoBehaviour
@@ -13,6 +14,8 @@ public class CueMovement : MonoBehaviour
     private Vector2 previousMouseLocation;
 
     public float shotStrength = 1f;
+
+    private float horizontalNudgeAmount = 0f;
 
     // store unscaled charge start time (null => not charging)
     private float? isChargingStart = null;
@@ -84,25 +87,38 @@ public class CueMovement : MonoBehaviour
         if (cam != null)
         {
             // if player inputs direction horizontal
-            float horizontal = Input.GetAxisRaw("Horizontal");
-            // fineAimingActive = true;
-            // if previousMouseLocation == currentMouseLocation
-            // fineAimingActive = false;
-            horizontal = 0f;
+            if(Input.GetAxisRaw("Horizontal") != 0f)
+            {
+                 fineAimingActive = true;
+            }
+            else if(previousMouseLocation != new Vector2(Input.mousePosition.x, Input.mousePosition.y))
+            {
+                fineAimingActive = false;
+                horizontalNudgeAmount = 0f;
+            }
+
             if (fineAimingActive)
             {
                 //use arrow keys to nudge aiming angle by a small amount
-                //if (Input.GetKey(KeyCode.LeftArrow)) horizontal = -1f;
-                //else if (Input.GetKey(KeyCode.RightArrow)) horizontal = 1f;
+                if (Input.GetAxisRaw("Horizontal") == 1f) horizontalNudgeAmount++;
+                else if (Input.GetAxisRaw("Horizontal") == -1f) horizontalNudgeAmount--;
+                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(previousMouseLocation.x, previousMouseLocation.y, cam.nearClipPlane));
+                Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
+                Vector2 targetPos = target.transform.position;
+                Vector2 dir = clampedMousePosition - targetPos;
+                if (dir.sqrMagnitude > 1e-8f)
+                {
+                    aimingAngle = Mathf.Atan2(dir.y + horizontalNudgeAmount, dir.x + horizontalNudgeAmount);
+                }
             }
             else
             {
-                Vector3 mouseScreen = Input.mousePosition;
-                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, cam.nearClipPlane));
+                previousMouseLocation = Input.mousePosition;
+                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(previousMouseLocation.x, previousMouseLocation.y, cam.nearClipPlane));
                 // We only care about x,y plane
-                previousMouseLocation = new Vector2(mouseWorld3.x, mouseWorld3.y);
+                Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
                 Vector2 targetPos = target.transform.position;
-                Vector2 dir = previousMouseLocation - targetPos;
+                Vector2 dir = clampedMousePosition - targetPos;
                 if (dir.sqrMagnitude > 1e-8f)
                 {
                     aimingAngle = Mathf.Atan2(dir.y, dir.x);
