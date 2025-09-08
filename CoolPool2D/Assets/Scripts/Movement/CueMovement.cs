@@ -81,51 +81,84 @@ public class CueMovement : MonoBehaviour
     {
         if (target == null) return;
 
-        // --- MOUSE AIMING ---
-        // Compute mouse world position and point the aim from TARGET -> MOUSE
         Camera cam = Camera.main ?? Camera.current;
         if (cam != null)
         {
-            // if player inputs direction horizontal
-            if(Input.GetAxisRaw("Horizontal") != 0f)
+            Vector2 currentMousePosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+
+            // Detect keyboard input
+            bool horizontalInput = Input.GetAxisRaw("Horizontal") != 0f;
+
+            if (horizontalInput)
             {
-                 fineAimingActive = true;
+                fineAimingActive = true;
             }
-            else if(previousMouseLocation != new Vector2(Input.mousePosition.x, Input.mousePosition.y))
+            else if (previousMouseLocation != currentMousePosition)
             {
+                // Mouse moved – disable fine aiming
                 fineAimingActive = false;
                 horizontalNudgeAmount = 0f;
             }
-
             if (fineAimingActive)
             {
-                //use arrow keys to nudge aiming angle by a small amount
-                if (Input.GetAxisRaw("Horizontal") == 1f) horizontalNudgeAmount++;
-                else if (Input.GetAxisRaw("Horizontal") == -1f) horizontalNudgeAmount--;
+                float nudgeSpeed = 0.25f; // tweak to make it faster/slower
+
+                // Nudge smoothly while key is held
+                if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+                    horizontalNudgeAmount += nudgeSpeed * Time.unscaledDeltaTime;
+                else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+                    horizontalNudgeAmount -= nudgeSpeed * Time.unscaledDeltaTime;
+
+                // Use previous mouse position to preserve base aiming direction
                 Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(previousMouseLocation.x, previousMouseLocation.y, cam.nearClipPlane));
                 Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
                 Vector2 targetPos = target.transform.position;
                 Vector2 dir = clampedMousePosition - targetPos;
+
                 if (dir.sqrMagnitude > 1e-8f)
                 {
-                    aimingAngle = Mathf.Atan2(dir.y + horizontalNudgeAmount, dir.x + horizontalNudgeAmount);
+                    aimingAngle = Mathf.Atan2(dir.y, dir.x + horizontalNudgeAmount);
                 }
             }
+
             else
             {
-                previousMouseLocation = Input.mousePosition;
-                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(previousMouseLocation.x, previousMouseLocation.y, cam.nearClipPlane));
-                // We only care about x,y plane
+                // Mouse aiming
+                previousMouseLocation = currentMousePosition;
+
+                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(currentMousePosition.x, currentMousePosition.y, cam.nearClipPlane));
                 Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
                 Vector2 targetPos = target.transform.position;
                 Vector2 dir = clampedMousePosition - targetPos;
+
                 if (dir.sqrMagnitude > 1e-8f)
                 {
                     aimingAngle = Mathf.Atan2(dir.y, dir.x);
                 }
-
             }
         }
+
+        // --- Charging Shot ---
+        if (Input.GetKey(KeyCode.Space))
+        {
+            if (isChargingStart != null) return;
+            isChargingStart = GetUnscaledTime();
+        }
+        else
+        {
+            if (isChargingStart == null) return;
+
+            // Release to shoot
+            if (targetBall != null)
+            {
+                float finalStrength = Mathf.Lerp(0.2f, shotStrength, chargeTime);
+                targetBall.Shoot(aimingAngle, finalStrength);
+            }
+
+            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
+            isChargingStart = null;
+        }
+
 
         // Charging shot — use unscaled time to allow charging while frozen
         if (Input.GetKey(KeyCode.Space))
