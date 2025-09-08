@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 
 public class CueMovement : MonoBehaviour
@@ -7,9 +8,14 @@ public class CueMovement : MonoBehaviour
     public float distanceFromTarget = 4f; // Distance of the cue from the cue ball
     public GameObject target; // The target ball
     public DeterministicBall targetBall; // The deterministic ball script
-    public float AimingAngle;
+    public float aimingAngle;
+    public bool fineAimingActive = false;
+
+    private Vector2 previousMouseLocation;
 
     public float shotStrength = 1f;
+
+    private float horizontalNudgeAmount = 0f;
 
     // store unscaled charge start time (null => not charging)
     private float? isChargingStart = null;
@@ -19,7 +25,7 @@ public class CueMovement : MonoBehaviour
         ? Mathf.Clamp(GetUnscaledTime() - isChargingStart.Value, 0f, 1f)
         : 0f;
 
-    public float aimingSpeed = 1f; // Speed of aiming adjustment
+    public float aimingSpeed = 1f; // (unused for mouse-based immediate aim but kept for compatibility)
 
     private void Update()
     {
@@ -32,10 +38,11 @@ public class CueMovement : MonoBehaviour
         BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
         if (lineController != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
         {
-            var aimingAngleVector = new Vector2(Mathf.Cos(AimingAngle), Mathf.Sin(AimingAngle));
+            var aimingAngleVector = new Vector2(Mathf.Cos(aimingAngle), Mathf.Sin(aimingAngle));
             lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
         }
     }
+
     public void RunDisableRoutine(IEnumerator routine)
     {
         StartCoroutine(routine);
@@ -52,14 +59,18 @@ public class CueMovement : MonoBehaviour
     public void Enable(GameObject targetObj)
     {
         target = targetObj;
-        // don't cache initialTargetPosition; follow the live target
-        targetBall = target.GetComponent<DeterministicBall>();
+        if (target != null) targetBall = target.GetComponent<DeterministicBall>();
+        else targetBall = null;
+
         spriteRenderer.enabled = true;
 
         // Initialize aiming angle to point from cue -> target so rotation starts sensibly
-        Vector2 dir = (target.transform.position - transform.position);
-        if (dir.sqrMagnitude > 1e-6f)
-            AimingAngle = Mathf.Atan2(dir.y, dir.x);
+        if (target != null)
+        {
+            Vector2 dir = (target.transform.position - transform.position);
+            if (dir.sqrMagnitude > 1e-6f)
+                aimingAngle = Mathf.Atan2(dir.y, dir.x);
+        }
 
         // if the player is already holding space, start charging using unscaled time
         if (Input.GetKey(KeyCode.Space) && isChargingStart == null)
@@ -68,19 +79,86 @@ public class CueMovement : MonoBehaviour
 
     private void HandleInput()
     {
-        // Choose dt depending on whether we're effectively frozen
-        float dt = (Time.timeScale > 0.001f) ? Time.deltaTime : Time.unscaledDeltaTime;
+        if (target == null) return;
 
-        // Prefer raw axis (no smoothing) and fallback to arrow keys for reliability
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        if (Mathf.Approximately(horizontal, 0f))
+        Camera cam = Camera.main ?? Camera.current;
+        if (cam != null)
         {
-            if (Input.GetKey(KeyCode.LeftArrow)) horizontal = -1f;
-            else if (Input.GetKey(KeyCode.RightArrow)) horizontal = 1f;
+            Vector2 currentMousePosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+
+            // Detect keyboard input
+            bool horizontalInput = Input.GetAxisRaw("Horizontal") != 0f;
+
+            if (horizontalInput)
+            {
+                fineAimingActive = true;
+            }
+            else if (previousMouseLocation != currentMousePosition)
+            {
+                // Mouse moved – disable fine aiming
+                fineAimingActive = false;
+                horizontalNudgeAmount = 0f;
+            }
+            if (fineAimingActive)
+            {
+                float nudgeSpeed = 0.25f; // tweak to make it faster/slower
+
+                // Nudge smoothly while key is held
+                if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+                    horizontalNudgeAmount += nudgeSpeed * Time.unscaledDeltaTime;
+                else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+                    horizontalNudgeAmount -= nudgeSpeed * Time.unscaledDeltaTime;
+
+                // Use previous mouse position to preserve base aiming direction
+                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(previousMouseLocation.x, previousMouseLocation.y, cam.nearClipPlane));
+                Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
+                Vector2 targetPos = target.transform.position;
+                Vector2 dir = clampedMousePosition - targetPos;
+
+                if (dir.sqrMagnitude > 1e-8f)
+                {
+                    aimingAngle = Mathf.Atan2(dir.y, dir.x + horizontalNudgeAmount);
+                }
+            }
+
+            else
+            {
+                // Mouse aiming
+                previousMouseLocation = currentMousePosition;
+
+                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(currentMousePosition.x, currentMousePosition.y, cam.nearClipPlane));
+                Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
+                Vector2 targetPos = target.transform.position;
+                Vector2 dir = clampedMousePosition - targetPos;
+
+                if (dir.sqrMagnitude > 1e-8f)
+                {
+                    aimingAngle = Mathf.Atan2(dir.y, dir.x);
+                }
+            }
         }
 
-        // Rotate aim using dt (unscaled while frozen)
-        AimingAngle += horizontal * dt * aimingSpeed;
+        // --- Charging Shot ---
+        if (Input.GetKey(KeyCode.Space))
+        {
+            if (isChargingStart != null) return;
+            isChargingStart = GetUnscaledTime();
+        }
+        else
+        {
+            if (isChargingStart == null) return;
+
+            // Release to shoot
+            if (targetBall != null)
+            {
+                float finalStrength = Mathf.Lerp(0.2f, shotStrength, chargeTime);
+                targetBall.Shoot(aimingAngle, finalStrength);
+            }
+
+            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
+            isChargingStart = null;
+        }
+
 
         // Charging shot — use unscaled time to allow charging while frozen
         if (Input.GetKey(KeyCode.Space))
@@ -96,7 +174,7 @@ public class CueMovement : MonoBehaviour
             if (targetBall != null)
             {
                 float finalStrength = Mathf.Lerp(0.2f, shotStrength, chargeTime);
-                targetBall.Shoot(AimingAngle, finalStrength);
+                targetBall.Shoot(aimingAngle, finalStrength);
             }
 
             EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
@@ -109,13 +187,14 @@ public class CueMovement : MonoBehaviour
         if (target == null) return;
 
         Vector2 targetWorld = target.transform.position;
-        var offset = getOffset(distanceFromTarget - (chargeTime * 3f), AimingAngle);
+        var offset = getOffset(distanceFromTarget - (chargeTime * 3f), aimingAngle);
         Vector2 cuePos = targetWorld + offset;
         transform.position = cuePos;
 
         // Rotate the cue to face the aim direction
-        transform.rotation = Quaternion.Euler(0, 0, AimingAngle * Mathf.Rad2Deg);
+        transform.rotation = Quaternion.Euler(0, 0, aimingAngle * Mathf.Rad2Deg);
     }
+
     public Vector2 getOffset(float distance, float angle)
     {
         float x = distance * Mathf.Cos(angle);
