@@ -95,7 +95,7 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
         if (!shotTaken && cueBallData != null && cueBall.activeInHierarchy)
         {
             cueBall.GetComponent<DeterministicBall>()
-                   .Shoot(cueMovement.AimingAngle, cueMovement.shotStrength);
+                   .Shoot(cueMovement.aimingAngle, cueMovement.shotStrength);
         }
 
         // Disable cue
