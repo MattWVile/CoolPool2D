@@ -1,5 +1,6 @@
-using System;
 using JetBrains.Annotations;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public interface IGameEventArgs { }
@@ -62,6 +63,22 @@ public class BallKissedEvent : BaseGameEvent, IScorableEvent
     public float ScoreTypePoints { get; set; }
     public bool IsFoul { get; set; }
 }
+
+public class ShotScoreTypeUpdatedEvent : BaseGameEvent
+{
+    public new ScoreManager Sender { get; set; }        // optional typed sender
+
+    public ScoreType ScoreType { get; set; } // snapshot for UI
+}
+public class ShotMultipliersCalculatedEvent : BaseGameEvent
+{
+    // typed sender can be MultiplierCalculator if you prefer
+    public new MultiplierCalculator Sender { get; set; }
+    // list of multiplier entries (label + factor)
+    public List<MultiplierCalculator.MultiplierEntry> Multipliers { get; set; }
+}
+
+
 
 //public class ShotScoreCalculatedEvent : BaseGameEvent
 //{

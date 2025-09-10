@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,7 +45,7 @@ public class ScoreManager : MonoBehaviour
 
     private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
     {
-        ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeName == scoreTypeHeader);
+        ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeHeader == scoreTypeHeader);
         if (scoreType == null)
         {
             scoreType = new ScoreType(scoreTypeHeader, scoreTypePoints, isScoreTypeAFoul);
@@ -63,15 +62,26 @@ public class ScoreManager : MonoBehaviour
         {
             scoreType.NumberOfThisScoreType++;
         }
-
-        UIManager.Instance.AddToShotScore(scoreType.ScoreTypePoints);
-        if (scoreType.ScoreTypeName.Contains("kissed") && scoreType.NumberOfThisScoreType <= 1)
+        if (scoreType.ScoreTypeHeader.Contains("kissed") && scoreType.NumberOfThisScoreType <= 1)
         {
             return;
         }
-        UIManager.Instance.AddScoreType(scoreTypeHeader);
+
+        PublishShotScoreTypeUpdatedEvent(scoreType);
+    }
+    private void PublishShotScoreTypeUpdatedEvent(ScoreType scoreType)
+    {
+        var scorePublishedEvent = new ShotScoreTypeUpdatedEvent
+        {
+            Sender = this,
+            ScoreType = scoreType
+        };
+
+        EventBus.Publish(scorePublishedEvent);
     }
 
+
+    // TODO be deleted and moved to score calculation
     private float calculateShotScore()
     {
         float shotScore = 0f;
@@ -90,8 +100,9 @@ public class ScoreManager : MonoBehaviour
     public void CalculateTotalPoints()
     {
         totalScore += calculateShotScore();
-        UIManager.Instance.UpdateTotalScore(totalScore);
-        UIManager.Instance.ClearShotScore();
+        ScoreUIManager.Instance.UpdateTotalScore(totalScore);
+        ScoreUIManager.Instance.ClearShotScore();
         currentScoreTypes.Clear();
     }
+
 }

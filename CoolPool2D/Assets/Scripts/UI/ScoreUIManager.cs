@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class UIManager : MonoBehaviour
+public class ScoreUIManager : MonoBehaviour
 {
-    public static UIManager Instance { get; private set; }
+    public static ScoreUIManager Instance { get; private set; }
 
     public UIDocument uiDocument; // Assign this in the inspector
     private VisualElement root;
@@ -30,6 +30,19 @@ public class UIManager : MonoBehaviour
     {
         root = uiDocument.rootVisualElement;
         scoreTypes = new List<VisualElement>();
+
+        // subscribe to score updates
+        EventBus.Subscribe<ShotScoreTypeUpdatedEvent>(OnScoreUpdated);
+    }
+
+    private void OnDestroy()
+    {
+        EventBus.Unsubscribe<ShotScoreTypeUpdatedEvent>(OnScoreUpdated);
+    }
+
+    public void OnScoreUpdated(ShotScoreTypeUpdatedEvent shotScoreTypeUpdatedEvent)
+    {
+        AddScoreType(shotScoreTypeUpdatedEvent.ScoreType.ScoreTypeHeader);
     }
 
     public void UpdateTotalScore(float newTotalScoreFloat)
@@ -65,7 +78,7 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        ScoreType scoreType = ScoreManager.Instance.currentScoreTypes.Find(scoreType => scoreType.ScoreTypeName == scoreTypeHeader);
+        ScoreType scoreType = ScoreManager.Instance.currentScoreTypes.Find(scoreType => scoreType.ScoreTypeHeader == scoreTypeHeader);
         if (scoreType == null)
         {
             Debug.LogError($"ScoreType with header {scoreTypeHeader} not found in ScoreManager!");
@@ -83,21 +96,21 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void CreateNewScoreTypeElement(string shotTypeHeader, ScoreType shot)
+    private void CreateNewScoreTypeElement(string scoreTypeHeader, ScoreType scoreType)
     {
-        VisualElement scoreType = shotTypeTemplate.Instantiate();
-        scoreType.Q<Label>("ScoreTypeHeading").text = shotTypeHeader;
-        scoreType.Q<Label>("ScoreTypeMultValue").text = shot.ScoreTypeMultiplierAddition == 0 ? "" : shot.ScoreTypeMultiplierAddition.ToString();
-        scoreType.Q<Label>("ScoreTypeMultAdditionSymbol").text = shot.ScoreTypeMultiplierAddition == 0 ? "" : "+";
-        scoreType.Q<Label>("ScoreTypeMultAsterix").text = shot.ScoreTypeMultiplierAddition == 0 ? "" : "*";
-        scoreType.Q<Label>("ScoreTypeAmount").text = shot.NumberOfThisScoreType.ToString();
-        scoreType.Q<Label>("ScoreTypeScore").text = shot.ScoreTypePoints.ToString();
-        scoreTypes.Add(scoreType);
+        VisualElement scoreTypeVisualElement = shotTypeTemplate.Instantiate();
+        scoreTypeVisualElement.Q<Label>("ScoreTypeHeading").text = scoreTypeHeader;
+        scoreTypeVisualElement.Q<Label>("ScoreTypeMultValue").text = scoreType.ScoreTypeMultiplierAddition == 0 ? "" : scoreType.ScoreTypeMultiplierAddition.ToString();
+        scoreTypeVisualElement.Q<Label>("ScoreTypeMultAdditionSymbol").text = scoreType.ScoreTypeMultiplierAddition == 0 ? "" : "+";
+        scoreTypeVisualElement.Q<Label>("ScoreTypeMultAsterix").text = scoreType.ScoreTypeMultiplierAddition == 0 ? "" : "*";
+        scoreTypeVisualElement.Q<Label>("ScoreTypeAmount").text = scoreType.NumberOfThisScoreType.ToString();
+        scoreTypeVisualElement.Q<Label>("ScoreTypeScore").text = scoreType.ScoreTypePoints.ToString();
+        scoreTypes.Add(scoreTypeVisualElement);
 
         VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreTypes");
         if (shotScoreBackground != null)
         {
-            shotScoreBackground.Add(scoreType);
+            shotScoreBackground.Add(scoreTypeVisualElement);
         }
         else
         {
