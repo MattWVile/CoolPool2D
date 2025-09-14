@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,7 +45,7 @@ public class ScoreManager : MonoBehaviour
 
     private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
     {
-        ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeName == scoreTypeHeader);
+        ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeHeader == scoreTypeHeader);
         if (scoreType == null)
         {
             scoreType = new ScoreType(scoreTypeHeader, scoreTypePoints, isScoreTypeAFoul);
@@ -63,34 +62,21 @@ public class ScoreManager : MonoBehaviour
         {
             scoreType.NumberOfThisScoreType++;
         }
-
-        UIManager.Instance.AddToShotScore(scoreType.ScoreTypePoints);
-        if (scoreType.ScoreTypeName.Contains("kissed") && scoreType.NumberOfThisScoreType <= 1)
+        if (scoreType.ScoreTypeHeader.Contains("kissed") && scoreType.NumberOfThisScoreType <= 1)
         {
             return;
         }
-        UIManager.Instance.AddScoreType(scoreTypeHeader);
-    }
 
-    private float calculateShotScore()
+        PublishShotScoreTypeUpdatedEvent(scoreType);
+    }
+    private void PublishShotScoreTypeUpdatedEvent(ScoreType scoreType)
     {
-        float shotScore = 0f;
-        foreach (ScoreType scoreType in currentScoreTypes)
+        var scorePublishedEvent = new ShotScoreTypeUpdatedEvent
         {
-            if (scoreType.IsScoreFoul)
-            {
-                return 0f;
-            }
-            shotScore += scoreType.NumberOfThisScoreType * scoreType.ScoreTypePoints;
-        }
-        return shotScore;
-    }
+            Sender = this,
+            ScoreType = scoreType
+        };
 
-    public void CalculateTotalPoints()
-    {
-        totalScore += calculateShotScore();
-        UIManager.Instance.UpdateTotalScore(totalScore);
-        UIManager.Instance.ClearShotScore();
-        currentScoreTypes.Clear();
+        EventBus.Publish(scorePublishedEvent);
     }
 }

@@ -6,6 +6,8 @@ public class PocketController : MonoBehaviour
 
     public float radius = 1f;
 
+    public float ballPocketedPoints = 1000f;
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.black;
@@ -23,7 +25,7 @@ public class PocketController : MonoBehaviour
                 PocketLocation = PocketLocation,
                 Sender = this,
                 ScoreTypeHeader = " pot",
-                ScoreTypePoints = ballData.BallPoints,
+                ScoreTypePoints = ballPocketedPoints + ballData.BallPoints,
                 IsFoul = "CueBall" == pocketedBall.tag
             };
             EventBus.Publish(ballPocketedEvent);

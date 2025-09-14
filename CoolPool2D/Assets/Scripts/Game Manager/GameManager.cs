@@ -46,6 +46,11 @@ public class GameManager : MonoBehaviour
             gameStateManager.SubmitEndOfState(GameState.Shooting);
         });
 
+        EventBus.Subscribe<ScoringFinishedEvent>((@event) =>
+        {
+            gameStateManager.SubmitEndOfState(GameState.CalculatePoints);
+        });
+
         EventBus.Subscribe<NewGameStateEvent>((@event) =>
         {
             switch (@event.NewGameState)
@@ -73,9 +78,9 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        SpawnSpecificBallAndCueBall(BallColour.Blue);
-        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Blue, BallSpawnLocations.Random);
-        AddBallToLists(BallColour.Blue, specificBall);
+        SpawnSpecificBallAndCueBall(BallColour.Black);
+        //var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        //AddBallToLists(BallColour.Orange, specificBall);
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
 
@@ -125,7 +130,7 @@ public class GameManager : MonoBehaviour
 
         amountOfCueBallsSpawned++;
 
-        var specificBall = BallSpawner.SpawnSpecificBall(ballColour, BallSpawnLocations.NextToLowCenterPocket);
+        var specificBall = BallSpawner.SpawnSpecificBall(ballColour, BallSpawnLocations.TriangleCenter);
         ballGameObjects.Add(specificBall);
 
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
@@ -160,8 +165,7 @@ public class GameManager : MonoBehaviour
     private void HandleCalculatePointsState()
     {
         Debug.Log("Calculating points.");
-        ScoreManager.Instance.CalculateTotalPoints();
-        StartCoroutine(WaitThenEndState(.1f, GameState.CalculatePoints));
+
     }
 
     private IEnumerator WaitThenEndState(float seconds, GameState gameState)

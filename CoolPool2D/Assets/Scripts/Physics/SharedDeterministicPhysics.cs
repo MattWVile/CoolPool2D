@@ -164,13 +164,13 @@ public static class SharedDeterministicPhysics
     }
 
     // Compute reflection and nudge position (same semantics as your ComputeWallReflection)
-    public static void ComputeWallReflection(Vector2 incomingDirection, Vector2 hitNormal, float wallBounciness, Vector2 contactCenter, float separationNudge, float stepOffset, out Vector2 reflectedDirectionNormalized, out Vector2 newPositionAfterNudge)
+    public static void ComputeWallReflection(Vector2 incomingDirection, Vector2 hitNormal, float railBounciness, Vector2 contactCenter, float separationNudge, float stepOffset, out Vector2 reflectedDirectionNormalized, out Vector2 newPositionAfterNudge)
     {
         float normalComponent = Vector2.Dot(incomingDirection, hitNormal);
         Vector2 normalVector = normalComponent * hitNormal;
         Vector2 tangentialVector = incomingDirection - normalVector;
 
-        Vector2 newDirUnnormalized = tangentialVector - normalVector * wallBounciness;
+        Vector2 newDirUnnormalized = tangentialVector - normalVector * railBounciness;
         if (newDirUnnormalized.sqrMagnitude <= MIN_VELOCITY_THRESHOLD)
             newDirUnnormalized = Vector2.Reflect(incomingDirection, hitNormal);
 
