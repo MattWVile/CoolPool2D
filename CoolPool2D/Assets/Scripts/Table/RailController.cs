@@ -4,6 +4,8 @@ public class RailController : MonoBehaviour
 {
     public RailLocation railLocation;
 
+    public float ballCollidedWithRailPoints = 10f;
+
 
     public void PublishBallCollidedWithRailEvent(GameObject ballThatHitRail)
     {
@@ -15,7 +17,7 @@ public class RailController : MonoBehaviour
                 RailLocation = railLocation,
                 Sender = this,
                 ScoreTypeHeader = " collided With Rail",
-                ScoreTypePoints = ballData.BallPoints,
+                ScoreTypePoints = ballCollidedWithRailPoints + ballData.BallPoints,
                 IsFoul = false
             };
             EventBus.Publish(ballCollidedWithRailEvent);

@@ -8,6 +8,7 @@ using UnityEngine;
 /// ScoreCalculator: tallies shot events (kiss, rails, pot) grouped by ball colour
 /// and, at shot end, builds a list of multiplier entries that UI can present.
 /// This version uses ONLY multiplicative factors (no additive logic).
+/// Always rounds scores to whole numbers (no decimals).
 /// </summary>
 public class ScoreCalculator : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class ScoreCalculator : MonoBehaviour
     public class MultiplierEntry
     {
         public string Label;
-        public float Factor; // multiplicative factor (1f = no effect)
+        public float Factor;
 
         public MultiplierEntry(string label, float factor)
         {
@@ -25,21 +26,20 @@ public class ScoreCalculator : MonoBehaviour
     }
 
     [Header("Kiss settings")]
-    public int kissesPerChunk = 1;          // every N kisses -> 1 chunk
-    public float kissMultiplyPerChunk = 1.3f; // multiplicative factor per chunk
+    public int kissesPerChunk = 1;
+    public float kissMultiplyPerChunk = 1.3f;
 
     [Header("Object-ball rail settings")]
-    public int objectRailsPerChunk = 3;          // every N object-ball rails -> 1 chunk
+    public int objectRailsPerChunk = 3;
     public float objectRailsMultiplyPerChunk = 1.2f;
 
     [Header("Pot settings")]
-    public float potMultiply = 1.5f;               // factor per pot (1 = no multiply)
+    public float potMultiply = 1.5f;
 
     [Header("Cue-ball rail settings")]
     public int cueRailsPerChunk = 5;
     public float cueRailMultiplyPerChunk = 1.2f;
 
-    // per-colour counters (colour string -> count)
     private readonly Dictionary<string, int> _kissCountsByColour = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> _objRailCountsByColour = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> _cueRailCountsByColour = new(StringComparer.OrdinalIgnoreCase);
@@ -47,10 +47,9 @@ public class ScoreCalculator : MonoBehaviour
 
     private const string UnknownColourKey = "unknown";
 
-    private float shotScore = 0f;
-    private float totalScore = 0f;
+    private int shotScore = 0;
+    private int totalScore = 0;
 
-    // multiplier entries constructed per-shot (immutable for the UI coroutine)
     private readonly List<MultiplierEntry> currentShotMultiplierEntries = new();
 
     private void Start()
@@ -82,7 +81,7 @@ public class ScoreCalculator : MonoBehaviour
 
         if (lowerHeader.Contains("rail"))
         {
-            if (lowerHeader.Contains("cue"))
+            if (lowerHeader.Contains("white"))
                 IncrementCount(_cueRailCountsByColour, colourKey);
             else
                 IncrementCount(_objRailCountsByColour, colourKey);
@@ -91,8 +90,6 @@ public class ScoreCalculator : MonoBehaviour
 
     private void OnBallsStopped(BallStoppedEvent evt)
     {
-        // Start scoring coroutine — this will build entries, show multipliers, apply them,
-        // and only when finished will it finalize the score and reset state.
         StartCoroutine(HandleScoringSequence());
     }
 
@@ -109,10 +106,8 @@ public class ScoreCalculator : MonoBehaviour
         CalculateShotScore();
         ScoreUIManager.Instance?.UpdateShotScore(shotScore);
 
-        // Wait for UI presentation to finish applying all multipliers (coroutine handles waiting)
         yield return StartCoroutine(ApplyMultipliersToShotScoreCoroutine());
 
-        // finalize
         totalScore += shotScore;
         ScoreUIManager.Instance?.UpdateTotalScore(totalScore);
         ScoreUIManager.Instance?.ClearShotScore();
@@ -125,7 +120,6 @@ public class ScoreCalculator : MonoBehaviour
     {
         currentShotMultiplierEntries.Clear();
 
-        // object-ball rails (per-colour)
         foreach (var kv in _objRailCountsByColour)
         {
             if (objectRailsPerChunk <= 0) continue;
@@ -141,7 +135,6 @@ public class ScoreCalculator : MonoBehaviour
             }
         }
 
-        // cue-ball rails
         foreach (var kv in _cueRailCountsByColour)
         {
             if (cueRailsPerChunk <= 0) continue;
@@ -151,13 +144,12 @@ public class ScoreCalculator : MonoBehaviour
             {
                 if (!Mathf.Approximately(cueRailMultiplyPerChunk, 1f))
                 {
-                    string label = $"{ToTitleCase(kv.Key)} cue bounce chunk #{c}";
+                    string label = $"{ToTitleCase(kv.Key)} rail bounce chunk #{c}";
                     currentShotMultiplierEntries.Add(new MultiplierEntry(label, cueRailMultiplyPerChunk));
                 }
             }
         }
 
-        // kisses
         foreach (var kv in _kissCountsByColour)
         {
             if (kissesPerChunk <= 0) continue;
@@ -173,7 +165,6 @@ public class ScoreCalculator : MonoBehaviour
             }
         }
 
-        // pots (one entry per pot if multiplies)
         foreach (var kv in _potCountsByColour)
         {
             int pots = kv.Value;
@@ -195,22 +186,24 @@ public class ScoreCalculator : MonoBehaviour
         _cueRailCountsByColour.Clear();
         _potCountsByColour.Clear();
         currentShotMultiplierEntries.Clear();
-        shotScore = 0f;
+        shotScore = 0;
     }
 
-    private float CalculateShotScore()
+    private void CalculateShotScore()
     {
-        shotScore = 0f;
+        shotScore = 0;
 
         foreach (var scoreType in ScoreManager.Instance.currentScoreTypes)
         {
             if (scoreType.IsScoreFoul)
-                return 0f;
+            {
+                shotScore = 0;
+                return;
+            }
 
-            shotScore += scoreType.NumberOfThisScoreType * scoreType.ScoreTypePoints;
+            float raw = scoreType.NumberOfThisScoreType * scoreType.ScoreTypePoints;
+            shotScore += Mathf.RoundToInt(raw);
         }
-
-        return shotScore;
     }
 
     private IEnumerator ApplyMultipliersToShotScoreCoroutine()
@@ -221,7 +214,6 @@ public class ScoreCalculator : MonoBehaviour
         float uiWaitTime = Mathf.Max(0f, ScoreUIManager.Instance?.multiplierPopUpTime ?? 0.5f);
         const float smallBuffer = 0.05f;
 
-        // iterate over a copy to be extra-safe against unexpected mutation
         var entries = new List<MultiplierEntry>(currentShotMultiplierEntries);
 
         foreach (var mult in entries)
@@ -230,12 +222,12 @@ public class ScoreCalculator : MonoBehaviour
 
             ScoreUIManager.Instance?.DisplayMultiplierPopUp(amountToTrigger, mult.Label, mult.Factor);
 
+            float raw = shotScore * mult.Factor;
+            shotScore = Mathf.RoundToInt(raw);
 
-            shotScore *= mult.Factor;
             ScoreUIManager.Instance?.UpdateShotScore(shotScore);
-            // wait the UI time so the player sees the popup (coroutine inside UI should not be assumed)
-            yield return new WaitForSeconds(uiWaitTime + smallBuffer);
 
+            yield return new WaitForSeconds(uiWaitTime + smallBuffer);
         }
     }
 
@@ -245,7 +237,7 @@ public class ScoreCalculator : MonoBehaviour
 
         if (labelLower.Contains("pot")) return 1;
         if (labelLower.Contains("kiss")) return Math.Max(1, kissesPerChunk);
-        if (labelLower.Contains("cue bounce")) return Math.Max(1, cueRailsPerChunk);
+        if (labelLower.Contains("cue ball rail bounce")) return Math.Max(1, cueRailsPerChunk);
         if (labelLower.Contains("rail bounce")) return Math.Max(1, objectRailsPerChunk);
 
         return 1;
@@ -277,7 +269,6 @@ public class ScoreCalculator : MonoBehaviour
         return $"{token} ball";
     }
 
-    // small utility so labels are nicer for UI ("orange ball" -> "Orange Ball")
     private static string ToTitleCase(string s)
     {
         if (string.IsNullOrWhiteSpace(s)) return s;

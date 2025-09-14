@@ -78,9 +78,9 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        SpawnSpecificBallAndCueBall(BallColour.Orange);
-        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
-        AddBallToLists(BallColour.Orange, specificBall);
+        SpawnSpecificBallAndCueBall(BallColour.Black);
+        //var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        //AddBallToLists(BallColour.Orange, specificBall);
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
 
@@ -130,7 +130,7 @@ public class GameManager : MonoBehaviour
 
         amountOfCueBallsSpawned++;
 
-        var specificBall = BallSpawner.SpawnSpecificBall(ballColour, BallSpawnLocations.NextToLowCenterPocket);
+        var specificBall = BallSpawner.SpawnSpecificBall(ballColour, BallSpawnLocations.TriangleCenter);
         ballGameObjects.Add(specificBall);
 
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();

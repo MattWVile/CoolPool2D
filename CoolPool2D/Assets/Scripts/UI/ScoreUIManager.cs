@@ -16,7 +16,7 @@ public class ScoreUIManager : MonoBehaviour
     public List<VisualElement> scoreTypes; // List to hold current score types
 
     private Coroutine multiplierPopupCoroutine;
-    public float multiplierPopUpTime = .5f;
+    public float multiplierPopUpTime = 1f;
 
     private void Awake()
     {
@@ -149,7 +149,7 @@ public class ScoreUIManager : MonoBehaviour
         if (root == null && uiDocument != null) root = uiDocument.rootVisualElement;
 
         string cleanLabel = CleanMultiplierLabel(label);
-        string popupText = $"{amountToTrigger}x {cleanLabel} ×{factor}";
+        string popupText = $"{amountToTrigger}x {cleanLabel} X {factor}";
 
         if (multiplierPopupCoroutine != null) StopCoroutine(multiplierPopupCoroutine);
         multiplierPopupCoroutine = StartCoroutine(ShowMultiplierPopupCoroutine(popupText, multiplierPopUpTime));

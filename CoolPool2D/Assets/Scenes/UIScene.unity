@@ -949,7 +949,6 @@ GameObject:
   - component: {fileID: 830456692}
   - component: {fileID: 830456691}
   - component: {fileID: 830456694}
-  - component: {fileID: 830456693}
   m_Layer: 0
   m_Name: ScoreManager
   m_TagString: Untagged
@@ -985,18 +984,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &830456693
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 830456690}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13baadd004c27d545ab5cd744a9f71d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &830456694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1010,15 +997,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   kissesPerChunk: 1
-  kissAdditionPerChunk: 0
-  kissMultiplyPerChunk: 1.5
-  railsPerChunk: 4
-  railsAdditionPerChunk: 0
-  railsMultiplyPerChunk: 1.3
-  potAddition: 2
-  potMultiply: 1.5
+  kissMultiplyPerChunk: 1.4
+  objectRailsPerChunk: 3
+  objectRailsMultiplyPerChunk: 1.2
+  potMultiply: 1.6
   cueRailsPerChunk: 5
-  cueRailAdditionPerChunk: 0
   cueRailMultiplyPerChunk: 1.2
 --- !u!1 &859875811
 GameObject:
@@ -1946,6 +1929,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 897729864}
   shotTypeTemplate: {fileID: 9197481963319205126, guid: 1ceb33886a28b5c4888ebde180db1440, type: 3}
+  multiplierPopUpTime: 0.5
 --- !u!1 &2124217143
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,5 +16,5 @@
             </ui:GroupBox>
         </ui:VisualElement>
     </ui:GroupBox>
-    <ui:Label tabindex="-1" parse-escape-sequences="true" display-tooltip-when-elided="true" name="MultiplierPopUp" style="top: -389px; font-size: 45%; -unity-font-style: bold-and-italic; align-self: center; padding-top: 0; padding-bottom: 0; -unity-text-outline-color: rgba(255, 255, 255, 0); color: rgb(255, 255, 255); -unity-font: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); -unity-font-definition: initial; left: 177px;" />
+    <ui:Label tabindex="-1" parse-escape-sequences="true" display-tooltip-when-elided="true" name="MultiplierPopUp" style="top: -389px; font-size: 55%; -unity-font-style: bold-and-italic; align-self: center; padding-top: 0; padding-bottom: 0; -unity-text-outline-color: rgba(255, 255, 255, 0); color: rgb(255, 255, 255); -unity-font: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); -unity-font-definition: initial; left: 177px;" />
 </ui:UXML>
