@@ -70,15 +70,13 @@ public class ShotScoreTypeUpdatedEvent : BaseGameEvent
 
     public ScoreType ScoreType { get; set; } // snapshot for UI
 }
-public class ShotMultipliersCalculatedEvent : BaseGameEvent
+
+
+public class ScoringFinishedEvent : BaseGameEvent
 {
-    // typed sender can be MultiplierCalculator if you prefer
-    public new MultiplierCalculator Sender { get; set; }
-    // list of multiplier entries (label + factor)
-    public List<MultiplierCalculator.MultiplierEntry> Multipliers { get; set; }
+    public new ScoreManager Sender { get; set; } // overridden Sender to specify the sender type
+    public float TotalScore { get; set; }
 }
-
-
 
 //public class ShotScoreCalculatedEvent : BaseGameEvent
 //{

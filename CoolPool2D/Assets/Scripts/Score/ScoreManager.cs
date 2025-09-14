@@ -79,30 +79,4 @@ public class ScoreManager : MonoBehaviour
 
         EventBus.Publish(scorePublishedEvent);
     }
-
-
-    // TODO be deleted and moved to score calculation
-    private float calculateShotScore()
-    {
-        float shotScore = 0f;
-        foreach (ScoreType scoreType in currentScoreTypes)
-        {
-            if (scoreType.IsScoreFoul)
-            {
-                return 0f;
-            }
-            shotScore += scoreType.NumberOfThisScoreType * scoreType.ScoreTypePoints;
-        }
-
-        return shotScore;
-    }
-
-    public void CalculateTotalPoints()
-    {
-        totalScore += calculateShotScore();
-        ScoreUIManager.Instance.UpdateTotalScore(totalScore);
-        ScoreUIManager.Instance.ClearShotScore();
-        currentScoreTypes.Clear();
-    }
-
 }

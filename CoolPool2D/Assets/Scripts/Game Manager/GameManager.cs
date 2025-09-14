@@ -46,6 +46,11 @@ public class GameManager : MonoBehaviour
             gameStateManager.SubmitEndOfState(GameState.Shooting);
         });
 
+        EventBus.Subscribe<ScoringFinishedEvent>((@event) =>
+        {
+            gameStateManager.SubmitEndOfState(GameState.CalculatePoints);
+        });
+
         EventBus.Subscribe<NewGameStateEvent>((@event) =>
         {
             switch (@event.NewGameState)
@@ -160,8 +165,7 @@ public class GameManager : MonoBehaviour
     private void HandleCalculatePointsState()
     {
         Debug.Log("Calculating points.");
-        ScoreManager.Instance.CalculateTotalPoints();
-        StartCoroutine(WaitThenEndState(.1f, GameState.CalculatePoints));
+
     }
 
     private IEnumerator WaitThenEndState(float seconds, GameState gameState)

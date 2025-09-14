@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -12,6 +14,9 @@ public class ScoreUIManager : MonoBehaviour
     public VisualElement mostRecentShotAdded;
 
     public List<VisualElement> scoreTypes; // List to hold current score types
+
+    private Coroutine multiplierPopupCoroutine;
+    public float multiplierPopUpTime = .5f;
 
     private void Awake()
     {
@@ -62,6 +67,12 @@ public class ScoreUIManager : MonoBehaviour
         {
             root.Q<Label>("ShotScoreScore").text = shotScoreToAdd.ToString();   
         }
+    }
+
+    public void UpdateShotScore(float shotScoreToAdd)
+    {
+        string shotScoreText = root.Q<Label>("ShotScoreScore").text;
+        root.Q<Label>("ShotScoreScore").text = shotScoreToAdd.ToString();
     }
 
     public void ClearShotScore()
@@ -130,5 +141,51 @@ public class ScoreUIManager : MonoBehaviour
             scoreType.RemoveFromHierarchy();
         }
         scoreTypes.Clear();
+    }
+
+
+    public void DisplayMultiplierPopUp(int amountToTrigger, string label, float factor)
+    {
+        if (root == null && uiDocument != null) root = uiDocument.rootVisualElement;
+
+        string cleanLabel = CleanMultiplierLabel(label);
+        string popupText = $"{amountToTrigger}x {cleanLabel} ×{factor}";
+
+        if (multiplierPopupCoroutine != null) StopCoroutine(multiplierPopupCoroutine);
+        multiplierPopupCoroutine = StartCoroutine(ShowMultiplierPopupCoroutine(popupText, multiplierPopUpTime));
+    }
+
+    private IEnumerator ShowMultiplierPopupCoroutine(string text, float duration)
+    {
+        if (root == null && uiDocument != null) root = uiDocument.rootVisualElement;
+        if (root == null) yield break;
+
+        var popup = root.Q<Label>("MultiplierPopUp");
+        if (popup == null) yield break;
+
+        popup.text = text;
+        popup.visible = true;
+
+        yield return new WaitForSeconds(duration);
+
+        popup.visible = false;
+        multiplierPopupCoroutine = null;
+    }
+
+    private static string CleanMultiplierLabel(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+
+        string s = raw.Trim();
+
+        // remove "chunk ..." suffix e.g. "Object rails chunk #1" -> "Object rails"
+        int chunkIdx = s.IndexOf("chunk", StringComparison.OrdinalIgnoreCase);
+        if (chunkIdx >= 0) s = s.Substring(0, chunkIdx).Trim();
+
+        // remove trailing "#N" parts e.g. "Pot #1" -> "Pot"
+        int hashIdx = s.IndexOf('#');
+        if (hashIdx >= 0) s = s.Substring(0, hashIdx).Trim();
+
+        return s;
     }
 }
