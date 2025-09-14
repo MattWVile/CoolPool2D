@@ -220,6 +220,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 1
   radius: 0.3
+  ballPocketedPoints: 1000
 --- !u!1 &243062864
 GameObject:
   m_ObjectHideFlags: 0
@@ -303,6 +304,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 5
   radius: 0.3
+  ballPocketedPoints: 1000
 --- !u!1 &275362491
 GameObject:
   m_ObjectHideFlags: 0
@@ -398,6 +400,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   railLocation: 3
+  ballCollidedWithRailPoints: 10
 --- !u!1 &322025660
 GameObject:
   m_ObjectHideFlags: 0
@@ -580,6 +583,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   railLocation: 6
+  ballCollidedWithRailPoints: 10
 --- !u!1 &508518186
 GameObject:
   m_ObjectHideFlags: 0
@@ -675,6 +679,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   railLocation: 1
+  ballCollidedWithRailPoints: 10
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -997,12 +1002,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   kissesPerChunk: 1
-  kissMultiplyPerChunk: 1.4
+  kissMultiplyPerChunk: 1.3
   objectRailsPerChunk: 3
-  objectRailsMultiplyPerChunk: 1.2
-  potMultiply: 1.6
+  objectRailsMultiplyPerChunk: 1.1
+  potMultiply: 2
   cueRailsPerChunk: 5
-  cueRailMultiplyPerChunk: 1.2
+  cueRailMultiplyPerChunk: 1.1
 --- !u!1 &859875811
 GameObject:
   m_ObjectHideFlags: 0
@@ -1098,6 +1103,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   railLocation: 5
+  ballCollidedWithRailPoints: 10
 --- !u!1 &897729863
 GameObject:
   m_ObjectHideFlags: 0
@@ -1241,6 +1247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   railLocation: 4
+  ballCollidedWithRailPoints: 10
 --- !u!1 &1036668680
 GameObject:
   m_ObjectHideFlags: 0
@@ -1368,6 +1375,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 2
   radius: 0.3
+  ballPocketedPoints: 1000
 --- !u!1 &1469342011
 GameObject:
   m_ObjectHideFlags: 0
@@ -1547,6 +1555,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 4
   radius: 0.3
+  ballPocketedPoints: 1000
 --- !u!1 &1746868100
 GameObject:
   m_ObjectHideFlags: 0
@@ -1642,6 +1651,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   railLocation: 2
+  ballCollidedWithRailPoints: 10
 --- !u!1 &1784321149
 GameObject:
   m_ObjectHideFlags: 0
@@ -1688,6 +1698,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 6
   radius: 0.3
+  ballPocketedPoints: 1000
 --- !u!1 &1824203223
 GameObject:
   m_ObjectHideFlags: 0
@@ -1839,6 +1850,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 3
   radius: 0.3
+  ballPocketedPoints: 1000
 --- !u!1 &1858511321
 GameObject:
   m_ObjectHideFlags: 0
