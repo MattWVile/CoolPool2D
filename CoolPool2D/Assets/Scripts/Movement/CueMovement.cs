@@ -73,7 +73,7 @@ public class CueMovement : MonoBehaviour
         }
 
         // if the player is already holding space, start charging using unscaled time
-        if (Input.GetKey(KeyCode.Space) && isChargingStart == null)
+        if (Input.GetKey(KeyCode.Space) && isChargingStart == null || Input.GetKey(KeyCode.Mouse0) && isChargingStart == null)
             isChargingStart = GetUnscaledTime();
     }
 
@@ -139,7 +139,7 @@ public class CueMovement : MonoBehaviour
         }
 
         // --- Charging Shot ---
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Mouse0))
         {
             if (isChargingStart != null) return;
             isChargingStart = GetUnscaledTime();
@@ -161,7 +161,7 @@ public class CueMovement : MonoBehaviour
 
 
         // Charging shot — use unscaled time to allow charging while frozen
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Mouse0))
         {
             if (isChargingStart != null) return;
             isChargingStart = GetUnscaledTime();
