@@ -23,7 +23,7 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
     public void OnBallHit(GameObject self, GameObject other)
     {
         var otherBallData = other.GetComponent<BallData>();
-        if (otherBallData.BallColour != BallColour.White) return;
+        if (otherBallData.BallColour != BallColour.Cue) return;
             
         var selfBallData = self.GetComponent<BallData>();
         if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn >= selfBallData.numberOfOnBallHitEffects) return;

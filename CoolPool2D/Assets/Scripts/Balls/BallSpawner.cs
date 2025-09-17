@@ -92,6 +92,18 @@ public class BallSpawner : MonoBehaviour
     //    return ball;
     //}
 
+    public static Dictionary<BallColour, GameObject> SpawnLastShotBalls(Dictionary<BallColour, Vector2> ballsToSpawn)
+    {
+        var spawnedBalls = new Dictionary<BallColour, GameObject>();
+        foreach (var (ballColour, position) in ballsToSpawn)
+        {
+            var ballGameObject = SpawnSpecificBall(ballColour, BallSpawnLocations.Random);
+            ballGameObject.transform.position = position;
+            spawnedBalls.Add(ballColour, ballGameObject);
+        }
+        return spawnedBalls;
+    }
+
     public static GameObject SpawnSpecificBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector)
     {
         Vector2 spawnPosition;
@@ -135,6 +147,7 @@ public class BallSpawner : MonoBehaviour
     public static GameObject SpawnCueBall(int cueBallIndex)
     {
         GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
+        GameManager.Instance.amountOfCueBallsSpawned++;
         return ballGameObject;
     }
 }

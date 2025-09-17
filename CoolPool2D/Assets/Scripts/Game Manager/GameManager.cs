@@ -16,6 +16,14 @@ public class GameManager : MonoBehaviour
 
     public int amountOfCueBallsSpawned = 0;
 
+
+    // varables for shot reset
+    public int lastShotScore;
+    public Dictionary<BallColour, Vector2> lastShotBallColoursWithLastShotLocation;
+    public float lastShotAimingAngle;
+
+    public ScoreCalculator scoreCalculator;
+
     private void Awake()
     {
         if (Instance == null)
@@ -33,6 +41,7 @@ public class GameManager : MonoBehaviour
     {
         cue = GameObject.Find("Cue");
         cueMovement = cue.GetComponent<CueMovement>();
+        scoreCalculator = GameObject.Find("ScoreManager").GetComponent<ScoreCalculator>();
 
         EventBus.Subscribe<BallPocketedEvent>(HandlePocketedBall);
 
@@ -79,8 +88,14 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         SpawnSpecificBallAndCueBall(BallColour.Black);
-        //var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
-        //AddBallToLists(BallColour.Orange, specificBall);
+        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        AddBallToLists(BallColour.Orange, specificBall);
+        var specificBall2 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        AddBallToLists(BallColour.Orange, specificBall2);
+        var specificBall3 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        AddBallToLists(BallColour.Orange, specificBall3);
+
+        UpdateLastShotBallPositions();
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
 
@@ -96,9 +111,9 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("No shootable found. placing one.");
             var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-            AddBallToLists(BallColour.White, cueBall);
+            AddBallToLists(BallColour.Cue, cueBall);
         }
-
+        UpdateLastShotBallPositions();
         StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
     }
 
@@ -112,11 +127,40 @@ public class GameManager : MonoBehaviour
         gameStateManager.SetGameState(GameState.GameStart);
     }
 
+    private void UpdateLastShotBallPositions()
+    {
+        lastShotBallColoursWithLastShotLocation = new Dictionary<BallColour, Vector2>();
+        foreach (var ball in ballGameObjects)
+        {
+            var ballColour = ball.GetComponent<BallData>().ballColour;
+            lastShotBallColoursWithLastShotLocation[ballColour] = ball.transform.position;
+        }
+    }
+
+    public void RetryLastShot()
+    {
+
+        // Update the game state
+        cueMovement.aimingAngle = lastShotAimingAngle;
+        cueMovement.fineAimingActive = true;
+
+        var lastShotBalls = BallSpawner.SpawnLastShotBalls(lastShotBallColoursWithLastShotLocation);
+        ballGameObjects.ForEach(Destroy);
+        ballGameObjects.Clear();
+        deterministicBalls.Clear();
+        AddBallsToLists(lastShotBalls);
+
+        scoreCalculator.totalScore -= lastShotScore;
+        lastShotScore = 0;
+        ScoreUIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
+
+        gameStateManager.SetGameState(GameState.Aiming);
+    }
+
     public void SpawnBallTriangleAndCueBall()
     {
         //ballDictionary = BallSpawner.SpawnBallsInTriangle();
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-        amountOfCueBallsSpawned++;
         ballGameObjects.Add(cueBall);
 
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
@@ -127,8 +171,6 @@ public class GameManager : MonoBehaviour
 
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
         ballGameObjects.Add(cueBall);
-
-        amountOfCueBallsSpawned++;
 
         var specificBall = BallSpawner.SpawnSpecificBall(ballColour, BallSpawnLocations.TriangleCenter);
         ballGameObjects.Add(specificBall);
@@ -178,6 +220,15 @@ public class GameManager : MonoBehaviour
     {
         ballGameObjects.Add(ballToAdd);
         deterministicBalls.Add(ballToAdd.GetComponent<DeterministicBall>());
+    }
+
+    private void AddBallsToLists(Dictionary<BallColour, GameObject> ballsToAdd)
+    {
+        foreach (var ball in ballsToAdd)
+        {
+            ballGameObjects.Add(ball.Value);
+            deterministicBalls.Add(ball.Value.GetComponent<DeterministicBall>());
+        }
     }
 
     private IEnumerator CheckIfAllBallsStopped()

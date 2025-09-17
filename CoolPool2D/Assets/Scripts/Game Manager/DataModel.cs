@@ -46,5 +46,5 @@ public enum BallColour
     Green,
     Orange,
     Black,
-    White
+    Cue
 }

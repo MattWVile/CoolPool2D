@@ -15,7 +15,7 @@ public class FreezeTimeAfterDelayAndChargeShotOnHit : MonoBehaviour, IOnBallHitE
     {
         // only apply when OTHER is the cue ball
         var otherBallData = other.GetComponent<BallData>();
-        if (otherBallData.BallColour != BallColour.White) return;
+        if (otherBallData.BallColour != BallColour.Cue) return;
 
         // enforce per-turn trigger limits if you're using that counter
         var selfBallData = self.GetComponent<BallData>();

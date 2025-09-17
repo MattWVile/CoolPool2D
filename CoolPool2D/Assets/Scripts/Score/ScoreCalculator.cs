@@ -53,7 +53,7 @@ public class ScoreCalculator : MonoBehaviour
     private const string UnknownColourKey = "unknown";
 
     private int shotScore = 0;
-    private int totalScore = 0;
+    public int totalScore = 0;
 
     private readonly List<MultiplierEntry> currentShotMultiplierEntries = new();
 
@@ -92,7 +92,7 @@ public class ScoreCalculator : MonoBehaviour
         }
         else if (lowerHeader.Contains("rail"))
         {
-            if (lowerHeader.Contains("white"))
+            if (lowerHeader.Contains("cue"))
                 IncrementCount(_cueRailCountsByColour, colourKey);
             else
                 IncrementCount(_objRailCountsByColour, colourKey);
@@ -119,6 +119,7 @@ public class ScoreCalculator : MonoBehaviour
 
         yield return StartCoroutine(ApplyMultipliersToShotScoreCoroutine());
 
+        GameManager.Instance.lastShotScore = shotScore;
         totalScore += shotScore;
         ScoreUIManager.Instance?.UpdateTotalScore(totalScore);
         ScoreUIManager.Instance?.ClearShotScore();
@@ -285,7 +286,7 @@ public class ScoreCalculator : MonoBehaviour
             ? originalHeader.Substring(0, idx).Trim()
             : originalHeader.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
-        if (string.Equals(token, "white", StringComparison.OrdinalIgnoreCase) ||
+        if (
             string.Equals(token, "cue", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(token, "cueball", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(token, "cue-ball", StringComparison.OrdinalIgnoreCase))

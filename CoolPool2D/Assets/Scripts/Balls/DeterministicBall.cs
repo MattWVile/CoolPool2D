@@ -56,6 +56,7 @@ public class DeterministicBall : MonoBehaviour
             velocity += new Vector2(1e-4f, 0f);
         }
         initialVelocity = velocity; 
+        GameManager.Instance.lastShotAimingAngle = angleRad;
     }
 
 }

@@ -41,6 +41,10 @@ public class DebuggingTools : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
+            GameManager.Instance.RetryLastShot();
+        }
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
             GameManager.Instance.ResetGame();
         }
     }
