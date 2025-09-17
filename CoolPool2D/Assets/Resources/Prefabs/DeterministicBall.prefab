@@ -118,7 +118,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e68e49004bc655f4cba292f61c040ea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxReflections: 8
+  maxReflections: 2
   maxRayDistance: 60
   stepOffset: 0.01
   lineRendererWidthMultiplier: 0.2
@@ -140,7 +140,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ballColour: 7
-  ballPoints: 100
+  ballPoints: 50
   ballMultiplier: 1
   numberOfOnBallHitEffectsTriggeredThisTurn: 0
   numberOfOnBallHitEffects: 0
