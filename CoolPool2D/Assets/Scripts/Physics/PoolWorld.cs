@@ -571,10 +571,7 @@ public class PoolWorld : MonoBehaviour
     {
         var aData = a.gameObject.GetComponent<BallData>();
         var bData = b.gameObject.GetComponent<BallData>();
-        string header;
-        if (aData.BallColour == BallColour.White) header = $"Cue ball kissed {bData.BallColour} ball";
-        else if (bData.BallColour == BallColour.White) header = $"{aData.BallColour} ball kissed Cue ball";
-        else header = $"{aData.BallColour} ball kissed {bData.BallColour} ball";
+        string header = $"{aData.BallColour} ball kissed {bData.BallColour} ball";
 
         var evt = new BallKissedEvent
         {

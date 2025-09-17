@@ -48,14 +48,14 @@ public class DeterministicBall : MonoBehaviour
 
     public void Shoot(float angleRad, float speed)
     {
-
+        GameManager.Instance.CaptureCurrentShotSnapshot();
         velocity = new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad)) * speed;
         if (PoolWorld.Instance != null && velocity.sqrMagnitude <= PoolWorld.Instance.sleepVelocityThreshold * PoolWorld.Instance.sleepVelocityThreshold)
         {
             // tiny bump to ensure it's active
             velocity += new Vector2(1e-4f, 0f);
         }
-        initialVelocity = velocity; 
+        initialVelocity = velocity;
     }
 
 }

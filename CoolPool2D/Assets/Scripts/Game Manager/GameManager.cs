@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,13 @@ public class GameManager : MonoBehaviour
 
     public int amountOfCueBallsSpawned = 0;
 
+    // legacy score / aiming fields kept (but NO dictionary)
+    public int lastShotScore;
+
+    public ScoreCalculator scoreCalculator;
+
+    private readonly ShotRecorder shotRecorder = new ShotRecorder();
+
     private void Awake()
     {
         if (Instance == null)
@@ -26,6 +34,7 @@ public class GameManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
     }
 
@@ -33,6 +42,9 @@ public class GameManager : MonoBehaviour
     {
         cue = GameObject.Find("Cue");
         cueMovement = cue.GetComponent<CueMovement>();
+        var scoreManagerObj = GameObject.Find("ScoreManager");
+        if (scoreManagerObj != null)
+            scoreCalculator = scoreManagerObj.GetComponent<ScoreCalculator>();
 
         EventBus.Subscribe<BallPocketedEvent>(HandlePocketedBall);
 
@@ -79,8 +91,17 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         SpawnSpecificBallAndCueBall(BallColour.Black);
-        //var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
-        //AddBallToLists(BallColour.Orange, specificBall);
+
+        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        AddBallToLists(specificBall);
+
+        var specificBall2 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        AddBallToLists(specificBall2);
+
+        var specificBall3 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        AddBallToLists(specificBall3);
+
+        CaptureCurrentShotSnapshot();
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
 
@@ -92,11 +113,11 @@ public class GameManager : MonoBehaviour
             var target = PoolWorld.Instance.GetNextTarget();
             possibleTargets.Add(target.gameObject);
         }
-        catch (System.NullReferenceException)
+        catch (NullReferenceException)
         {
             Debug.Log("No shootable found. placing one.");
             var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-            AddBallToLists(BallColour.White, cueBall);
+            AddBallToLists(cueBall);
         }
 
         StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
@@ -108,30 +129,45 @@ public class GameManager : MonoBehaviour
         ballGameObjects.Clear();
         deterministicBalls.Clear();
         amountOfCueBallsSpawned = 0;
-        // Update the game state
         gameStateManager.SetGameState(GameState.GameStart);
+    }
+
+    public void CaptureCurrentShotSnapshot()
+    {
+        shotRecorder.SaveSnapshot(ballGameObjects);
+    }
+
+    public void RetryLastShot()
+    {
+        ballGameObjects.ForEach(Destroy);
+        ballGameObjects.Clear();
+        deterministicBalls.Clear();
+
+        BallSpawner.SpawnLastShotBalls(shotRecorder.GetLastSnapshot());
+
+        if (scoreCalculator != null)
+        {
+            scoreCalculator.totalScore -= lastShotScore;
+            lastShotScore = 0;
+            ScoreUIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
+        }
+        gameStateManager.SetGameState(GameState.Aiming);
     }
 
     public void SpawnBallTriangleAndCueBall()
     {
-        //ballDictionary = BallSpawner.SpawnBallsInTriangle();
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-        amountOfCueBallsSpawned++;
-        ballGameObjects.Add(cueBall);
-
+        AddBallToLists(cueBall);
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
     }
 
     public void SpawnSpecificBallAndCueBall(BallColour ballColour)
     {
-
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-        ballGameObjects.Add(cueBall);
-
-        amountOfCueBallsSpawned++;
+        AddBallToLists(cueBall);
 
         var specificBall = BallSpawner.SpawnSpecificBall(ballColour, BallSpawnLocations.TriangleCenter);
-        ballGameObjects.Add(specificBall);
+        AddBallToLists(specificBall);
 
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
     }
@@ -159,13 +195,12 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("HandleShootingState");
         StartCoroutine(CheckIfAllBallsStopped());
-        cueMovement.RunDisableRoutine(cueMovement.Disable(0.05f));
+        cueMovement?.RunDisableRoutine(cueMovement.Disable(0.05f));
     }
 
     private void HandleCalculatePointsState()
     {
         Debug.Log("Calculating points.");
-
     }
 
     private IEnumerator WaitThenEndState(float seconds, GameState gameState)
@@ -174,8 +209,14 @@ public class GameManager : MonoBehaviour
         gameStateManager.SubmitEndOfState(gameState);
     }
 
-    private void AddBallToLists(BallColour ballColour, GameObject ballToAdd)
+    public void AddBallToLists(GameObject ballToAdd)
     {
+        if (ballToAdd == null)
+        {
+            Debug.LogWarning("GameManager.AddBallToLists your ballToAdd param is null");
+            return;
+        }
+
         ballGameObjects.Add(ballToAdd);
         deterministicBalls.Add(ballToAdd.GetComponent<DeterministicBall>());
     }

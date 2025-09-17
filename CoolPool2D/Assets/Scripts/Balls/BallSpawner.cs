@@ -1,7 +1,8 @@
-using System.Collections.Generic;
 using System;
-using UnityEngine;
+using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 public enum BallSpawnLocations
 {
@@ -92,6 +93,23 @@ public class BallSpawner : MonoBehaviour
     //    return ball;
     //}
 
+    public static void SpawnLastShotBalls(IReadOnlyList<BallSnapshot> ballsToSpawn)
+    {
+
+        foreach (var ballSnapshot in ballsToSpawn)
+        {
+            var ballGameObject = SpawnSpecificBall(ballSnapshot.Colour, BallSpawnLocations.Random);
+            ballGameObject.transform.position = ballSnapshot.Position;
+            if (ballGameObject == null)
+            {
+                Debug.LogError($"Failed to spawn ball for colour {ballSnapshot.Colour} at {ballSnapshot.Position}");
+                continue;
+            }
+
+            GameManager.Instance.AddBallToLists(ballGameObject);
+        }
+    }
+
     public static GameObject SpawnSpecificBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector)
     {
         Vector2 spawnPosition;
@@ -135,6 +153,7 @@ public class BallSpawner : MonoBehaviour
     public static GameObject SpawnCueBall(int cueBallIndex)
     {
         GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
+        GameManager.Instance.amountOfCueBallsSpawned++;
         return ballGameObject;
     }
 }
