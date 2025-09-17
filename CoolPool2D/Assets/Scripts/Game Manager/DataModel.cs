@@ -7,6 +7,17 @@ public enum RailLocation {
     BottomLeft,
     BottomRight
 }
+
+public enum JawLocation {
+    NoJaw,
+    TopLeftPocket,
+    TopRightPocket,
+    TopMiddlePocket,
+    BottomMiddlePocket,
+    BottomLeftPocket,
+    BottomRightPocket
+}
+
 public enum PocketLocation {
     NoPocket,
     TopLeft,

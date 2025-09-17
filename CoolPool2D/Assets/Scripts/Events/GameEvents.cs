@@ -44,6 +44,16 @@ public class BallCollidedWithRailEvent : BaseGameEvent, IScorableEvent
     public bool IsFoul { get; set; }
 }
 
+public class BallCollidedWithJawEvent : BaseGameEvent, IScorableEvent
+{
+    public JawLocation JawLocation { get; set; }
+    public new JawController Sender { get; set; }
+    public BallData BallData { get; set; }
+    public string ScoreTypeHeader { get; set; }
+    public float ScoreTypePoints { get; set; }
+    public bool IsFoul { get; set; }
+}
+
 public class BallPocketedEvent : BaseGameEvent, IScorableEvent
 {
     public PocketLocation PocketLocation { get; set; }

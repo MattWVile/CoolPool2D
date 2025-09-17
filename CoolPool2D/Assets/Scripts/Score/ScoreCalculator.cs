@@ -33,6 +33,10 @@ public class ScoreCalculator : MonoBehaviour
     public int objectRailsPerChunk = 3;
     public float objectRailsMultiplyPerChunk = 1.2f;
 
+    [Header("jaw settings")]
+    public int jawsPerChunk = 2;
+    public float jawsMultiplyPerChunk = 1.3f;
+
     [Header("Pot settings")]
     public float potMultiply = 1.5f;
 
@@ -43,6 +47,7 @@ public class ScoreCalculator : MonoBehaviour
     private readonly Dictionary<string, int> _kissCountsByColour = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> _objRailCountsByColour = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> _cueRailCountsByColour = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, int> _jawCountsByColour = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> _potCountsByColour = new(StringComparer.OrdinalIgnoreCase);
 
     private const string UnknownColourKey = "unknown";
@@ -74,12 +79,18 @@ public class ScoreCalculator : MonoBehaviour
         string colourKey = ExtractColourToken(header, lowerHeader);
 
         if (lowerHeader.Contains("kiss"))
+        {
             IncrementCount(_kissCountsByColour, colourKey);
-
-        if (lowerHeader.Contains("pot") || lowerHeader.Contains("pocket"))
-            IncrementCount(_potCountsByColour, colourKey);
-
-        if (lowerHeader.Contains("rail"))
+        } 
+        else if (lowerHeader.Contains("pot") || lowerHeader.Contains("pocket"))
+        {
+            IncrementCount(_potCountsByColour, colourKey); 
+        }
+        else if(lowerHeader.Contains("jaw"))
+        {
+            IncrementCount(_jawCountsByColour, colourKey);
+        }
+        else if (lowerHeader.Contains("rail"))
         {
             if (lowerHeader.Contains("white"))
                 IncrementCount(_cueRailCountsByColour, colourKey);
@@ -150,6 +161,21 @@ public class ScoreCalculator : MonoBehaviour
             }
         }
 
+        foreach (var kv in _jawCountsByColour)
+        {
+            if (jawsPerChunk <= 0) continue;
+
+            int chunks = kv.Value / jawsPerChunk;
+            for (int c = 1; c <= chunks; c++)
+            {
+                if (!Mathf.Approximately(jawsMultiplyPerChunk, 1f))
+                {
+                    string label = $"{ToTitleCase(kv.Key)} jaw bounce chunk #{c}";
+                    currentShotMultiplierEntries.Add(new MultiplierEntry(label, jawsMultiplyPerChunk));
+                }
+            }
+        }
+
         foreach (var kv in _kissCountsByColour)
         {
             if (kissesPerChunk <= 0) continue;
@@ -184,6 +210,7 @@ public class ScoreCalculator : MonoBehaviour
         _kissCountsByColour.Clear();
         _objRailCountsByColour.Clear();
         _cueRailCountsByColour.Clear();
+        _jawCountsByColour.Clear();
         _potCountsByColour.Clear();
         currentShotMultiplierEntries.Clear();
         shotScore = 0;

@@ -152,11 +152,11 @@ public class BallAimingLineController : MonoBehaviour
             HitCategory hitCategory = HitCategory.None;
             DeterministicBall hitBall = null;
 
-            // --- find rail hit ---
-            if (TryFindRailHit(currentPosition, currentDirection, ballRadius, world, maxDistance, out float railDistance, out Vector2 railNormal))
+            // --- find edge (rail/jaw) hit ---
+            if (TryFindEdgeHit(currentPosition, currentDirection, ballRadius, world, maxDistance, out float edgeDistance, out Vector2 edgeNormal))
             {
-                bestDistance = railDistance;
-                hitNormal = railNormal;
+                bestDistance = edgeDistance;
+                hitNormal = edgeNormal;
                 hitCategory = HitCategory.Wall;
             }
 
@@ -187,7 +187,7 @@ public class BallAimingLineController : MonoBehaviour
             {
                 consumedBalls.Add(hitBall);
 
-                Vector2 velocityA = currentDirection; // direction used as A's velocity
+                Vector2 velocityA = currentDirection;
                 Vector2 velocityB = (Vector2)hitBall.velocity;
                 Vector2 collisionNormal = hitNormal.normalized;
 
@@ -215,7 +215,7 @@ public class BallAimingLineController : MonoBehaviour
                 if (maxDistance <= 0f) break;
                 continue;
             }
-            else // rail
+            else // wall/edge
             {
                 SharedDeterministicPhysics.ComputeWallReflection(currentDirection, hitNormal, railBounciness, contactCenter, separationNudge,
                     stepOffset, out Vector2 newDir, out Vector2 newPos);
@@ -290,24 +290,120 @@ public class BallAimingLineController : MonoBehaviour
         }
     }
 
-    // New: find earliest rail collision (uses shared SharedDeterministicPhysics)
-    private bool TryFindRailHit(Vector2 position, Vector2 direction, float radius, PoolWorld world, float maxDistance, out float distanceToRail, out Vector2 railNormal)
+    private bool TryFindEdgeHit(Vector2 position, Vector2 direction, float radius, PoolWorld world, float maxDistance, out float distanceToEdge, out Vector2 edgeNormal)
     {
-        distanceToRail = float.PositiveInfinity;
-        railNormal = Vector2.zero;
-        if (world == null || world.railSegmentsDictionary == null || world.railSegmentsDictionary.Count == 0) return false;
+        distanceToEdge = float.PositiveInfinity;
+        edgeNormal = Vector2.zero;
 
-        // We sweep the ball center along direction * t and ask deterministic physics to find earliest
-        if (SharedDeterministicPhysics.CalculateTimeToRailCollision(position, direction.normalized, radius, world.railSegmentsDictionary, maxDistance, out float t, out Vector2 normal) != RailLocation.NoRail)
+        if (world == null || world.edgeSegmentsDictionary == null || world.edgeSegmentsDictionary.Count == 0) return false;
+
+        const float eps = 1e-6f;
+
+        foreach (var kv in world.edgeSegmentsDictionary)
         {
-            if (t >= 0f && t <= maxDistance)
+            var segments = kv.Value;
+            if (segments == null) continue;
+
+            foreach (var seg in segments)
             {
-                distanceToRail = t;
-                railNormal = normal;
-                return true;
+                Vector2 A = seg.start;
+                Vector2 B = seg.end;
+                Vector2 AB = B - A;
+                float abLen2 = AB.sqrMagnitude;
+                if (abLen2 <= SharedDeterministicPhysics.MIN_DIRECTION_EPSILON)
+                {
+                    if (SolvePointCollision(position, direction, radius, A, maxDistance, out float tPoint, out Vector2 nPoint))
+                    {
+                        if (tPoint < distanceToEdge)
+                        {
+                            distanceToEdge = tPoint;
+                            edgeNormal = nPoint;
+                        }
+                    }
+                    continue;
+                }
+
+                Vector2 n = new Vector2(-AB.y, AB.x).normalized;
+                float a = Vector2.Dot(position - A, n);
+                float b = Vector2.Dot(direction, n);
+
+                if (Mathf.Abs(b) > eps)
+                {
+                    float t1 = (radius - a) / b;
+                    float t2 = (-radius - a) / b;
+                    float[] candidates = { t1, t2 };
+                    for (int ci = 0; ci < 2; ci++)
+                    {
+                        float t = candidates[ci];
+                        if (t < 0f || t > maxDistance) continue;
+
+                        Vector2 point = position + direction * t;
+                        float s = Vector2.Dot(point - A, AB) / abLen2;
+                        if (s >= -1e-6f && s <= 1f + 1e-6f)
+                        {
+                            Vector2 hitNormal = Vector2.Dot(direction, n) > 0f ? -n : n;
+                            if (t < distanceToEdge)
+                            {
+                                distanceToEdge = t;
+                                edgeNormal = hitNormal;
+                            }
+                        }
+                    }
+                }
+
+                if (SolvePointCollision(position, direction, radius, A, maxDistance, out float tA, out Vector2 nA))
+                {
+                    if (tA < distanceToEdge)
+                    {
+                        distanceToEdge = tA;
+                        edgeNormal = nA;
+                    }
+                }
+                if (SolvePointCollision(position, direction, radius, B, maxDistance, out float tB, out Vector2 nB))
+                {
+                    if (tB < distanceToEdge)
+                    {
+                        distanceToEdge = tB;
+                        edgeNormal = nB;
+                    }
+                }
             }
         }
-        return false;
+
+        return distanceToEdge != float.PositiveInfinity;
+    }
+
+    private static bool SolvePointCollision(Vector2 p0, Vector2 v, float r, Vector2 point, float maxT, out float tOut, out Vector2 normalOut)
+    {
+        tOut = maxT;
+        normalOut = Vector2.zero;
+
+        Vector2 m = p0 - point;
+        float A = Vector2.Dot(v, v);
+        float B = 2f * Vector2.Dot(m, v);
+        float C = Vector2.Dot(m, m) - r * r;
+
+        if (A <= SharedDeterministicPhysics.MIN_VELOCITY_THRESHOLD) return false;
+
+        float D = B * B - 4f * A * C;
+        if (D < 0f) return false;
+
+        float sqrtD = Mathf.Sqrt(D);
+        float r0 = (-B - sqrtD) / (2f * A);
+        float r1 = (-B + sqrtD) / (2f * A);
+
+        float root = float.PositiveInfinity;
+        if (r0 >= 0f && r0 <= maxT) root = r0;
+        else if (r1 >= 0f && r1 <= maxT) root = r1;
+        else return false;
+
+        Vector2 hitPos = p0 + v * root;
+        Vector2 n = hitPos - point;
+        float len = n.magnitude;
+        if (len <= SharedDeterministicPhysics.MIN_DIRECTION_EPSILON) return false;
+        normalOut = n / len;
+        tOut = root;
+        return true;
     }
 
     private bool TryFindBallHit(Vector2 position, Vector2 direction, float radius, PoolWorld world, DeterministicBall self, HashSet<DeterministicBall> ignoredBalls, float maxDistance, out float distanceToBall, out Vector2 collisionNormal, out DeterministicBall hitBall)
