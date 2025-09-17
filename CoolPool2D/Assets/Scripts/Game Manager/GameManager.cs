@@ -92,14 +92,14 @@ public class GameManager : MonoBehaviour
     {
         SpawnSpecificBallAndCueBall(BallColour.Black);
 
-        var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
-        AddBallToLists(specificBall);
+        //var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        //AddBallToLists(specificBall);
 
-        var specificBall2 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
-        AddBallToLists(specificBall2);
+        //var specificBall2 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        //AddBallToLists(specificBall2);
 
-        var specificBall3 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
-        AddBallToLists(specificBall3);
+        //var specificBall3 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        //AddBallToLists(specificBall3);
 
         CaptureCurrentShotSnapshot();
         gameStateManager.SubmitEndOfState(GameState.GameStart);
