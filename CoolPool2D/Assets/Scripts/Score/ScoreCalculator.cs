@@ -286,8 +286,7 @@ public class ScoreCalculator : MonoBehaviour
             ? originalHeader.Substring(0, idx).Trim()
             : originalHeader.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
-        if (
-            string.Equals(token, "cue", StringComparison.OrdinalIgnoreCase) ||
+        if (string.Equals(token, "cue", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(token, "cueball", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(token, "cue-ball", StringComparison.OrdinalIgnoreCase))
         {

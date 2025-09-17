@@ -10,9 +10,9 @@ public class GameManager : MonoBehaviour
 
     public GameObject cue;
     public CueMovement cueMovement;
-    public List<GameObject> possibleTargets = new List<GameObject>();
-    public List<GameObject> ballGameObjects = new List<GameObject>();
-    public List<DeterministicBall> deterministicBalls = new List<DeterministicBall>();
+    public List<GameObject> possibleTargets;
+    public List<GameObject> ballGameObjects;
+    public List<DeterministicBall> deterministicBalls;
     public GameStateManager gameStateManager;
 
     public int amountOfCueBallsSpawned = 0;
@@ -41,7 +41,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         cue = GameObject.Find("Cue");
-        cueMovement = cue != null ? cue.GetComponent<CueMovement>() : null;
+        cueMovement = cue.GetComponent<CueMovement>();
         var scoreManagerObj = GameObject.Find("ScoreManager");
         if (scoreManagerObj != null)
             scoreCalculator = scoreManagerObj.GetComponent<ScoreCalculator>();
@@ -182,20 +182,13 @@ public class GameManager : MonoBehaviour
     private void HandleAimingState()
     {
         Debug.Log("HandleAimingState");
-        GameObject targetGameObject = null;
-        if (possibleTargets != null && possibleTargets.Count > 0)
-            targetGameObject = possibleTargets.FirstOrDefault();
+        var targetGameObject = possibleTargets.First();
         if (targetGameObject == null)
         {
-            var next = PoolWorld.Instance.GetNextTarget();
-            if (next != null) targetGameObject = next.gameObject;
+            targetGameObject = PoolWorld.Instance.GetNextTarget().gameObject;
         }
-
-        if (targetGameObject != null)
-        {
-            possibleTargets.Add(targetGameObject);
-            cueMovement?.Enable(targetGameObject);
-        }
+        possibleTargets.Add(targetGameObject);
+        cueMovement.Enable(targetGameObject);
     }
 
     private void HandleShootingState()
@@ -218,24 +211,28 @@ public class GameManager : MonoBehaviour
 
     public void AddBallToLists(GameObject ballToAdd)
     {
-        if (ballToAdd == null) return;
+        if (ballToAdd == null)
+        {
+            Debug.LogWarning("GameManager.AddBallToLists your ballToAdd param is null");
+            return;
+        }
+
         ballGameObjects.Add(ballToAdd);
-        var det = ballToAdd.GetComponent<DeterministicBall>();
-        if (det != null)
-            deterministicBalls.Add(det);
+        deterministicBalls.Add(ballToAdd.GetComponent<DeterministicBall>());
     }
 
     private IEnumerator CheckIfAllBallsStopped()
     {
         yield return new WaitForSeconds(0.5f);
         while (!AllBallsStopped())
+        {
             yield return new WaitForSeconds(0.5f);
+        }
         EventBus.Publish(new BallStoppedEvent());
     }
 
     public bool AllBallsStopped()
     {
-        return deterministicBalls.All(rb => rb != null && rb.velocity.magnitude < 0.1f);
+        return deterministicBalls.All(rb => rb.velocity.magnitude < 0.1f);
     }
-
 }
