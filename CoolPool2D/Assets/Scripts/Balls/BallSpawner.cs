@@ -1,7 +1,8 @@
-using System.Collections.Generic;
 using System;
-using UnityEngine;
+using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 public enum BallSpawnLocations
 {
@@ -92,16 +93,21 @@ public class BallSpawner : MonoBehaviour
     //    return ball;
     //}
 
-    public static Dictionary<BallColour, GameObject> SpawnLastShotBalls(Dictionary<BallColour, Vector2> ballsToSpawn)
+    public static void SpawnLastShotBalls(IReadOnlyList<BallSnapshot> ballsToSpawn)
     {
-        var spawnedBalls = new Dictionary<BallColour, GameObject>();
-        foreach (var (ballColour, position) in ballsToSpawn)
+
+        foreach (var ballSnapshot in ballsToSpawn)
         {
-            var ballGameObject = SpawnSpecificBall(ballColour, BallSpawnLocations.Random);
-            ballGameObject.transform.position = position;
-            spawnedBalls.Add(ballColour, ballGameObject);
+            var ballGameObject = SpawnSpecificBall(ballSnapshot.Colour, BallSpawnLocations.Random);
+            ballGameObject.transform.position = ballSnapshot.Position;
+            if (ballGameObject == null)
+            {
+                Debug.LogError($"Failed to spawn ball for colour {ballSnapshot.Colour} at {ballSnapshot.Position}");
+                continue;
+            }
+
+            GameManager.Instance.AddBallToLists(ballGameObject);
         }
-        return spawnedBalls;
     }
 
     public static GameObject SpawnSpecificBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector)

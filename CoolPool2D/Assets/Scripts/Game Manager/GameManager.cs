@@ -204,24 +204,7 @@ public class GameManager : MonoBehaviour
         ballGameObjects.Clear();
         deterministicBalls.Clear();
 
-        var snaps = shotRecorder.GetLastSnapshot();
-        foreach (var snap in snaps)
-        {
-            var ballGameObject = SpawnBallAtPosition(snap.Colour, snap.Position);
-            if (ballGameObject == null)
-            {
-                Debug.LogError($"Failed to spawn ball for colour {snap.Colour} at {snap.Position}");
-                continue;
-            }
-            var det = ballGameObject.GetComponent<DeterministicBall>();
-            if (det != null)
-            {
-                det.velocity = snap.Velocity;
-                det.active = snap.Active;
-            }
-
-            AddBallToLists(ballGameObject);
-        }
+        BallSpawner.SpawnLastShotBalls(shotRecorder.GetLastSnapshot());
 
         if (scoreCalculator != null)
         {
@@ -294,7 +277,7 @@ public class GameManager : MonoBehaviour
         gameStateManager.SubmitEndOfState(gameState);
     }
 
-    private void AddBallToLists(GameObject ballToAdd)
+    public void AddBallToLists(GameObject ballToAdd)
     {
         if (ballToAdd == null) return;
         ballGameObjects.Add(ballToAdd);
@@ -316,47 +299,4 @@ public class GameManager : MonoBehaviour
         return deterministicBalls.All(rb => rb != null && rb.velocity.magnitude < 0.1f);
     }
 
-    private GameObject SpawnBallAtPosition(BallColour colour, Vector2 position)
-    {
-        var spawnerType = typeof(BallSpawner);
-        var methods = spawnerType.GetMethods(BindingFlags.Public | BindingFlags.Static);
-        MethodInfo found = null;
-        foreach (var m in methods)
-        {
-            var ps = m.GetParameters();
-            if (ps.Length == 2 && ps[0].ParameterType == typeof(BallColour) && ps[1].ParameterType == typeof(Vector2))
-            {
-                found = m;
-                break;
-            }
-        }
-
-        if (found != null)
-        {
-            var result = found.Invoke(null, new object[] { colour, position });
-            return result as GameObject;
-        }
-
-        // Fallback: look for SpawnSpecificBall(BallColour, BallSpawnLocations)
-        var fallback = methods.FirstOrDefault(m =>
-        {
-            var ps = m.GetParameters();
-            return ps.Length == 2 && ps[0].ParameterType == typeof(BallColour) &&
-                   ps[1].ParameterType.IsEnum && ps[1].ParameterType.Name == nameof(BallSpawnLocations);
-        });
-
-        if (fallback != null)
-        {
-            // spawn at a deterministic default (TriangleCenter) then move to exact position
-            var spawned = fallback.Invoke(null, new object[] { colour, Enum.Parse(fallback.GetParameters()[1].ParameterType, BallSpawnLocations.TriangleCenter.ToString()) }) as GameObject;
-            if (spawned != null)
-            {
-                spawned.transform.position = position;
-            }
-            return spawned;
-        }
-
-        Debug.LogError("No suitable BallSpawner spawn method found. Please add a SpawnSpecificBall(BallColour, Vector2) method or adjust this code.");
-        return null;
-    }
 }
