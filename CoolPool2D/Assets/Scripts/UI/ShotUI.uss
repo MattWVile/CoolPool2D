@@ -1,0 +1,22 @@
+/* ShotsUI.uss */
+
+.shot-ball {
+    width: 35px;
+    height: 35px;
+    /* border-radius: 50% tends to work; use high px value to make a circle */
+    border-radius: 999px;
+    background-color: white;
+    /* center the ball within its parent container */
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    margin-bottom: 2px;
+}
+
+/* Optional: style for the container so balls are lined up horizontally */
+#ShotIconsRoot {
+    flex-direction: row;
+    justify-content: flex-start; /* or center */
+    align-items: center;
+    gap: 8px; /* space between icons */
+}

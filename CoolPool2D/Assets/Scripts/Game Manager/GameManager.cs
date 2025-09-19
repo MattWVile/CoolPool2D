@@ -149,7 +149,7 @@ public class GameManager : MonoBehaviour
         {
             scoreCalculator.totalScore -= lastShotScore;
             lastShotScore = 0;
-            ScoreUIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
+            UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
         }
         gameStateManager.SetGameState(GameState.Aiming);
     }

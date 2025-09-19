@@ -1579,9 +1579,12 @@ MonoBehaviour:
   kissMultiplyPerChunk: 1.3
   objectRailsPerChunk: 3
   objectRailsMultiplyPerChunk: 1.1
+  jawsPerChunk: 2
+  jawsMultiplyPerChunk: 1.3
   potMultiply: 2
   cueRailsPerChunk: 5
   cueRailMultiplyPerChunk: 1.1
+  totalScore: 0
 --- !u!1 &859875811
 GameObject:
   m_ObjectHideFlags: 0
@@ -2285,6 +2288,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   jawLocation: 3
   ballCollidedWithJawPoints: 50
+--- !u!1 &1393735774
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1393735776}
+  - component: {fileID: 1393735775}
+  m_Layer: 0
+  m_Name: PlayerRemainingShotsManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1393735775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393735774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 503b90612d613204ca867dfc6d6ea85f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  amountOfShotsRemaining: 3
+--- !u!4 &1393735776
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393735774}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.32612, y: 1.4434655, z: 241864.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1399249353
 GameObject:
   m_ObjectHideFlags: 0
@@ -2372,6 +2420,8 @@ MonoBehaviour:
   deterministicBalls: []
   gameStateManager: {fileID: 1469342014}
   amountOfCueBallsSpawned: 0
+  lastShotScore: 0
+  scoreCalculator: {fileID: 0}
 --- !u!4 &1469342013
 Transform:
   m_ObjectHideFlags: 0
@@ -3091,7 +3141,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2007219861}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 608dfda80147a51488c74cc6815e384c, type: 3}
+  m_Script: {fileID: 11500000, guid: aabeab1f7c54645498a5aef4f0c20194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 897729864}
@@ -3198,3 +3248,4 @@ SceneRoots:
   - {fileID: 682658748}
   - {fileID: 124450167}
   - {fileID: 1036668682}
+  - {fileID: 1393735776}
