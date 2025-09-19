@@ -129,6 +129,9 @@ public class GameManager : MonoBehaviour
         ballGameObjects.Clear();
         deterministicBalls.Clear();
         amountOfCueBallsSpawned = 0;
+        lastShotScore = 0;
+        scoreCalculator.totalScore = 0;
+        UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
         gameStateManager.SetGameState(GameState.GameStart);
     }
 

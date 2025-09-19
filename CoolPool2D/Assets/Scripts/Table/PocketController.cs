@@ -6,7 +6,7 @@ public class PocketController : MonoBehaviour
 
     public float radius = 1f;
 
-    public float ballPocketedPoints = 1000f;
+    private float ballPocketedPoints = 500f;
 
     private void OnDrawGizmos()
     {

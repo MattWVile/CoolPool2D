@@ -412,7 +412,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 1
   radius: 0.3
-  ballPocketedPoints: 1000
 --- !u!1 &243062864
 GameObject:
   m_ObjectHideFlags: 0
@@ -498,7 +497,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 5
   radius: 0.3
-  ballPocketedPoints: 1000
 --- !u!1 &275362491
 GameObject:
   m_ObjectHideFlags: 0
@@ -964,7 +962,7 @@ PolygonCollider2D:
   m_Points:
     m_Paths:
     - - {x: -0.175, y: -0.07018381}
-      - {x: -0.105, y: -0.070183806}
+      - {x: -0.11416707, y: -0.06990605}
       - {x: -0.17499998, y: -0.18005057}
   m_UseDelaunayMesh: 0
 --- !u!1 &444022711
@@ -1579,9 +1577,9 @@ MonoBehaviour:
   kissMultiplyPerChunk: 1.3
   objectRailsPerChunk: 3
   objectRailsMultiplyPerChunk: 1.1
-  jawsPerChunk: 2
+  jawsPerChunk: 1
   jawsMultiplyPerChunk: 1.3
-  potMultiply: 2
+  potMultiply: 1.8
   cueRailsPerChunk: 5
   cueRailMultiplyPerChunk: 1.1
   totalScore: 0
@@ -2219,7 +2217,7 @@ Transform:
   m_GameObject: {fileID: 1201022650}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.011, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2269,10 +2267,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.17401817, y: -0.18016613}
-      - {x: 0.17401817, y: -0.18016613}
-      - {x: 0.175, y: -0.07018381}
-      - {x: 0.10382106, y: -0.07007134}
+    - - {x: 0.18521923, y: -0.18092388}
+      - {x: 0.18480869, y: -0.07023476}
+      - {x: 0.114830755, y: -0.07007332}
   m_UseDelaunayMesh: 0
 --- !u!114 &1201022653
 MonoBehaviour:
@@ -2381,7 +2378,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 2
   radius: 0.3
-  ballPocketedPoints: 1000
 --- !u!1 &1469342011
 GameObject:
   m_ObjectHideFlags: 0
@@ -2756,7 +2752,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 4
   radius: 0.3
-  ballPocketedPoints: 1000
 --- !u!1 &1746868100
 GameObject:
   m_ObjectHideFlags: 0
@@ -2834,8 +2829,8 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.185, y: 1.21}
-      - {x: 0.185, y: 1.1}
+    - - {x: 0.18500008, y: 1.2085503}
+      - {x: 0.1854693, y: 1.1007742}
       - {x: 2.085, y: 1.1}
       - {x: 2.085, y: 1.2074423}
   m_UseDelaunayMesh: 0
@@ -2901,7 +2896,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 6
   radius: 0.3
-  ballPocketedPoints: 1000
 --- !u!1 &1824203223
 GameObject:
   m_ObjectHideFlags: 0
@@ -3055,7 +3049,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 3
   radius: 0.3
-  ballPocketedPoints: 1000
 --- !u!1 &1858511321
 GameObject:
   m_ObjectHideFlags: 0
