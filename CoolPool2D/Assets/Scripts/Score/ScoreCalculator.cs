@@ -115,14 +115,14 @@ public class ScoreCalculator : MonoBehaviour
         }
 
         CalculateShotScore();
-        ScoreUIManager.Instance?.UpdateShotScore(shotScore);
+        UIManager.Instance?.UpdateShotScore(shotScore);
 
         yield return StartCoroutine(ApplyMultipliersToShotScoreCoroutine());
 
         GameManager.Instance.lastShotScore = shotScore;
         totalScore += shotScore;
-        ScoreUIManager.Instance?.UpdateTotalScore(totalScore);
-        ScoreUIManager.Instance?.ClearShotScore();
+        UIManager.Instance?.UpdateTotalScore(totalScore);
+        UIManager.Instance?.ClearShotScore();
         ScoreManager.Instance.currentScoreTypes.Clear();
         ResetShotState();
         EventBus.Publish(new ScoringFinishedEvent());
@@ -239,7 +239,7 @@ public class ScoreCalculator : MonoBehaviour
         if (currentShotMultiplierEntries.Count == 0)
             yield break;
 
-        float uiWaitTime = Mathf.Max(0f, ScoreUIManager.Instance?.multiplierPopUpTime ?? 0.5f);
+        float uiWaitTime = Mathf.Max(0f, UIManager.Instance?.multiplierPopUpTime ?? 0.5f);
         const float smallBuffer = 0.05f;
 
         var entries = new List<MultiplierEntry>(currentShotMultiplierEntries);
@@ -248,12 +248,12 @@ public class ScoreCalculator : MonoBehaviour
         {
             int amountToTrigger = GetAmountToTrigger(mult);
 
-            ScoreUIManager.Instance?.DisplayMultiplierPopUp(amountToTrigger, mult.Label, mult.Factor);
+            UIManager.Instance?.DisplayMultiplierPopUp(amountToTrigger, mult.Label, mult.Factor);
 
             float raw = shotScore * mult.Factor;
             shotScore = Mathf.RoundToInt(raw);
 
-            ScoreUIManager.Instance?.UpdateShotScore(shotScore);
+            UIManager.Instance?.UpdateShotScore(shotScore);
 
             yield return new WaitForSeconds(uiWaitTime + smallBuffer);
         }

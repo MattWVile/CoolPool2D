@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class ScoreUIManager : MonoBehaviour
+public class UIManager : MonoBehaviour
 {
-    public static ScoreUIManager Instance { get; private set; }
+    public static UIManager Instance { get; private set; }
 
     public UIDocument uiDocument; // Assign this in the inspector
     private VisualElement root;
@@ -17,6 +17,8 @@ public class ScoreUIManager : MonoBehaviour
 
     private Coroutine multiplierPopupCoroutine;
     public float multiplierPopUpTime = 1f;
+
+    private const string BallChildName = "RemainingShotBall";
 
     private void Awake()
     {
@@ -187,5 +189,41 @@ public class ScoreUIManager : MonoBehaviour
         if (hashIdx >= 0) s = s.Substring(0, hashIdx).Trim();
 
         return s;
+    }
+
+    public void UpdateRemainingShotsIcons(int remainingShots, int maxAmountOfShots)
+    {
+        if (root == null && uiDocument != null) root = uiDocument.rootVisualElement;
+        for (int i = 1; i <= maxAmountOfShots; i++)
+        {
+            var shotIcon = root.Q<VisualElement>($"ShotIcon{i}");
+
+            if (shotIcon == null)
+            {
+                continue;
+            }
+
+            bool shouldHaveBall = i <= remainingShots;
+
+            var existing = shotIcon.Q<VisualElement>(BallChildName);
+
+            if (shouldHaveBall)
+            {
+                if (existing == null)
+                {
+                    var ball = new VisualElement { name = BallChildName };
+                    ball.AddToClassList("shot-ball");
+                    ball.style.alignSelf = Align.Center;
+                    shotIcon.Add(ball);
+                }
+            }
+            else
+            {
+                if (existing != null)
+                {
+                    existing.RemoveFromHierarchy();
+                }
+            }
+        }
     }
 }
