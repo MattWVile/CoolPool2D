@@ -220,17 +220,20 @@ public class ScoreCalculator : MonoBehaviour
     private void CalculateShotScore()
     {
         shotScore = 0;
+        bool shotFouled = false;
 
         foreach (var scoreType in ScoreManager.Instance.currentScoreTypes)
         {
             if (scoreType.IsScoreFoul)
             {
-                shotScore = 0;
-                return;
+                shotFouled = true;
             }
-
             float raw = scoreType.NumberOfThisScoreType * scoreType.ScoreTypePoints;
             shotScore += Mathf.RoundToInt(raw);
+        }
+        if (shotFouled)
+        {
+            shotScore = shotScore / 2;
         }
     }
 
