@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerRemainingShotsManager : MonoBehaviour
@@ -37,21 +36,33 @@ public class PlayerRemainingShotsManager : MonoBehaviour
     {
         if (!@event.BallData.CompareTag("CueBall"))
         {
-            IncreaseAmountOfShotsByOne();
+            if (amountOfShotsRemaining != 0 && GameManager.Instance.ballGameObjects.Count != 1)
+            {
+                IncreaseAmountOfShotsByOne();
+            }
         }
     }
 
     private void OnNewGameState(NewGameStateEvent @event)
     {
-        if (@event.NewGameState == GameState.GameStart)
+        switch (@event.NewGameState)
         {
-            ResetAmountOfShots();
+            case GameState.GameStart:
+                ResetAmountOfShots();
+                break;
+            case GameState.PrepareNextTurn:
+                HandlePrepareNextTurn();
+                break;
         }
     }
 
     private void ReduceAmountOfShotsByOne()
     {
         amountOfShotsRemaining = Mathf.Max(0, amountOfShotsRemaining - 1);
+        if (amountOfShotsRemaining == 0)
+        {
+            GameManager.Instance.playerHasNoShotsLeft = true;   
+        }
         UIManager.Instance?.UpdateRemainingShotsIcons(amountOfShotsRemaining, maxAmountOfShots);
     }
 
@@ -65,5 +76,14 @@ public class PlayerRemainingShotsManager : MonoBehaviour
     {
         amountOfShotsRemaining = maxAmountOfShots;
         UIManager.Instance?.UpdateRemainingShotsIcons(amountOfShotsRemaining, maxAmountOfShots);
+    }
+
+    private void HandlePrepareNextTurn()
+    {
+        if (GameManager.Instance.ballGameObjects.Count <= 1 && amountOfShotsRemaining > 1)
+        {
+            BallSpawner.SpawnSpecificColourBall(GameManager.Instance.lastPottedBall.ballColour, BallSpawnLocations.TriangleCenter);
+            ReduceAmountOfShotsByOne();
+        }
     }
 }

@@ -34,7 +34,14 @@ public class GameStateManager : MonoBehaviour
                 CurrentGameState = GameState.CalculatePoints;
                 break;
             case GameState.CalculatePoints:
-                CurrentGameState = GameState.PrepareNextTurn;
+                if(GameManager.Instance.playerHasNoShotsLeft)
+                {
+                    CurrentGameState = GameState.GameOver;
+                }
+                else
+                {
+                    CurrentGameState = GameState.PrepareNextTurn;
+                }
                 break;
             case GameState.PrepareNextTurn:
                 CurrentGameState = GameState.Aiming;

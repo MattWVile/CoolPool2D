@@ -98,7 +98,7 @@ public class BallSpawner : MonoBehaviour
 
         foreach (var ballSnapshot in ballsToSpawn)
         {
-            var ballGameObject = SpawnSpecificBall(ballSnapshot.Colour, BallSpawnLocations.Random);
+            var ballGameObject = SpawnSpecificColourBall(ballSnapshot.Colour, BallSpawnLocations.Random);
             ballGameObject.transform.position = ballSnapshot.Position;
             if (ballGameObject == null)
             {
@@ -110,7 +110,7 @@ public class BallSpawner : MonoBehaviour
         }
     }
 
-    public static GameObject SpawnSpecificBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector)
+    public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector)
     {
         Vector2 spawnPosition;
         switch (spawnPositionSelector)
@@ -132,6 +132,7 @@ public class BallSpawner : MonoBehaviour
         GameObject ballGameObject = Instantiate(Resources.Load($"Prefabs/{ballColour}Ball"), spawnPosition, Quaternion.identity) as GameObject;
 
         if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
+        GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
     }
 
@@ -154,6 +155,7 @@ public class BallSpawner : MonoBehaviour
     {
         GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
         GameManager.Instance.amountOfCueBallsSpawned++;
+        GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
     }
 }
