@@ -33,7 +33,8 @@ public enum GameState {
     Shooting,
     CalculatePoints,
     PrepareNextTurn,
-    GameStart
+    GameStart,
+    GameOver
 }
 
 public enum BallColour
