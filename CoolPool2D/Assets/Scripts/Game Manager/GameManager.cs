@@ -99,6 +99,7 @@ public class GameManager : MonoBehaviour
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
         deterministicBalls.Clear();
+        UIManager.Instance?.EnableGameOverScreen(scoreCalculator.totalScore);
         //if (playerSelectsReset)
         //{
         //    ResetGame();
@@ -112,7 +113,6 @@ public class GameManager : MonoBehaviour
         //    ExitGame();
         //}
         playerHasNoShotsLeft = false;
-        //UIManager.Instance?.ShowGameOverPanel();
     }
     public void StartGame()
     {

@@ -11,6 +11,7 @@ public class UIManager : MonoBehaviour
     public UIDocument uiDocument; // Assign this in the inspector
     private VisualElement root;
     public VisualTreeAsset shotTypeTemplate; // Assign the template .uxml here
+    public VisualTreeAsset GameOverScreen; // Assign the template .uxml here
     public VisualElement mostRecentShotAdded;
 
     public List<VisualElement> scoreTypes; // List to hold current score types
@@ -129,6 +130,13 @@ public class UIManager : MonoBehaviour
         {
             Debug.LogError("Container 'ShotScoreTypes' not found in the UI!");
         }
+    }
+
+    public void EnableGameOverScreen(int totalScore)
+    {
+        VisualElement gameOverScreen = GameOverScreen.Instantiate();
+        gameOverScreen.Q<Label>("TotalScoreValue").text = totalScore.ToString();
+        root.Add(gameOverScreen);
     }
 
     public void IncrementShotTypeAmount(VisualElement scoreType)
