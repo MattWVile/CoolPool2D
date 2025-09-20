@@ -2418,6 +2418,8 @@ MonoBehaviour:
   amountOfCueBallsSpawned: 0
   lastShotScore: 0
   scoreCalculator: {fileID: 0}
+  lastPottedBall: {fileID: 0}
+  playerHasNoShotsLeft: 0
 --- !u!4 &1469342013
 Transform:
   m_ObjectHideFlags: 0
@@ -3139,6 +3141,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 897729864}
   shotTypeTemplate: {fileID: 9197481963319205126, guid: 1ceb33886a28b5c4888ebde180db1440, type: 3}
+  GameOverScreen: {fileID: 9197481963319205126, guid: 338ffa44ba859354fb24ea59f8087303, type: 3}
   multiplierPopUpTime: 0.5
 --- !u!1 &2124217143
 GameObject:
