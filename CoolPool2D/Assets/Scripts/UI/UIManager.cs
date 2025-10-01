@@ -14,6 +14,10 @@ public class UIManager : MonoBehaviour
     public VisualTreeAsset GameOverScreen; // Assign the template .uxml here
     public VisualElement mostRecentShotAdded;
 
+    public Button resetGameButton;
+    public Button resetLastShotButton;
+    public Button exitGameButton;
+
     public List<VisualElement> scoreTypes; // List to hold current score types
 
     private Coroutine multiplierPopupCoroutine;
@@ -137,6 +141,25 @@ public class UIManager : MonoBehaviour
         VisualElement gameOverScreen = GameOverScreen.Instantiate();
         gameOverScreen.Q<Label>("TotalScoreValue").text = totalScore.ToString();
         root.Add(gameOverScreen);
+
+        resetGameButton = gameOverScreen.Q<Button>("ResetGameButton");
+        resetGameButton.RegisterCallback<ClickEvent>(ev => {
+            GameManager.Instance.ResetGame();
+            gameOverScreen.RemoveFromHierarchy();
+        });
+
+        resetLastShotButton = gameOverScreen.Q<Button>("RetryLastShotButton");
+        resetLastShotButton.RegisterCallback<ClickEvent>(ev => {
+            GameManager.Instance.RetryLastShot();
+            gameOverScreen.RemoveFromHierarchy();
+        });
+
+        exitGameButton = gameOverScreen.Q<Button>("ExitGameButton");
+        exitGameButton.RegisterCallback<ClickEvent>(ev => {
+            GameManager.Instance.ExitGame();
+            gameOverScreen.RemoveFromHierarchy();
+        });
+
     }
 
     public void IncrementShotTypeAmount(VisualElement scoreType)

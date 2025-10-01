@@ -61,7 +61,7 @@ public class PlayerRemainingShotsManager : MonoBehaviour
         amountOfShotsRemaining = Mathf.Max(0, amountOfShotsRemaining - 1);
         if (amountOfShotsRemaining == 0)
         {
-            GameManager.Instance.playerHasNoShotsLeft = true;   
+            GameManager.Instance.playerHasShotsRemaining = false;   
         }
         UIManager.Instance?.UpdateRemainingShotsIcons(amountOfShotsRemaining, maxAmountOfShots);
     }
