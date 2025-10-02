@@ -2410,14 +2410,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cue: {fileID: 0}
   cueMovement: {fileID: 0}
-  possibleTargets:
-  - {fileID: 0}
+  possibleTargets: []
   ballGameObjects: []
   deterministicBalls: []
   gameStateManager: {fileID: 1469342014}
   amountOfCueBallsSpawned: 0
   lastShotScore: 0
   scoreCalculator: {fileID: 0}
+  lastPottedBall: {fileID: 0}
+  playerHasNoShotsLeft: 0
 --- !u!4 &1469342013
 Transform:
   m_ObjectHideFlags: 0
