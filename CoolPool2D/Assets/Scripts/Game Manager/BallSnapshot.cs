@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -21,20 +20,20 @@ public class ShotRecorder
         _lastShotSnapshot.Clear();
         if (balls == null) return;
 
-        foreach (var go in balls)
+        foreach (var ballGameObject in balls)
         {
-            if (go == null) continue;
-            var data = go.GetComponent<BallData>();
+            if (ballGameObject == null) continue;
+            var data = ballGameObject.GetComponent<BallData>();
             if (data == null) continue;
-            var det = go.GetComponent<DeterministicBall>();
+            var det = ballGameObject.GetComponent<DeterministicBall>();
 
             var snap = new BallSnapshot
             {
-                InstanceId = go.GetInstanceID(),
+                InstanceId = ballGameObject.GetInstanceID(),
                 Colour = data.BallColour,
-                Position = (Vector2)go.transform.position,
+                Position = (Vector2)ballGameObject.transform.position,
                 Velocity = det != null ? det.velocity : Vector2.zero,
-                Active = det != null ? det.active : go.activeInHierarchy
+                Active = det != null ? det.active : ballGameObject.activeInHierarchy
             };
             _lastShotSnapshot.Add(snap);
         }

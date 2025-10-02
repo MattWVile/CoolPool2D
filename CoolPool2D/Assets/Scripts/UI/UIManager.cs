@@ -11,7 +11,12 @@ public class UIManager : MonoBehaviour
     public UIDocument uiDocument; // Assign this in the inspector
     private VisualElement root;
     public VisualTreeAsset shotTypeTemplate; // Assign the template .uxml here
+    public VisualTreeAsset GameOverScreen; // Assign the template .uxml here
     public VisualElement mostRecentShotAdded;
+
+    public Button resetGameButton;
+    public Button resetLastShotButton;
+    public Button exitGameButton;
 
     public List<VisualElement> scoreTypes; // List to hold current score types
 
@@ -129,6 +134,32 @@ public class UIManager : MonoBehaviour
         {
             Debug.LogError("Container 'ShotScoreTypes' not found in the UI!");
         }
+    }
+
+    public void EnableGameOverScreen(int totalScore)
+    {
+        VisualElement gameOverScreen = GameOverScreen.Instantiate();
+        gameOverScreen.Q<Label>("TotalScoreValue").text = totalScore.ToString();
+        root.Add(gameOverScreen);
+
+        resetGameButton = gameOverScreen.Q<Button>("ResetGameButton");
+        resetGameButton.RegisterCallback<ClickEvent>(ev => {
+            GameManager.Instance.ResetGame();
+            gameOverScreen.RemoveFromHierarchy();
+        });
+
+        resetLastShotButton = gameOverScreen.Q<Button>("RetryLastShotButton");
+        resetLastShotButton.RegisterCallback<ClickEvent>(ev => {
+            GameManager.Instance.RetryLastShot();
+            gameOverScreen.RemoveFromHierarchy();
+        });
+
+        exitGameButton = gameOverScreen.Q<Button>("ExitGameButton");
+        exitGameButton.RegisterCallback<ClickEvent>(ev => {
+            GameManager.Instance.ExitGame();
+            gameOverScreen.RemoveFromHierarchy();
+        });
+
     }
 
     public void IncrementShotTypeAmount(VisualElement scoreType)

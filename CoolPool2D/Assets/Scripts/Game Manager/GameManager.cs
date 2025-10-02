@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
 
     public BallData lastPottedBall;
 
-    public bool playerHasNoShotsLeft = false;
+    public bool playerHasShotsRemaining = true;
     private void Awake()
     {
         if (Instance == null)
@@ -90,27 +90,7 @@ public class GameManager : MonoBehaviour
 
         gameStateManager.SetGameState(GameState.GameStart);
     }
-    public void HandleGameOverState()
-    {
-        Debug.Log("Game Over!");
-        ballGameObjects.ForEach(Destroy);
-        ballGameObjects.Clear();
-        deterministicBalls.Clear();
-        //if (playerSelectsReset)
-        //{
-        //    ResetGame();
-        //}
-        //else if (playerSelectsRetry)
-        //{
-        //    RetryLastShot();
-        //}
-        //else if (playerSelectsExit)
-        //{
-        //    ExitGame();
-        //}
-        playerHasNoShotsLeft = false;
-        //UIManager.Instance?.ShowGameOverPanel();
-    }
+
     public void StartGame()
     {
         var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
@@ -151,12 +131,21 @@ public class GameManager : MonoBehaviour
     {
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
+        possibleTargets.Clear();
         deterministicBalls.Clear();
         amountOfCueBallsSpawned = 0;
         lastShotScore = 0;
         scoreCalculator.totalScore = 0;
+        playerHasShotsRemaining = true;
         UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
         gameStateManager.SetGameState(GameState.GameStart);
+    }
+    public void HandleGameOverState()
+    {
+        ballGameObjects.ForEach(Destroy);
+        ballGameObjects.Clear();
+        deterministicBalls.Clear();
+        UIManager.Instance?.EnableGameOverScreen(scoreCalculator.totalScore);
     }
 
     public void CaptureCurrentShotSnapshot()
@@ -169,6 +158,7 @@ public class GameManager : MonoBehaviour
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
         deterministicBalls.Clear();
+        possibleTargets.Clear();
 
         BallSpawner.SpawnLastShotBalls(shotRecorder.GetLastSnapshot());
 
@@ -246,5 +236,10 @@ public class GameManager : MonoBehaviour
     public bool AllBallsStopped()
     {
         return deterministicBalls.All(rb => rb.velocity.magnitude < 0.1f);
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
     }
 }

@@ -61,7 +61,7 @@ public class PlayerRemainingShotsManager : MonoBehaviour
         amountOfShotsRemaining = Mathf.Max(0, amountOfShotsRemaining - 1);
         if (amountOfShotsRemaining == 0)
         {
-            GameManager.Instance.playerHasNoShotsLeft = true;   
+            GameManager.Instance.playerHasShotsRemaining = false;   
         }
         UIManager.Instance?.UpdateRemainingShotsIcons(amountOfShotsRemaining, maxAmountOfShots);
     }
@@ -82,8 +82,11 @@ public class PlayerRemainingShotsManager : MonoBehaviour
     {
         if (GameManager.Instance.ballGameObjects.Count <= 1 && amountOfShotsRemaining > 1)
         {
-            BallSpawner.SpawnSpecificColourBall(GameManager.Instance.lastPottedBall.ballColour, BallSpawnLocations.TriangleCenter);
-            ReduceAmountOfShotsByOne();
+            if(GameManager.Instance.lastPottedBall.ballColour != BallColour.Cue)
+            {
+                BallSpawner.SpawnSpecificColourBall(GameManager.Instance.lastPottedBall.ballColour, BallSpawnLocations.TriangleCenter);
+                ReduceAmountOfShotsByOne();
+            }
         }
     }
 }

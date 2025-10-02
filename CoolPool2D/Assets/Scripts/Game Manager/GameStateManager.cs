@@ -34,7 +34,7 @@ public class GameStateManager : MonoBehaviour
                 CurrentGameState = GameState.CalculatePoints;
                 break;
             case GameState.CalculatePoints:
-                if(GameManager.Instance.playerHasNoShotsLeft)
+                if(!GameManager.Instance.playerHasShotsRemaining)
                 {
                     CurrentGameState = GameState.GameOver;
                 }

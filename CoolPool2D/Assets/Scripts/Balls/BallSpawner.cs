@@ -105,8 +105,6 @@ public class BallSpawner : MonoBehaviour
                 Debug.LogError($"Failed to spawn ball for colour {ballSnapshot.Colour} at {ballSnapshot.Position}");
                 continue;
             }
-
-            GameManager.Instance.AddBallToLists(ballGameObject);
         }
     }
 
