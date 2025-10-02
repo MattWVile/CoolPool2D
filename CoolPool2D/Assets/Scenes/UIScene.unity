@@ -2410,8 +2410,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cue: {fileID: 0}
   cueMovement: {fileID: 0}
-  possibleTargets:
-  - {fileID: 0}
+  possibleTargets: []
   ballGameObjects: []
   deterministicBalls: []
   gameStateManager: {fileID: 1469342014}

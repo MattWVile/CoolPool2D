@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 /// <summary>
@@ -60,13 +61,15 @@ public class ScoreCalculator : MonoBehaviour
     private void Start()
     {
         EventBus.Subscribe<ShotScoreTypeUpdatedEvent>(OnShotScoreTypeUpdated);
-        EventBus.Subscribe<BallStoppedEvent>(OnBallsStopped);
+        //EventBus.Subscribe<BallStoppedEvent>(OnBallsStopped);
+        EventBus.Subscribe<NewGameStateEvent>(HandleNewGameStateEventScoring);
     }
 
     private void OnDestroy()
     {
         EventBus.Unsubscribe<ShotScoreTypeUpdatedEvent>(OnShotScoreTypeUpdated);
-        EventBus.Unsubscribe<BallStoppedEvent>(OnBallsStopped);
+        //EventBus.Unsubscribe<BallStoppedEvent>(OnBallsStopped);
+        EventBus.Unsubscribe<NewGameStateEvent>(HandleNewGameStateEventScoring);
     }
 
     private void OnShotScoreTypeUpdated(ShotScoreTypeUpdatedEvent evt)
@@ -99,25 +102,26 @@ public class ScoreCalculator : MonoBehaviour
         }
     }
 
-    private void OnBallsStopped(BallStoppedEvent evt)
+    private void HandleNewGameStateEventScoring(NewGameStateEvent evt)
     {
-        StartCoroutine(HandleScoringSequence());
+        Debug.Log("HandleCalculatePoints");
+
+        if (evt?.NewGameState == GameState.CalculatePoints) {
+            StartCoroutine(HandleScoringSequence());
+        }
     }
 
     private IEnumerator HandleScoringSequence()
     {
         BuildMultiplierEntries();
 
-        if (currentShotMultiplierEntries.Count == 0)
-        {
-            ResetShotState();
-            yield break;
-        }
-
         CalculateShotScore();
         UIManager.Instance?.UpdateShotScore(shotScore);
 
-        yield return StartCoroutine(ApplyMultipliersToShotScoreCoroutine());
+        if (currentShotMultiplierEntries.Count != 0)
+        {
+            yield return StartCoroutine(ApplyMultipliersToShotScoreCoroutine());
+        }
 
         GameManager.Instance.lastShotScore = shotScore;
         totalScore += shotScore;

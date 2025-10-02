@@ -76,9 +76,6 @@ public class GameManager : MonoBehaviour
                 case GameState.Shooting:
                     HandleShootingState();
                     break;
-                case GameState.CalculatePoints:
-                    HandleCalculatePointsState();
-                    break;
                 case GameState.PrepareNextTurn:
                     HandlePrepareNextTurnState();
                     break;
@@ -117,7 +114,9 @@ public class GameManager : MonoBehaviour
         try
         {
             var target = PoolWorld.Instance.GetNextTarget();
-            possibleTargets.Add(target.gameObject);
+            if(target.gameObject && !possibleTargets.Contains(target.gameObject))
+                possibleTargets.Add(target.gameObject);
+
         }
         catch (NullReferenceException)
         {
@@ -188,12 +187,12 @@ public class GameManager : MonoBehaviour
     private void HandleAimingState()
     {
         Debug.Log("HandleAimingState");
-        var targetGameObject = possibleTargets.First();
+        var targetGameObject = possibleTargets.FirstOrDefault();
         if (targetGameObject == null)
         {
             targetGameObject = PoolWorld.Instance.GetNextTarget().gameObject;
+            possibleTargets.Add(targetGameObject);
         }
-        possibleTargets.Add(targetGameObject);
         cueMovement.Enable(targetGameObject);
     }
 
@@ -202,11 +201,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("HandleShootingState");
         StartCoroutine(CheckIfAllBallsStopped());
         cueMovement?.RunDisableRoutine(cueMovement.Disable(0.05f));
-    }
-
-    private void HandleCalculatePointsState()
-    {
-        Debug.Log("Calculating points.");
     }
 
     private IEnumerator WaitThenEndState(float seconds, GameState gameState)
