@@ -131,6 +131,7 @@ public class GameManager : MonoBehaviour
     {
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
+        possibleTargets.Clear();
         deterministicBalls.Clear();
         amountOfCueBallsSpawned = 0;
         lastShotScore = 0;
@@ -157,6 +158,7 @@ public class GameManager : MonoBehaviour
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
         deterministicBalls.Clear();
+        possibleTargets.Clear();
 
         BallSpawner.SpawnLastShotBalls(shotRecorder.GetLastSnapshot());
 

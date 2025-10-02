@@ -82,8 +82,11 @@ public class PlayerRemainingShotsManager : MonoBehaviour
     {
         if (GameManager.Instance.ballGameObjects.Count <= 1 && amountOfShotsRemaining > 1)
         {
-            BallSpawner.SpawnSpecificColourBall(GameManager.Instance.lastPottedBall.ballColour, BallSpawnLocations.TriangleCenter);
-            ReduceAmountOfShotsByOne();
+            if(GameManager.Instance.lastPottedBall.ballColour != BallColour.Cue)
+            {
+                BallSpawner.SpawnSpecificColourBall(GameManager.Instance.lastPottedBall.ballColour, BallSpawnLocations.TriangleCenter);
+                ReduceAmountOfShotsByOne();
+            }
         }
     }
 }
