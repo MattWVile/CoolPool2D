@@ -1,0 +1,27 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; background-color: rgb(25, 47, 25); background-image: url(&quot;project://database/Assets/Sprites/mainmenubg.png?fileID=2800000&amp;guid=db91e5bf149934a4db08c37f99f3c068&amp;type=3#mainmenubg&quot;); flex-direction: row;">
+        <ui:VisualElement name="VisualElement" style="flex-grow: 1; width: 36px;">
+            <ui:VisualElement style="flex-grow: 1; max-height: 100px;">
+                <ui:Label tabindex="-1" text="PoolGame" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; font-size: 68px; max-width: 400px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(17, 93, 20); -unity-font-style: bold; -unity-font: initial; padding-left: 22px;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1; padding-left: 68px;">
+                <ui:VisualElement style="flex-grow: 1;">
+                    <ui:VisualElement style="flex-grow: 1; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px;">
+                        <ui:Button text="Start Run" parse-escape-sequences="true" display-tooltip-when-elided="true" name="StartRunButton" style="border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; flex-grow: 1; font-size: 32px; background-color: rgba(5, 47, 19, 0.36); color: rgb(166, 233, 187); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(101, 230, 127);" />
+                    </ui:VisualElement>
+                    <ui:VisualElement style="flex-grow: 1; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px;">
+                        <ui:Button text="Unlocks" parse-escape-sequences="true" display-tooltip-when-elided="true" name="UnlocksButton" style="border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; flex-grow: 1; font-size: 32px; background-color: rgba(5, 47, 19, 0.36); color: rgb(166, 233, 187); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(101, 230, 127);" />
+                    </ui:VisualElement>
+                    <ui:VisualElement style="flex-grow: 1; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px;">
+                        <ui:Button text="Challenges" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ChallengesButton" style="border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; flex-grow: 1; font-size: 32px; background-color: rgba(5, 47, 19, 0.36); color: rgb(166, 233, 187); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(101, 230, 127);" />
+                    </ui:VisualElement>
+                    <ui:VisualElement style="flex-grow: 1; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px;">
+                        <ui:Button text="Options" parse-escape-sequences="true" display-tooltip-when-elided="true" name="OptionsButton" style="border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; flex-grow: 1; font-size: 32px; background-color: rgba(5, 47, 19, 0.36); color: rgb(166, 233, 187); -unity-text-outline-color: rgb(100, 229, 126); -unity-text-outline-width: 1px;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1; max-height: 100px;" />
+        </ui:VisualElement>
+        <ui:VisualElement style="flex-grow: 1;" />
+    </ui:VisualElement>
+</ui:UXML>
