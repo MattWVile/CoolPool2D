@@ -2418,7 +2418,7 @@ MonoBehaviour:
   lastShotScore: 0
   scoreCalculator: {fileID: 0}
   lastPottedBall: {fileID: 0}
-  playerHasNoShotsLeft: 0
+  playerHasShotsRemaining: 1
 --- !u!4 &1469342013
 Transform:
   m_ObjectHideFlags: 0
@@ -2753,6 +2753,55 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PocketLocation: 4
   radius: 0.3
+--- !u!1 &1744688603
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1744688605}
+  - component: {fileID: 1744688604}
+  m_Layer: 0
+  m_Name: SoundManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1744688604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1744688603}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b839e3a1ef6f7b44aced2bfad0822a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BallHitClip: {fileID: 8300000, guid: f026a7ca7a11cfd4b86dfde215043780, type: 3}
+  BallHit2Clip: {fileID: 8300000, guid: df6a15b70cfe93d44ad1666d786a04a9, type: 3}
+  CueHitClip: {fileID: 8300000, guid: c30be0995fa83c84ca83abb28e49596a, type: 3}
+  RailHitClip: {fileID: 8300000, guid: c023db9284a1b0f41b8415d1ed67bc22, type: 3}
+  ClickClip: {fileID: 8300000, guid: 341fbfbecd0957649ad55ff31e9572d5, type: 3}
+--- !u!4 &1744688605
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1744688603}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.1354308, y: 0.037043795, z: -0.040443514}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1746868100
 GameObject:
   m_ObjectHideFlags: 0
@@ -3244,3 +3293,4 @@ SceneRoots:
   - {fileID: 124450167}
   - {fileID: 1036668682}
   - {fileID: 1393735776}
+  - {fileID: 1744688605}
