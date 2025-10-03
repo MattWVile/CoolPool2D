@@ -256,6 +256,11 @@ public class ScoreCalculator : MonoBehaviour
             int amountToTrigger = GetAmountToTrigger(mult);
 
             UIManager.Instance?.DisplayMultiplierPopUp(amountToTrigger, mult.Label, mult.Factor);
+            EventBus.Publish(new DisplayMultiplierPopUpEvent
+            {
+                Sender = this,
+                MultiplierCount = entries.IndexOf(mult) + 1
+            });
 
             float raw = shotScore * mult.Factor;
             shotScore = Mathf.RoundToInt(raw);

@@ -88,6 +88,13 @@ public class ScoringFinishedEvent : BaseGameEvent
     public float TotalScore { get; set; }
 }
 
+public class DisplayMultiplierPopUpEvent : BaseGameEvent
+{
+    public new ScoreCalculator Sender { get; set; } // overridden Sender to specify the sender type
+    public int MultiplierCount { get; set; }
+
+}
+
 //public class ShotScoreCalculatedEvent : BaseGameEvent
 //{
 //    public new ScoreController Sender { get; set; } // overridden Sender to specify the sender type
