@@ -7,6 +7,7 @@ public class SoundManager : MonoBehaviour
     public AudioClip BallHit2Clip;
     public AudioClip CueHitClip;
     public AudioClip RailHitClip;
+    public AudioClip BallPocketedClip;
 
     public AudioClip ClickClip;
 
@@ -44,6 +45,15 @@ public class SoundManager : MonoBehaviour
             velocity = Mathf.Clamp(velocity, 0.2f, 1f);
             PlaySound(RailHitClip, velocity);
         }));
+
+        EventBus.Subscribe<BallPocketedEvent>((@event =>
+        {
+            var velocity = @event.BallData.gameObject.GetComponent<DeterministicBall>().velocity.magnitude;
+            velocity = velocity / 25; // normalize based on expected max speed
+            velocity = Mathf.Clamp(velocity, 0.2f, 1f);
+            PlaySound(BallPocketedClip, velocity);
+        }));
+
         EventBus.Subscribe<BallKissedEvent>((@event =>
         {
             var velocity = @event.BallData.gameObject.GetComponent<DeterministicBall>().velocity.magnitude;
