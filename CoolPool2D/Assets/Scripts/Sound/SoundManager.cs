@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class SoundManager : MonoBehaviour
@@ -44,7 +40,7 @@ public class SoundManager : MonoBehaviour
         EventBus.Subscribe<BallCollidedWithRailEvent>((@event =>
         {
             var velocity = @event.BallData.gameObject.GetComponent<DeterministicBall>().velocity.magnitude;
-            velocity = velocity / 30; // normalize based on expected max speed
+            velocity = velocity / 20; // normalize based on expected max speed
             velocity = Mathf.Clamp(velocity, 0.2f, 1f);
             PlaySound(RailHitClip, velocity);
         }));
