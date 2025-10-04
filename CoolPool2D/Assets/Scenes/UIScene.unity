@@ -2786,7 +2786,7 @@ MonoBehaviour:
   BallHit2Clip: {fileID: 8300000, guid: df6a15b70cfe93d44ad1666d786a04a9, type: 3}
   CueHitClip: {fileID: 8300000, guid: c30be0995fa83c84ca83abb28e49596a, type: 3}
   RailHitClip: {fileID: 8300000, guid: c023db9284a1b0f41b8415d1ed67bc22, type: 3}
-  BallPocketedClip: {fileID: 0}
+  BallPocketedClip: {fileID: 8300000, guid: 83a15dd0af2d3fc43abb7dbdca6dc262, type: 3}
   ClickClip: {fileID: 8300000, guid: 341fbfbecd0957649ad55ff31e9572d5, type: 3}
 --- !u!4 &1744688605
 Transform:
