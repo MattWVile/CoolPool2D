@@ -10,8 +10,10 @@ public class UIManager : MonoBehaviour
 
     public UIDocument uiDocument; // Assign this in the inspector
     private VisualElement root;
-    public VisualTreeAsset shotTypeTemplate; // Assign the template .uxml here
-    public VisualTreeAsset GameOverScreen; // Assign the template .uxml here
+    public VisualTreeAsset shotTypeTemplate;
+    public VisualTreeAsset gameOverScreenAsset;
+    public VisualTreeAsset levelCompleteScreenAsset;
+
     public VisualElement mostRecentShotAdded;
 
     public Button resetGameButton;
@@ -136,10 +138,11 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void EnableGameOverScreen(int totalScore)
+    public void EnableGameOverScreen(int totalScore, int scoreToBeat)
     {
-        VisualElement gameOverScreen = GameOverScreen.Instantiate();
+        VisualElement gameOverScreen = gameOverScreenAsset.Instantiate();
         gameOverScreen.Q<Label>("TotalScoreValue").text = totalScore.ToString();
+        gameOverScreen.Q<Label>("ScoreToBeatValue").text = scoreToBeat.ToString();
         root.Add(gameOverScreen);
 
         resetGameButton = gameOverScreen.Q<Button>("ResetGameButton");
@@ -158,6 +161,27 @@ public class UIManager : MonoBehaviour
         exitGameButton.RegisterCallback<ClickEvent>(ev => {
             GameManager.Instance.ExitGame();
             gameOverScreen.RemoveFromHierarchy();
+        });
+
+    }
+
+    public void EnableLevelCompleteScreen(int totalScore, int scoreToBeat)
+    {
+        VisualElement levelCompleteScreen = levelCompleteScreenAsset.Instantiate();
+        levelCompleteScreen.Q<Label>("TotalScoreValue").text = totalScore.ToString();
+        levelCompleteScreen.Q<Label>("ScoreToBeatValue").text = scoreToBeat.ToString();
+        root.Add(levelCompleteScreen);
+
+        resetGameButton = levelCompleteScreen.Q<Button>("ContinueButton");
+        resetGameButton.RegisterCallback<ClickEvent>(ev => {
+            GameManager.Instance.StartNextLevel();
+            levelCompleteScreen.RemoveFromHierarchy();
+        });
+
+        exitGameButton = levelCompleteScreen.Q<Button>("ExitGameButton");
+        exitGameButton.RegisterCallback<ClickEvent>(ev => {
+            GameManager.Instance.ExitGame();
+            levelCompleteScreen.RemoveFromHierarchy();
         });
 
     }
@@ -257,4 +281,14 @@ public class UIManager : MonoBehaviour
             }
         }
     }
+
+    public void SetScoreToBeat(int scoreToBeat)
+    {
+        if (root == null && uiDocument != null) root = uiDocument.rootVisualElement;
+        var label = root.Q<Label>("ScoreToBeatValue");
+        if (label != null)
+        {
+            label.text = scoreToBeat.ToString();
+        }
+    }   
 }

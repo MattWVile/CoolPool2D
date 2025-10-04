@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public enum BallSpawnLocations
 {
     TriangleCenter,
     NextToLowCenterPocket,
+    cueBallInitialPosition,
     Random
 }
+
 public class BallSpawner : MonoBehaviour
 {
     //private static readonly List<BallColour> ballSpawnPattern = new List<BallColour>
@@ -27,7 +28,7 @@ public class BallSpawner : MonoBehaviour
     //{
     //    var balls = new Dictionary<GameObject, BallData>();
     //    var firstBallOfLineVector = Vector2.zero;
-    //    var ballRadius = Resources.Load("Prefabs/ObjectBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
+    //    var ballRadius = Resources.Load("Prefabs/DeterministicBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
     //    int ballIndex = 1;
 
     //    var ballSpawnVector = TriangleCenterVector;
@@ -108,11 +109,96 @@ public class BallSpawner : MonoBehaviour
         }
     }
 
+
+    public static void SpawnNextRoundBalls(IReadOnlyList<BallSnapshot> ballsToSpawn){
+        if (ballsToSpawn == null || ballsToSpawn.Count == 0) return;
+
+        // max balls the triangle layout supports (rows 1..5) = 15
+        const int maxTriangleBalls = 15;
+        if (ballsToSpawn.Count > maxTriangleBalls)
+        {
+            Debug.LogWarning($"SpawnNextRoundBalls: provided {ballsToSpawn.Count} snapshots, but triangle supports up to {maxTriangleBalls}. Only first {maxTriangleBalls} will be used.");
+        }
+
+        int spawnLimit = Math.Min(ballsToSpawn.Count, maxTriangleBalls);
+
+        // Get ball radius using the same deterministic prefab as original method
+        var deterministic = Resources.Load("Prefabs/DeterministicBall", typeof(GameObject)) as GameObject;
+        if (deterministic == null)
+        {
+            Debug.LogError("DeterministicBall prefab not found - cannot calculate spacing.");
+            return;
+        }
+        var ballRadius = deterministic.GetComponent<SpriteRenderer>().bounds.size.x / 2f;
+
+        var firstBallOfLineVector = Vector2.zero;
+        var ballSpawnVector = TriangleCenterVector;
+        ballSpawnVector.x += ballRadius * 3.45f;
+
+        int ballIndex = 0; // index into ballsToSpawn
+
+        for (int ballRow = 1; ballRow < 6 && ballIndex < spawnLimit; ballRow++)
+        {
+            if (ballRow != 1)
+            {
+                firstBallOfLineVector.x += ballRadius * 1.73f;
+            }
+
+            for (int ballNumber = 1; ballNumber <= ballRow && ballIndex < spawnLimit; ballNumber++)
+            {
+                if ((ballNumber == 1) && (ballRow != 1))
+                {
+                    firstBallOfLineVector.y += ballRadius;
+                    ballSpawnVector = firstBallOfLineVector;
+                }
+                else if (ballRow != 1)
+                {
+                    ballSpawnVector.y -= ballRadius * 2f;
+                }
+                else
+                {
+                    firstBallOfLineVector = ballSpawnVector;
+                }
+
+                var ballSnapshot = ballsToSpawn[ballIndex];
+                ballIndex++;
+
+                // if snapshot says the ball is not active, skip spawning it
+                if (!ballSnapshot.Active)
+                {
+                    continue;
+                }
+
+                GameObject ballGameObject = null;
+
+                // If the snapshot colour is Cue, use the cue-spawning path.
+                if (ballSnapshot.Colour == BallColour.Cue)
+                {
+                    ballGameObject = SpawnCueBall(GameManager.Instance.amountOfCueBallsSpawned); 
+                }
+                else
+                {
+                    // Spawn the requested colour at the computed triangle position
+                    ballGameObject = SpawnSpecificColourBallWithVector(ballSnapshot.Colour, ballSpawnVector);
+                }
+
+                if (ballGameObject == null)
+                {
+                    Debug.LogError($"Failed to spawn ball for colour {ballSnapshot.Colour} at triangle position {ballSpawnVector}");
+                    continue;
+                }
+            }
+        }
+    }
+
     public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector)
     {
         Vector2 spawnPosition;
         switch (spawnPositionSelector)
         {
+            case BallSpawnLocations.cueBallInitialPosition:
+                spawnPosition = cueBallInitialPosition;
+                break;
             case BallSpawnLocations.TriangleCenter:
                 spawnPosition = TriangleCenterVector;
                 break;
@@ -127,9 +213,29 @@ public class BallSpawner : MonoBehaviour
                 throw new InvalidOperationException($"Unexpected spawn position selector: {spawnPositionSelector}");
         }
 
+        if(ballColour == BallColour.Random)
+        {
+            ballColour = (BallColour)UnityEngine.Random.Range(1, Enum.GetNames(typeof(BallColour)).Length - 3);
+
+        }
+
         GameObject ballGameObject = Instantiate(Resources.Load($"Prefabs/{ballColour}Ball"), spawnPosition, Quaternion.identity) as GameObject;
 
         if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
+        GameManager.Instance.AddBallToLists(ballGameObject);
+        return ballGameObject;
+    }
+
+    public static GameObject SpawnSpecificColourBallWithVector(BallColour ballColour, Vector2 spawnPosition)
+    {
+        if (ballColour == BallColour.Random)
+        {
+            ballColour = (BallColour)UnityEngine.Random.Range(1, Enum.GetNames(typeof(BallColour)).Length - 3);
+        }
+
+        GameObject ballGameObject = Instantiate(Resources.Load($"Prefabs/{ballColour}Ball"), spawnPosition, Quaternion.identity) as GameObject;
+
+        if (ballGameObject == null) return null;
         GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
     }

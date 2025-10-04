@@ -34,18 +34,16 @@ public enum GameState {
     CalculatePoints,
     PrepareNextTurn,
     GameStart,
-    GameOver
+    GameOver,
+    PrepareNextLevel
 }
 
 public enum BallColour
 {
-    Red,
-    Yellow,
     Blue,
     Purple,
-    Maroon,
-    Green,
     Orange,
     Black,
-    Cue
+    Cue,
+    Random
 }
