@@ -49,6 +49,10 @@ public class GameStateManager : MonoBehaviour
             case GameState.GameStart:
                 CurrentGameState = GameState.Aiming;
                 break;
+            case GameState.PrepareNextLevel:
+                CurrentGameState = GameState.Aiming;
+                break;
+
         }
         EventBus.Publish(new NewGameStateEvent { Sender = this, NewGameState = CurrentGameState });
     }

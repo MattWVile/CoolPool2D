@@ -90,27 +90,47 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
+        BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
 
-        var specificBall = BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.TriangleCenter);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.TriangleCenter);
 
-        //var specificBall = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        //var specificBall = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
-        //var specificBall2 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        //var specificBall2 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
-        //var specificBall3 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
+        //var specificBall3 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
         CaptureCurrentShotSnapshot();
         UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
     
+    public void StartNextLevel()
+    {
+        amountOfCueBallsSpawned = 0;
+        lastShotScore = 0;
+        playerHasShotsRemaining = true;
+
+        IReadOnlyList<BallSnapshot> lastSnapshot = shotRecorder.GetLastSnapshot();
+        BallSpawner.SpawnNextRoundBalls(lastSnapshot);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Random, BallSpawnLocations.Random);
+
+        UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
+        UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
+
+        gameStateManager.SubmitEndOfState(GameState.PrepareNextLevel);
+    }
+
     private void HandleScoringFinishedEvent(ScoringFinishedEvent scoringFinishedEvent)
     {
         if (scoringFinishedEvent.TotalScore >= ScoreManager.Instance.scoreToBeat)
         {
-            ScoreManager.Instance.IncreaseScoreToBeat();
             UIManager.Instance?.EnableLevelCompleteScreen(scoringFinishedEvent.TotalScore, ScoreManager.Instance.scoreToBeat);
+            ScoreManager.Instance.IncreaseScoreToBeat();
+            ballGameObjects.ForEach(Destroy);
+            ballGameObjects.Clear();
+            deterministicBalls.Clear();
+            gameStateManager.SetGameState(GameState.PrepareNextLevel);
             playerHasShotsRemaining = false;
         }
         else
@@ -118,6 +138,7 @@ public class GameManager : MonoBehaviour
             gameStateManager.SubmitEndOfState(GameState.CalculatePoints);
         }
     }
+
     private void HandlePrepareNextTurnState()
     {
         Debug.Log("Preparing next turn.");

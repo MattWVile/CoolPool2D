@@ -174,7 +174,7 @@ public class UIManager : MonoBehaviour
 
         resetGameButton = levelCompleteScreen.Q<Button>("ContinueButton");
         resetGameButton.RegisterCallback<ClickEvent>(ev => {
-            GameManager.Instance.ContinueGame();
+            GameManager.Instance.StartNextLevel();
             levelCompleteScreen.RemoveFromHierarchy();
         });
 

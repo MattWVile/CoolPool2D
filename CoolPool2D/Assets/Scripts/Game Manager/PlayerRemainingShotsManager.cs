@@ -50,6 +50,9 @@ public class PlayerRemainingShotsManager : MonoBehaviour
             case GameState.GameStart:
                 ResetAmountOfShots();
                 break;
+            case GameState.PrepareNextLevel:
+                ResetAmountOfShots();
+                break;
             case GameState.PrepareNextTurn:
                 HandlePrepareNextTurn();
                 break;

@@ -54,21 +54,19 @@ public class ScoreCalculator : MonoBehaviour
     private const string UnknownColourKey = "unknown";
 
     private int shotScore = 0;
-    public int totalScore = 0;
+    public int totalScore;
 
     private readonly List<MultiplierEntry> currentShotMultiplierEntries = new();
 
     private void Start()
     {
         EventBus.Subscribe<ShotScoreTypeUpdatedEvent>(OnShotScoreTypeUpdated);
-        //EventBus.Subscribe<BallStoppedEvent>(OnBallsStopped);
         EventBus.Subscribe<NewGameStateEvent>(HandleNewGameStateEventScoring);
     }
 
     private void OnDestroy()
     {
         EventBus.Unsubscribe<ShotScoreTypeUpdatedEvent>(OnShotScoreTypeUpdated);
-        //EventBus.Unsubscribe<BallStoppedEvent>(OnBallsStopped);
         EventBus.Unsubscribe<NewGameStateEvent>(HandleNewGameStateEventScoring);
     }
 
@@ -102,12 +100,19 @@ public class ScoreCalculator : MonoBehaviour
         }
     }
 
-    private void HandleNewGameStateEventScoring(NewGameStateEvent evt)
+    private void HandleNewGameStateEventScoring(NewGameStateEvent newGameStateEvent)
     {
         Debug.Log("HandleCalculatePoints");
-
-        if (evt?.NewGameState == GameState.CalculatePoints) {
-            StartCoroutine(HandleScoringSequence());
+        switch(newGameStateEvent?.NewGameState) {
+            case GameState.CalculatePoints:
+                StartCoroutine(HandleScoringSequence());
+                break;
+            case GameState.GameStart:
+                totalScore = 0;
+                break;
+            case GameState.PrepareNextLevel:
+                totalScore = 0;
+                break;
         }
     }
 

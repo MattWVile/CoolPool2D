@@ -29,7 +29,7 @@ public class ScoreManager : MonoBehaviour
 
     public void IncreaseScoreToBeat()
     {
-        scoreToBeat = (int)(scoreToBeat * 1.5f);
+        scoreToBeat = (int)(scoreToBeat * 2f);
     }
 
     public void OnScorableEvent(IScorableEvent @event)
