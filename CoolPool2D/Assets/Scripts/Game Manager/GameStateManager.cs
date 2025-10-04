@@ -50,7 +50,7 @@ public class GameStateManager : MonoBehaviour
                 CurrentGameState = GameState.Aiming;
                 break;
             case GameState.PrepareNextLevel:
-                CurrentGameState = GameState.Aiming;
+                CurrentGameState = GameState.PrepareNextTurn;
                 break;
 
         }

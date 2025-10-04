@@ -107,9 +107,13 @@ public class GameManager : MonoBehaviour
     
     public void StartNextLevel()
     {
+        ballGameObjects.ForEach(Destroy);
+        ballGameObjects.Clear();
+        deterministicBalls.Clear();
         amountOfCueBallsSpawned = 0;
         lastShotScore = 0;
         playerHasShotsRemaining = true;
+        ScoreManager.Instance.IncreaseScoreToBeat();
 
         IReadOnlyList<BallSnapshot> lastSnapshot = shotRecorder.GetLastSnapshot();
         BallSpawner.SpawnNextRoundBalls(lastSnapshot);
@@ -125,13 +129,9 @@ public class GameManager : MonoBehaviour
     {
         if (scoringFinishedEvent.TotalScore >= ScoreManager.Instance.scoreToBeat)
         {
-            UIManager.Instance?.EnableLevelCompleteScreen(scoringFinishedEvent.TotalScore, ScoreManager.Instance.scoreToBeat);
-            ScoreManager.Instance.IncreaseScoreToBeat();
-            ballGameObjects.ForEach(Destroy);
-            ballGameObjects.Clear();
-            deterministicBalls.Clear();
-            gameStateManager.SetGameState(GameState.PrepareNextLevel);
             playerHasShotsRemaining = false;
+            gameStateManager.SetGameState(GameState.PrepareNextLevel);
+            UIManager.Instance?.EnableLevelCompleteScreen(scoringFinishedEvent.TotalScore, ScoreManager.Instance.scoreToBeat);
         }
         else
         {
