@@ -116,8 +116,22 @@ public class GameManager : MonoBehaviour
         ScoreManager.Instance.IncreaseScoreToBeat();
 
         IReadOnlyList<BallSnapshot> lastSnapshot = shotRecorder.GetLastSnapshot();
-        BallSpawner.SpawnNextRoundBalls(lastSnapshot);
-        BallSpawner.SpawnSpecificColourBall(BallColour.Random, BallSpawnLocations.Random);
+        var list = lastSnapshot.ToList();
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
+        BallSpawner.SpawnNextRoundBalls(list);
 
         UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
         UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
