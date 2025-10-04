@@ -13,86 +13,12 @@ public enum BallSpawnLocations
 
 public class BallSpawner : MonoBehaviour
 {
-    //private static readonly List<BallColour> ballSpawnPattern = new List<BallColour>
-    //{BallColour.Red, BallColour.Yellow, BallColour.Blue, BallColour.Purple, BallColour.Orange, BallColour.Maroon, BallColour.Green,
-    // BallColour.Red, BallColour.Yellow, BallColour.Blue, BallColour.Purple, BallColour.Orange, BallColour.Maroon, BallColour.Green};
-
     public static Vector2 cueBallInitialPosition = new Vector2(-1.91f, 0.0384333f);
     public static Bounds ClothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
     public static Vector2 ClothCenterVector = ClothBounds.center;
     public static Vector2 ClothDimensionsVector = ClothBounds.size;
     public static Vector2 TriangleCenterVector = new Vector2(ClothCenterVector.x + ClothDimensionsVector.x / 5, ClothCenterVector.y);
     private static Vector2 NextToLowCenterPocketVector = new Vector2(1.804565f, -2.938997f);
-
-    //public static Dictionary<GameObject, BallData> SpawnBallsInTriangle()
-    //{
-    //    var balls = new Dictionary<GameObject, BallData>();
-    //    var firstBallOfLineVector = Vector2.zero;
-    //    var ballRadius = Resources.Load("Prefabs/DeterministicBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
-    //    int ballIndex = 1;
-
-    //    var ballSpawnVector = TriangleCenterVector;
-    //    ballSpawnVector.x += ballRadius * 3.45f;
-
-    //    for (int ballRow = 1; ballRow < 6; ballRow++)
-    //    {
-    //        if (ballRow != 1)
-    //        {
-    //            firstBallOfLineVector.x += ballRadius * 1.73f;
-    //        }
-
-    //        for (int ballNumber = 1; ballNumber <= ballRow; ballNumber++)
-    //        {
-    //            if ((ballNumber == 1) && (ballRow != 1))
-    //            {
-    //                firstBallOfLineVector.y += ballRadius;
-    //                ballSpawnVector = firstBallOfLineVector;
-    //            }
-    //            else if (ballRow != 1)
-    //            {
-    //                ballSpawnVector.y -= ballRadius * 2;
-    //            }
-    //            else
-    //            {
-    //                firstBallOfLineVector = ballSpawnVector;
-    //            }
-    //            var ball = SpawnTriangleBall(ballSpawnVector, ballIndex);
-    //            balls.Add(ball.BallGameObject, ball);
-    //            ballIndex++;
-    //        }
-    //    }
-    //    return balls;
-    //}
-
-    //private static BallData SpawnTriangleBall(Vector2 spawnPosition, int ballIndex)
-    //{
-    //    if (ballIndex > 15) ballIndex = new System.Random().Next(1, 15);
-    //    var ballTypeColour = ballSpawnPattern[ballIndex - 1];
-
-    //    GameObject ballGameObject = Instantiate(Resources.Load("Prefabs/ObjectBall"), spawnPosition, Quaternion.identity) as GameObject;
-
-    //    if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
-
-    //    BallData ball = new BallData(ballTypeColour, ballGameObject);
-
-    //    ballGameObject.tag = ballTypeColour.ToString();
-    //    ballGameObject.name = ballTypeColour.ToString();
-    //    switch (ballTypeColour)
-    //    {
-    //        case BallColour.Red:
-    //            ballGameObject.GetComponent<SpriteRenderer>().color = Color.red;
-    //            break;
-    //        case BallColour.Yellow:
-    //            ballGameObject.GetComponent<SpriteRenderer>().color = Color.yellow;
-    //            break;
-    //        case BallColour.Black:
-    //            ballGameObject.GetComponent<SpriteRenderer>().color = Color.black;
-    //            break;
-    //        default:
-    //            throw new InvalidOperationException($"Unexpected ball type: {ballTypeColour}");
-    //    }
-    //    return ball;
-    //}
 
     public static void SpawnLastShotBalls(IReadOnlyList<BallSnapshot> ballsToSpawn)
     {
