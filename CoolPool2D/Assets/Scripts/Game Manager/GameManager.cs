@@ -61,10 +61,7 @@ public class GameManager : MonoBehaviour
             gameStateManager.SubmitEndOfState(GameState.Shooting);
         });
 
-        EventBus.Subscribe<ScoringFinishedEvent>((@event) =>
-        {
-            gameStateManager.SubmitEndOfState(GameState.CalculatePoints);
-        });
+        EventBus.Subscribe<ScoringFinishedEvent>(HandleScoringFinishedEvent);
 
         EventBus.Subscribe<NewGameStateEvent>((@event) =>
         {
@@ -106,7 +103,20 @@ public class GameManager : MonoBehaviour
         CaptureCurrentShotSnapshot();
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
-
+    
+    private void HandleScoringFinishedEvent(ScoringFinishedEvent scoringFinishedEvent)
+    {
+        if (scoringFinishedEvent.TotalScore >= ScoreManager.Instance.scoreToBeat)
+        {
+            ScoreManager.Instance.IncreaseScoreToBeat();
+            //UIManager.Instance?.EnableLevelCompleteScreen(scoringFinishedEvent.TotalScore);
+            playerHasShotsRemaining = false;
+        }
+        else
+        {
+            gameStateManager.SubmitEndOfState(GameState.Shooting);
+        }
+    }
     private void HandlePrepareNextTurnState()
     {
         Debug.Log("Preparing next turn.");

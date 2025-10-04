@@ -8,6 +8,8 @@ public class ScoreManager : MonoBehaviour
     public float totalScore = 0f;
     public List<ScoreType> currentScoreTypes = new List<ScoreType>();
 
+    public float scoreToBeat = 7500f;
+
     void Awake()
     {
         if (Instance == null)
@@ -24,6 +26,11 @@ public class ScoreManager : MonoBehaviour
     void Start()
     {
         EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
+    }
+
+    public void IncreaseScoreToBeat()
+    {
+               scoreToBeat *= 1.5f;
     }
 
     public void OnScorableEvent(IScorableEvent @event)
