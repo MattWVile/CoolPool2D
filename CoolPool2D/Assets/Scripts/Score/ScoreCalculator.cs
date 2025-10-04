@@ -129,7 +129,7 @@ public class ScoreCalculator : MonoBehaviour
         UIManager.Instance?.ClearShotScore();
         ScoreManager.Instance.currentScoreTypes.Clear();
         ResetShotState();
-        EventBus.Publish(new ScoringFinishedEvent());
+        EventBus.Publish(new ScoringFinishedEvent {Sender = this, TotalScore = totalScore });
     }
 
     private void BuildMultiplierEntries()

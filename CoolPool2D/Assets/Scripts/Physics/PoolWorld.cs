@@ -207,6 +207,7 @@ public class PoolWorld : MonoBehaviour
             {
                 if (railBallIndex >= 0 && edgeHitKey.HasValue)
                 {
+                    // TODO fix error when potting balls here
                     var impacted = registeredBalls[railBallIndex];
                     if (impacted.active)
                     {

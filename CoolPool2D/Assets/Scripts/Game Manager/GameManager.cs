@@ -101,6 +101,7 @@ public class GameManager : MonoBehaviour
         //var specificBall3 = BallSpawner.SpawnSpecificBall(BallColour.Orange, BallSpawnLocations.Random);
 
         CaptureCurrentShotSnapshot();
+        UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
         gameStateManager.SubmitEndOfState(GameState.GameStart);
     }
     
@@ -109,12 +110,12 @@ public class GameManager : MonoBehaviour
         if (scoringFinishedEvent.TotalScore >= ScoreManager.Instance.scoreToBeat)
         {
             ScoreManager.Instance.IncreaseScoreToBeat();
-            //UIManager.Instance?.EnableLevelCompleteScreen(scoringFinishedEvent.TotalScore);
+            UIManager.Instance?.EnableLevelCompleteScreen(scoringFinishedEvent.TotalScore, ScoreManager.Instance.scoreToBeat);
             playerHasShotsRemaining = false;
         }
         else
         {
-            gameStateManager.SubmitEndOfState(GameState.Shooting);
+            gameStateManager.SubmitEndOfState(GameState.CalculatePoints);
         }
     }
     private void HandlePrepareNextTurnState()
@@ -155,7 +156,7 @@ public class GameManager : MonoBehaviour
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
         deterministicBalls.Clear();
-        UIManager.Instance?.EnableGameOverScreen(scoreCalculator.totalScore);
+        UIManager.Instance?.EnableGameOverScreen(scoreCalculator.totalScore, ScoreManager.Instance.scoreToBeat);
     }
 
     public void CaptureCurrentShotSnapshot()

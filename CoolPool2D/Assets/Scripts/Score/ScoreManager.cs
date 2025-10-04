@@ -5,10 +5,9 @@ public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance { get; private set; }
 
-    public float totalScore = 0f;
     public List<ScoreType> currentScoreTypes = new List<ScoreType>();
 
-    public float scoreToBeat = 7500f;
+    public int scoreToBeat = 500;
 
     void Awake()
     {
@@ -30,7 +29,7 @@ public class ScoreManager : MonoBehaviour
 
     public void IncreaseScoreToBeat()
     {
-               scoreToBeat *= 1.5f;
+        scoreToBeat = (int)(scoreToBeat * 1.5f);
     }
 
     public void OnScorableEvent(IScorableEvent @event)

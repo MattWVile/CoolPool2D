@@ -1545,7 +1545,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaa188ff299a2654ba650ee34928cdbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalScore: 0
+  scoreToBeat: 750
 --- !u!4 &830456692
 Transform:
   m_ObjectHideFlags: 0
@@ -2786,6 +2786,7 @@ MonoBehaviour:
   BallHit2Clip: {fileID: 8300000, guid: df6a15b70cfe93d44ad1666d786a04a9, type: 3}
   CueHitClip: {fileID: 8300000, guid: c30be0995fa83c84ca83abb28e49596a, type: 3}
   RailHitClip: {fileID: 8300000, guid: c023db9284a1b0f41b8415d1ed67bc22, type: 3}
+  BallPocketedClip: {fileID: 0}
   ClickClip: {fileID: 8300000, guid: 341fbfbecd0957649ad55ff31e9572d5, type: 3}
 --- !u!4 &1744688605
 Transform:
@@ -3189,7 +3190,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 897729864}
   shotTypeTemplate: {fileID: 9197481963319205126, guid: 1ceb33886a28b5c4888ebde180db1440, type: 3}
-  GameOverScreen: {fileID: 9197481963319205126, guid: 338ffa44ba859354fb24ea59f8087303, type: 3}
+  gameOverScreenAsset: {fileID: 9197481963319205126, guid: 338ffa44ba859354fb24ea59f8087303, type: 3}
+  levelCompleteScreenAsset: {fileID: 9197481963319205126, guid: 3d9066fae0e41be4a83b88fab0dfb3e6, type: 3}
   multiplierPopUpTime: 0.5
 --- !u!1 &2124217143
 GameObject:
