@@ -1,26 +1,14 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MapNode : MonoBehaviour
 {
-    public string type { get; set; } = string.Empty; // e.g. "normal", "shop", "event", "boss", "treasure"
+    public MapNodeType? type { get; set; }
+
     public List<MapNode> Prev = new();
     public List<MapNode> Next = new();
     public int x { get; set; }
     public int y { get; set; }
-
-
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void Instantiate(MapNode node)
     {
@@ -31,6 +19,7 @@ public class MapNode : MonoBehaviour
         Next = node.Next;
 
         transform.position = new Vector3(x , y , 0);
+        SetSprite();
         DrawPathsToNextNodes();
     }
 
@@ -42,4 +31,15 @@ public class MapNode : MonoBehaviour
         }
     }
 
+    private void SetSprite()
+    {
+        gameObject.GetComponent<SpriteRenderer>().sprite = type switch
+        {
+            MapNodeType.Start => Resources.Load<Sprite>("Sprites/Start"),
+            MapNodeType.Treasure => Resources.Load<Sprite>("Sprites/Treasure"),
+            MapNodeType.PoolEncounter => Resources.Load<Sprite>("Sprites/RedDragonSign"),
+            MapNodeType.Shop => Resources.Load<Sprite>("Sprites/ShabbyCloth"),
+            MapNodeType.RandomEvent => Resources.Load<Sprite>("Sprites/PaddysPub"),
+        };
+    }
 }

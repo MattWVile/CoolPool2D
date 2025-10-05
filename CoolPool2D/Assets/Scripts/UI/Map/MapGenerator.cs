@@ -1,7 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -20,18 +20,52 @@ public class MapGenerator : MonoBehaviour
         CreateNodePath();
         CreateNodePath();
 
-        AllNodes.ForEach(node =>
-        {
-            if (string.IsNullOrEmpty(node.type)) return;
-            var nodeGameObject = Instantiate(Resources.Load("Prefabs/MapNode"));
-            nodeGameObject.GetComponent<MapNode>().Instantiate(node);
-        });
+        PopulateNodes();
+
+        // TODO: ValidateMap();
+        // Check map validity
+        // (2 shops in a row, no nodes of certain type, path too intertwined etc)
     }
 
-    // Update is called once per frame
-    void Update()
+    private void PopulateNodes()
     {
-        
+        foreach (var node in AllNodes.FindAll(node => node.type == MapNodeType.Empty))
+        {
+            node.type = GetNodeType(node);
+            var nodeGameObject = Instantiate(Resources.Load("Prefabs/MapNode"));
+            nodeGameObject.GetComponent<MapNode>().Instantiate(node);
+        }
+
+    }
+
+    private MapNodeType GetNodeType(MapNode currentNode)
+    {
+
+        if (currentNode.x == 0) return MapNodeType.Start;
+
+        if (currentNode.x == 5) return MapNodeType.Treasure;
+
+        if (currentNode.x < 5 && currentNode.x > 2) 
+        {
+            var randomValue = Random.Range(0, 10);
+            if (randomValue < 2) return MapNodeType.Shop;
+            if (randomValue < 5) return MapNodeType.RandomEvent;
+            return MapNodeType.PoolEncounter;
+        }
+
+        if (currentNode.x < 12 && currentNode.x > 9) 
+        {
+            var randomValue = Random.Range(0, 10);
+            if (randomValue < 2) return MapNodeType.Shop;
+            if (randomValue < 4) return MapNodeType.RandomEvent;
+            return MapNodeType.PoolEncounter;
+        }
+        var randomValue2 = Random.Range(0, 100);
+
+        if (randomValue2 <= 5) return MapNodeType.Treasure;
+        if (randomValue2 > 5 && randomValue2 <= 15) return MapNodeType.RandomEvent;
+
+        return MapNodeType.PoolEncounter;
     }
 
     private void CreateNodes()
@@ -86,23 +120,22 @@ public class MapGenerator : MonoBehaviour
 
     public void CreateNodePath() {
 
-        var currNode = GetRandomStarterNode();
-        currNode.type = "start";
+        var currentNode = GetRandomStarterNode();
 
         while (true)
         {
             MapNode nextPathNode;
             try
             {
-                nextPathNode = GetNextNodeFor(currNode);
+                nextPathNode = GetNextNodeFor(currentNode);
             }
             catch (IndexOutOfRangeException)
             {
                 break;
             }
-            currNode.Next.Add(nextPathNode);
-            currNode = nextPathNode;
-            currNode.type = "pathNode";
+            currentNode.Next.Add(nextPathNode);
+            currentNode.type = MapNodeType.Empty;
+            currentNode = nextPathNode;
         }
     }
 

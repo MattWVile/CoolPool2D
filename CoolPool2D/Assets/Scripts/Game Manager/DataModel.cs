@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public enum RailLocation {
     NoRail,
     TopLeft,
@@ -46,4 +48,15 @@ public enum BallColour
     Black,
     Cue,
     Random
+}
+
+public enum MapNodeType
+{
+    Empty,
+    Start,
+    Shop,
+    Treasure,
+    RandomEvent,
+    PoolEncounter,
+    PoolBossEncounter
 }
