@@ -1,5 +1,4 @@
-﻿using Unity.VisualScripting;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class DeterministicBall : MonoBehaviour
 {
@@ -46,10 +45,18 @@ public class DeterministicBall : MonoBehaviour
         gameObject.GetComponent<BallData>().numberOfOnBallHitEffectsTriggeredThisTurn = 0;
     }
 
-    public void Shoot(float angleRad, float speed)
+    public void Shoot(float angleRad, float speed, GameObject target,  bool isInitialShot = true)
     {
-        GameManager.Instance.CaptureCurrentShotSnapshot();
-        velocity = new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad)) * speed;
+        if (isInitialShot)
+        { 
+            GameManager.Instance.CaptureCurrentShotSnapshot();
+            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
+        }
+        else
+        {
+            GameStateManager.Instance.SubmitEndOfState(GameState.Shooting);
+        }
+            velocity = new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad)) * speed;
         if (PoolWorld.Instance != null && velocity.sqrMagnitude <= PoolWorld.Instance.sleepVelocityThreshold * PoolWorld.Instance.sleepVelocityThreshold)
         {
             // tiny bump to ensure it's active

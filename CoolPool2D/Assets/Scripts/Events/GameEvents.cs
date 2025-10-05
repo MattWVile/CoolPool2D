@@ -19,8 +19,9 @@ public class GenericGameEvent : BaseGameEvent
 }
 public class BallHasBeenShotEvent : BaseGameEvent
 {
-    public new CueMovement Sender { get; set; } // overridden Sender to specify the sender type
+    public new DeterministicBall Sender { get; set; } // overridden Sender to specify the sender type
     public GameObject Target { get; set; }
+    public bool IsInitialShot { get; set; } = true;
 }
 
 public class BallStoppedEvent : BaseGameEvent

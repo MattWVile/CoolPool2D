@@ -92,7 +92,7 @@ public class GameManager : MonoBehaviour
     {
         BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
 
-        BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.TriangleCenter);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Blue, BallSpawnLocations.TriangleCenter);
 
         //var specificBall = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
@@ -116,6 +116,7 @@ public class GameManager : MonoBehaviour
         ScoreManager.Instance.IncreaseScoreToBeat();
 
         BallSpawner.SpawnNextRoundBalls(shotRecorder.GetLastSnapshot());
+        BallSpawner.SpawnSpecificColourBall(BallColour.Blue, BallSpawnLocations.Random);
 
         UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
         UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);

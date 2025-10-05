@@ -1,5 +1,7 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitEffect
 {
@@ -62,11 +64,11 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
             try
             {
                 var target = PoolWorld.Instance.GetNextTarget();
-                cueMovement.Enable(target.gameObject);
+                cueMovement.Enable(target.gameObject, false);
             }
             catch
             {
-                cueMovement.Enable(null);
+                cueMovement.Enable(null, false);
             }
         }
 
@@ -74,18 +76,22 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
         float timeoutRealtime = startRealtime + freezeDuration;
         bool shotTaken = false;
 
-        while (Time.realtimeSinceStartup < timeoutRealtime && !shotTaken)
+        while (Time.realtimeSinceStartup < timeoutRealtime)
         {
             // bail if cue ball is potted mid-freeze
-            if (cueBallData == null || !cueBall.activeInHierarchy)
+            if (cueBallData == null || !cueBall.activeInHierarchy || shotTaken)
             {
                 PoolWorld.Instance.RestoreTimeToNormal(transition);
                 yield break;
             }
 
-            if (Input.GetKeyUp(KeyCode.Space))
+            if (Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.Mouse0))
             {
                 shotTaken = true;
+                var target = PoolWorld.Instance.GetNextTarget();
+                cueBall.GetComponent<DeterministicBall>()
+                       .Shoot(cueMovement.aimingAngle, cueMovement.shotStrength, target.gameObject, false);
+                cueMovement.Disable();
             }
 
             yield return null;
@@ -94,8 +100,12 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
         // Auto fire only if still valid
         if (!shotTaken && cueBallData != null && cueBall.activeInHierarchy)
         {
+
+            var target = PoolWorld.Instance.GetNextTarget();
             cueBall.GetComponent<DeterministicBall>()
-                   .Shoot(cueMovement.aimingAngle, cueMovement.shotStrength);
+                   .Shoot(cueMovement.aimingAngle, cueMovement.shotStrength, target.gameObject, false);
+
+            cueMovement.Disable();
         }
 
         // Disable cue

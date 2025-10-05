@@ -5,7 +5,7 @@ public class CueMovement : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
     public float distanceFromTarget = 4f; // Distance of the cue from the cue ball
-    public GameObject target; // The target ball
+    public GameObject targetGameObject; // The target ball
     public DeterministicBall targetBall; // The deterministic ball script
     public float aimingAngle;
     public bool fineAimingActive = false;
@@ -19,6 +19,7 @@ public class CueMovement : MonoBehaviour
     // store unscaled charge start time (null => not charging)
     private float? isChargingStart = null;
 
+    bool isSecondaryHit = true;   
     // use unscaled time for charge when frozen
     private float chargeTime => isChargingStart != null
         ? Mathf.Clamp(GetUnscaledTime() - isChargingStart.Value, 0f, 1f)
@@ -32,13 +33,13 @@ public class CueMovement : MonoBehaviour
         HandleInput();
 
         // Trajectory preview only while not charging and when in aiming state
-        if (target == null) return;
+        if (targetGameObject == null) return;
 
-        BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
+        BallAimingLineController lineController = targetGameObject.GetComponent<BallAimingLineController>();
         if (lineController != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
         {
             var aimingAngleVector = new Vector2(Mathf.Cos(aimingAngle), Mathf.Sin(aimingAngle));
-            lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
+            lineController.ShowTrajectory(targetGameObject.transform.position, aimingAngleVector);
         }
     }
 
@@ -50,23 +51,24 @@ public class CueMovement : MonoBehaviour
     public IEnumerator Disable(float delay = 0f)
     {
         yield return new WaitForSeconds(delay);
-        target = null;
+        targetGameObject = null;
         targetBall = null;
         spriteRenderer.enabled = false;
     }
 
-    public void Enable(GameObject targetObj)
+    public void Enable(GameObject targetObj, bool isInintialShot = true)
     {
-        target = targetObj;
-        if (target != null) targetBall = target.GetComponent<DeterministicBall>();
+        isSecondaryHit = isInintialShot;
+        targetGameObject = targetObj;
+        if (targetGameObject != null) targetBall = targetGameObject.GetComponent<DeterministicBall>();
         else targetBall = null;
 
         spriteRenderer.enabled = true;
 
         // Initialize aiming angle to point from cue -> target so rotation starts sensibly
-        if (target != null)
+        if (targetGameObject != null)
         {
-            Vector2 dir = (target.transform.position - transform.position);
+            Vector2 dir = (targetGameObject.transform.position - transform.position);
             if (dir.sqrMagnitude > 1e-6f)
                 aimingAngle = Mathf.Atan2(dir.y, dir.x);
         }
@@ -78,7 +80,7 @@ public class CueMovement : MonoBehaviour
 
     private void HandleInput()
     {
-        if (target == null) return;
+        if (targetGameObject == null) return;
 
         Camera cam = Camera.main ?? Camera.current;
         if (cam != null)
@@ -111,7 +113,7 @@ public class CueMovement : MonoBehaviour
                 // Use previous mouse position to preserve base aiming direction
                 Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(previousMouseLocation.x, previousMouseLocation.y, cam.nearClipPlane));
                 Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
-                Vector2 targetPos = target.transform.position;
+                Vector2 targetPos = targetGameObject.transform.position;
                 Vector2 dir = clampedMousePosition - targetPos;
 
                 if (dir.sqrMagnitude > 1e-8f)
@@ -127,7 +129,7 @@ public class CueMovement : MonoBehaviour
 
                 Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(currentMousePosition.x, currentMousePosition.y, cam.nearClipPlane));
                 Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
-                Vector2 targetPos = target.transform.position;
+                Vector2 targetPos = targetGameObject.transform.position;
                 Vector2 dir = clampedMousePosition - targetPos;
 
                 if (dir.sqrMagnitude > 1e-8f)
@@ -136,28 +138,6 @@ public class CueMovement : MonoBehaviour
                 }
             }
         }
-
-        // --- Charging Shot ---
-        if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Mouse0))
-        {
-            if (isChargingStart != null) return;
-            isChargingStart = GetUnscaledTime();
-        }
-        else
-        {
-            if (isChargingStart == null) return;
-
-            // Release to shoot
-            if (targetBall != null)
-            {
-                float finalStrength = Mathf.Lerp(0.2f, shotStrength, chargeTime);
-                targetBall.Shoot(aimingAngle, finalStrength);
-            }
-
-            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
-            isChargingStart = null;
-        }
-
 
         // Charging shot — use unscaled time to allow charging while frozen
         if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Mouse0))
@@ -173,19 +153,18 @@ public class CueMovement : MonoBehaviour
             if (targetBall != null)
             {
                 float finalStrength = Mathf.Lerp(0.2f, shotStrength, chargeTime);
-                targetBall.Shoot(aimingAngle, finalStrength);
+                targetBall.Shoot(aimingAngle, finalStrength, targetGameObject, isSecondaryHit);
             }
 
-            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
             isChargingStart = null;
         }
     }
 
     private void SetPosition()
     {
-        if (target == null) return;
+        if (targetGameObject == null) return;
 
-        Vector2 targetWorld = target.transform.position;
+        Vector2 targetWorld = targetGameObject.transform.position;
         var offset = getOffset(distanceFromTarget - (chargeTime * 3f), aimingAngle);
         Vector2 cuePos = targetWorld + offset;
         transform.position = cuePos;
