@@ -88,9 +88,6 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
             if (Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.Mouse0))
             {
                 shotTaken = true;
-                var target = PoolWorld.Instance.GetNextTarget();
-                cueBall.GetComponent<DeterministicBall>()
-                       .Shoot(cueMovement.aimingAngle, cueMovement.shotStrength, target.gameObject, false);
                 cueMovement.Disable();
             }
 
@@ -104,8 +101,6 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
             var target = PoolWorld.Instance.GetNextTarget();
             cueBall.GetComponent<DeterministicBall>()
                    .Shoot(cueMovement.aimingAngle, cueMovement.shotStrength, target.gameObject, false);
-
-            cueMovement.Disable();
         }
 
         // Disable cue
