@@ -115,23 +115,7 @@ public class GameManager : MonoBehaviour
         playerHasShotsRemaining = true;
         ScoreManager.Instance.IncreaseScoreToBeat();
 
-        IReadOnlyList<BallSnapshot> lastSnapshot = shotRecorder.GetLastSnapshot();
-        var list = lastSnapshot.ToList();
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        list.Add(new BallSnapshot() { Active = true, Colour = BallColour.Random });
-        BallSpawner.SpawnNextRoundBalls(list);
+        BallSpawner.SpawnNextRoundBalls(shotRecorder.GetLastSnapshot());
 
         UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
         UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
