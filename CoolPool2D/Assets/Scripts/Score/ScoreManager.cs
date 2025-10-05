@@ -5,8 +5,9 @@ public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance { get; private set; }
 
-    public float totalScore = 0f;
     public List<ScoreType> currentScoreTypes = new List<ScoreType>();
+
+    public int scoreToBeat = 500;
 
     void Awake()
     {
@@ -24,6 +25,11 @@ public class ScoreManager : MonoBehaviour
     void Start()
     {
         EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
+    }
+
+    public void IncreaseScoreToBeat()
+    {
+        scoreToBeat = (int)(scoreToBeat * 2f);
     }
 
     public void OnScorableEvent(IScorableEvent @event)

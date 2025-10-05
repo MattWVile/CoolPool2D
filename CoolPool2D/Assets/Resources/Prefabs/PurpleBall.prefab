@@ -140,8 +140,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9da01b6659da38941a646c1b347b9487, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballColour: 3
-  ballPoints: 50
+  ballColour: 1
+  ballPoints: 90
   ballMultiplier: 1
   numberOfOnBallHitEffectsTriggeredThisTurn: 0
   numberOfOnBallHitEffects: 0
