@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
-using UnityEditor.iOS;
 using UnityEngine;
 
 public enum BallSpawnLocations
@@ -75,7 +74,7 @@ public class BallSpawner : MonoBehaviour
         pos.x += ((ballRadius * 2) * row);                             
         pos.y += ((ballRadius * 2) * (row-1));
         pos.y -= (ballRadius * Math.Abs(positionInRow) * 2f);
-        pos.y -= (ballRadius * row-1);
+        pos.y -= (ballRadius * row-1) + 1f;
 
         return pos;
     }
@@ -119,7 +118,7 @@ public class BallSpawner : MonoBehaviour
     {
         if (ballColour == BallColour.Random)
         {
-            ballColour = (BallColour)UnityEngine.Random.Range(1, Enum.GetNames(typeof(BallColour)).Length - 3);
+            ballColour = (BallColour)UnityEngine.Random.Range(0, Enum.GetNames(typeof(BallColour)).Length - 3);
         }
 
         var ballGameObject = Instantiate(Resources.Load($"Prefabs/{ballColour}Ball"), spawnPosition, Quaternion.identity) as GameObject;
