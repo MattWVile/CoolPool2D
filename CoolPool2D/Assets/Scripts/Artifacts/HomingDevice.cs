@@ -12,7 +12,9 @@ public sealed class HomingDevice : BaseArtifact<BallKissedEvent> {
 
     protected override void OnEvent(BallKissedEvent e)
     {
-        //if (Random.Range(0, 100) > 20) return;
+        if (Random.Range(0, 100) > 20) return; // 20% chance
+        if (e.BallData.ballColour != BallColour.Cue) return; // only apply when cue ball kisses another ball
+
 
         var closestPocket = FindClosestPocket(e.CollisionBallData.transform.position);
         if (closestPocket == null) {
@@ -21,7 +23,6 @@ public sealed class HomingDevice : BaseArtifact<BallKissedEvent> {
         }
 
         Vector2 directionToPocket = (closestPocket.transform.position - e.CollisionBallData.transform.position).normalized;
-
 
         var ball = e.CollisionBallData.gameObject.GetComponent<DeterministicBall>();
         CoroutineRunner.Instance.StartCoroutine(GradualNudge(ball, directionToPocket, NUDGE_STRENGTH, NUDGE_DURATION));
@@ -38,6 +39,7 @@ public sealed class HomingDevice : BaseArtifact<BallKissedEvent> {
             yield return null;
         }
     }
+
     private GameObject FindClosestPocket(Vector2 transformPosition)
     {
         var pockets = GameObject.FindGameObjectsWithTag("Pocket");
