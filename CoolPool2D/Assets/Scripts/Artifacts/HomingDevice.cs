@@ -7,6 +7,9 @@ public sealed class HomingDevice : BaseArtifact<BallKissedEvent> {
     public string name = "Homing Device";
     public string description = "When a ball gets kissed by the cueball it has a 20% chance to get nudged towards the closest pocket.";
 
+    public const float NUDGE_STRENGTH = 15.0f; // total strength distributed over 0.5 seconds
+    public const float NUDGE_DURATION = 0.5f;
+
     protected override void OnEvent(BallKissedEvent e)
     {
         //if (Random.Range(0, 100) > 20) return;
@@ -18,11 +21,10 @@ public sealed class HomingDevice : BaseArtifact<BallKissedEvent> {
         }
 
         Vector2 directionToPocket = (closestPocket.transform.position - e.CollisionBallData.transform.position).normalized;
-        float nudgeStrength = 15.0f; // total strength distributed over 0.5 seconds
-        float duration = 0.5f;
+
 
         var ball = e.CollisionBallData.gameObject.GetComponent<DeterministicBall>();
-        CoroutineRunner.Instance.StartCoroutine(GradualNudge(ball, directionToPocket, nudgeStrength, duration));
+        CoroutineRunner.Instance.StartCoroutine(GradualNudge(ball, directionToPocket, NUDGE_STRENGTH, NUDGE_DURATION));
 
         Debug.Log($"Gradually nudging ball: {e.CollisionBallData.BallColour} to {closestPocket.gameObject.name}");
     }
