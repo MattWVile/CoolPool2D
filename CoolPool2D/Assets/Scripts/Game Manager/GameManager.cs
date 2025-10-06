@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
     public List<DeterministicBall> deterministicBalls;
     public GameStateManager gameStateManager;
 
+    public List<ScriptableArtifactBase> activeArtifacts;
+
     public int amountOfCueBallsSpawned = 0;
 
     // legacy score / aiming fields kept (but NO dictionary)
@@ -38,6 +40,19 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
             return;
+        }
+        activeArtifacts = new List<ScriptableArtifactBase>()
+        {
+            new HomingDevice()
+        };
+    }
+
+    public void Update()
+    {
+        // when a button is prssed
+        if (Input.GetKeyDown(KeyCode.O)) {
+            activeArtifacts.ForEach(a => a.ApplyEffect());
+            Debug.Log($"Triggered ApplyEffect");
         }
     }
 
