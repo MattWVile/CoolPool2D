@@ -29,6 +29,8 @@ public class MapNode : MonoBehaviour
 
     private LineRenderer lineRenderer;
     const string PATHCOLOURCONSTANT = "#BBBBC5";
+    const float LINEWIDTH = .08f;
+    const int AMOUNTOFPOINTS = 2;   
     public void Instantiate(VirtualMapNode node)
     {
         type = node.type;
@@ -70,10 +72,10 @@ public class MapNode : MonoBehaviour
     {
         lineRenderer = new GameObject("LineRenderer").AddComponent<LineRenderer>();
         lineRenderer.transform.parent = transform;
-        lineRenderer.positionCount = 2;
+        lineRenderer.positionCount = AMOUNTOFPOINTS;
         lineRenderer.useWorldSpace = true;
-        lineRenderer.startWidth = 0.08f;
-        lineRenderer.endWidth = 0.08f;
+        lineRenderer.startWidth = LINEWIDTH;
+        lineRenderer.endWidth = LINEWIDTH;
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         Color pathColour;
         ColorUtility.TryParseHtmlString(PATHCOLOURCONSTANT, out pathColour);
