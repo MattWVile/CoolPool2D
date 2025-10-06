@@ -50,11 +50,7 @@ public class GameManager : MonoBehaviour
 
     public void Update()
     {
-        // when a button is prssed
-        if (Input.GetKeyDown(KeyCode.O)) {
-            activeArtifacts.ForEach(a => a.ApplyEffect());
-            Debug.Log($"Triggered ApplyEffect");
-        }
+
     }
 
     private void Start()
