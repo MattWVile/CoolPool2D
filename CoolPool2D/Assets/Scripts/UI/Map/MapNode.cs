@@ -28,7 +28,7 @@ public class MapNode : MonoBehaviour
     public int y { get; set; }
 
     private LineRenderer lineRenderer;
-    private string pathColourHex = "#BBBBC5";
+    const string PATHCOLOURCONSTANT = "#BBBBC5";
     public void Instantiate(VirtualMapNode node)
     {
         type = node.type;
@@ -76,7 +76,7 @@ public class MapNode : MonoBehaviour
         lineRenderer.endWidth = 0.08f;
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         Color pathColour;
-        ColorUtility.TryParseHtmlString(pathColourHex, out pathColour);
+        ColorUtility.TryParseHtmlString(PATHCOLOURCONSTANT, out pathColour);
         lineRenderer.startColor = pathColour;
         lineRenderer.endColor = pathColour;
     }
