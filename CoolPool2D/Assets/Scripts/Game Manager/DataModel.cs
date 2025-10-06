@@ -1,4 +1,4 @@
-using UnityEngine;
+using System;
 
 public enum RailLocation {
     NoRail,
@@ -50,9 +50,11 @@ public enum BallColour
     Random
 }
 
+[Serializable]
 public enum MapNodeType
 {
     Empty,
+    PartOfPath,
     Start,
     Shop,
     Treasure,

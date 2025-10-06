@@ -1,20 +1,37 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+
+[Serializable]
+public class VirtualMapNode
+{
+    public MapNodeType type;
+    public List<Coordinates> Prev;
+    public List<Coordinates> Next;
+    public Coordinates Coordinates;
+}
+
+[Serializable]
+public class Coordinates
+{
+    public int x;
+    public int y;
+}
 
 public class MapNode : MonoBehaviour
 {
     public MapNodeType? type { get; set; }
 
-    public List<MapNode> Prev = new();
-    public List<MapNode> Next = new();
+    public List<Coordinates> Prev = new();
+    public List<Coordinates> Next = new();
     public int x { get; set; }
     public int y { get; set; }
 
-    public void Instantiate(MapNode node)
+    public void Instantiate(VirtualMapNode node)
     {
         type = node.type;
-        x = node.x;
-        y = node.y;
+        x = node.Coordinates.x;
+        y = node.Coordinates.y;
         Prev = node.Prev;
         Next = node.Next;
 

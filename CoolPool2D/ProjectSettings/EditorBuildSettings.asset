@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/UIScene.unity
     guid: 68e77e6b00ac50b43a9fb63638732fb2
+  - enabled: 1
+    path: Assets/Scenes/StartRunCutScene.unity
+    guid: 0308713c0068d4a419641e098565883d
   m_configObjects: {}
