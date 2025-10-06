@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 [Serializable]
@@ -51,7 +53,8 @@ public class MapNode : MonoBehaviour
 
     private void SetSprite()
     {
-        gameObject.GetComponent<SpriteRenderer>().sprite = type switch
+        SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+        spriteRenderer.sprite = type switch
         {
             MapNodeType.Start => Resources.Load<Sprite>("Sprites/Start"),
             MapNodeType.Treasure => Resources.Load<Sprite>("Sprites/Treasure"),
@@ -60,6 +63,23 @@ public class MapNode : MonoBehaviour
             MapNodeType.RandomEvent => Resources.Load<Sprite>("Sprites/PaddysPub"),
             _ => null,
         };
+        if (!IsTraversable())
+        {
+            spriteRenderer.color = Color.red;
+        }
+    }
+
+    private void SetColour()
+    {
+        SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+        if (!IsTraversable())
+        {
+            spriteRenderer.color = Color.red;
+        }
+        else
+        {
+            spriteRenderer.color = Color.white;
+        }
     }
 
     private void AddPolygonCollider()
@@ -120,6 +140,20 @@ public class MapNode : MonoBehaviour
     private void OnMouseDown()
     {
         if (type == null) return;
-        Debug.Log($"Clicked on node at ({x}, {y}) of type {type}");
+        if (IsTraversable())
+        {
+            var traversalNode = DataManager.Instance.Data.MapData.GeneratedMap.Find(node => node.Coordinates.x == x && node.Coordinates.y == y);
+            DataManager.Instance.Data.MapData.CurrentNode = traversalNode;
+            Debug.Log($"type:{type} X:{x} Y:{y} clicked on traversable node");
+        }
+        GameObject.FindGameObjectsWithTag("MapNode").ToList().ForEach(node => node.GetComponent<MapNode>().SetColour());    
+    }
+
+    private bool IsTraversable()
+    {
+        if (type == MapNodeType.Start && DataManager.Instance.Data.MapData.CurrentNode == null) return true;
+        if (DataManager.Instance.Data.MapData.CurrentNode == null) return false;
+        if (DataManager.Instance.Data.MapData.CurrentNode.Next.Any(node => node.x == x && node.y == y)) return true;
+        return false;
     }
 }
