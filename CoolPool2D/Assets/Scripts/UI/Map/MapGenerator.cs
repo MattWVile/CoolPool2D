@@ -15,7 +15,7 @@ public class MapGenerator : MonoBehaviour
     void Start()
     {
         var MapFromSaveData = DataManager.Instance.Data.MapData.GeneratedMap;
-        if (MapFromSaveData.Count != 0)
+        if (MapFromSaveData != null && MapFromSaveData.Count != 0)
         {
             AllNodes = MapFromSaveData;
         }

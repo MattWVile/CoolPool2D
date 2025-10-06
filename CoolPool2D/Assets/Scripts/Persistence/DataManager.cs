@@ -17,6 +17,8 @@ public class DataManager : MonoBehaviour
     {
         if (Instance == null)
         {
+            LoadDataFromFileSafely();
+
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
@@ -36,15 +38,10 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
-        LoadDataFromFileSafely();
-    }
-
     private void LoadDataFromFileSafely()
     {
         Data = SaveFileUtils.LoadDataFromFile();
-        
+        if(Data == null) CreateNewSaveFile();
     }
 
     private void CreateNewSaveFile()
