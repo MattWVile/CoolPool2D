@@ -13,6 +13,7 @@ public class BallAimingLineController : MonoBehaviour
 
     [Header("LineRenderer Settings")]
     [SerializeField] private float lineRendererWidthMultiplier = .2f;
+    [SerializeField] private int lineRendererCornerRoundness = 20;
     [SerializeField] private int lineRendererStartRoundness = 5;
     [SerializeField] private string cueBallLineRendererColourHex = "#BBBBC5";
     [SerializeField, HideInInspector] private Color lineRendererColour;
@@ -63,7 +64,8 @@ public class BallAimingLineController : MonoBehaviour
             existing.startColor = color;
             existing.endColor = color;
             existing.widthMultiplier = lineRendererWidthMultiplier;
-            existing.numCapVertices = lineRendererStartRoundness;
+            existing.numCornerVertices = lineRendererStartRoundness;
+            existing.numCapVertices = lineRendererCornerRoundness;
             existing.alignment = LineAlignment.TransformZ;
             return existing;
         }
@@ -75,6 +77,7 @@ public class BallAimingLineController : MonoBehaviour
         newLR.endColor = color;
         newLR.widthMultiplier = lineRendererWidthMultiplier;
         newLR.numCapVertices = lineRendererStartRoundness;
+        newLR.numCornerVertices = lineRendererCornerRoundness;
         newLR.alignment = LineAlignment.TransformZ;
         return newLR;
     }
