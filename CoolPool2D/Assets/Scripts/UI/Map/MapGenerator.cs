@@ -3,49 +3,77 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 
 public class MapGenerator : MonoBehaviour
 {
-    public List<MapNode> AllNodes;
+    public List<VirtualMapNode> AllNodes;
 
     void Start()
     {
-        AllNodes = new List<MapNode>();
+        var MapFromSaveData = DataManager.Instance.Data.MapData.GeneratedMap;
+        if (MapFromSaveData.Count != 0)
+        {
+            AllNodes = MapFromSaveData;
+        }
+        else
+        {
+            GenerateMap();
+            DataManager.Instance.Data.MapData = new MapData() {
+                GeneratedMap = AllNodes,
+                CurrentNode = null
+            };
+            DataManager.Instance.SaveData();
+        }
+
+        VisualizeMap();
+
+    }
+
+    private void GenerateMap()
+    {
+        AllNodes = new List<VirtualMapNode>();
         CreateNodes();
         CreateNodePath();
         CreateNodePath();
         CreateNodePath();
         CreateNodePath();
 
-        PopulateNodes();
 
         // TODO: ValidateMap();
         // Check map validity
         // (2 shops in a row, no nodes of certain type, path too intertwined etc)
+        PopulateNodes();
+    }
+
+    private void VisualizeMap()
+    {
+        foreach (var virtualNode in AllNodes.FindAll(node => node.type != MapNodeType.Empty))
+        {
+            var nodeGameObject = Instantiate(Resources.Load("Prefabs/MapNode"));
+            nodeGameObject.GetComponent<MapNode>().Instantiate(virtualNode);
+        }
     }
 
     private void PopulateNodes()
     {
-        foreach (var node in AllNodes.FindAll(node => node.type == MapNodeType.Empty))
+        foreach (var node in AllNodes.FindAll(node => node.type == MapNodeType.PartOfPath))
         {
             node.type = GetNodeType(node);
-            var nodeGameObject = Instantiate(Resources.Load("Prefabs/MapNode"));
-            nodeGameObject.GetComponent<MapNode>().Instantiate(node);
         }
 
     }
 
-    private MapNodeType GetNodeType(MapNode currentNode)
+    private MapNodeType GetNodeType(VirtualMapNode currentNode)
     {
+        if (currentNode.Coordinates.x == 0)
+            return MapNodeType.Start;
+        if (currentNode.Coordinates.x == 5) return MapNodeType.Treasure;
 
-        if (currentNode.x == 0) return MapNodeType.Start;
-
-        if (currentNode.x == 5) return MapNodeType.Treasure;
-
-        if (currentNode.x < 5 && currentNode.x > 2) 
+        if (currentNode.Coordinates.x < 5 && currentNode.Coordinates.x > 2) 
         {
             var randomValue = Random.Range(0, 10);
             if (randomValue < 2) return MapNodeType.Shop;
@@ -53,7 +81,7 @@ public class MapGenerator : MonoBehaviour
             return MapNodeType.PoolEncounter;
         }
 
-        if (currentNode.x < 12 && currentNode.x > 9) 
+        if (currentNode.Coordinates.x < 12 && currentNode.Coordinates.x > 9) 
         {
             var randomValue = Random.Range(0, 10);
             if (randomValue < 2) return MapNodeType.Shop;
@@ -73,38 +101,45 @@ public class MapGenerator : MonoBehaviour
 
         for (var x = 0; x < 15; x++) {
             for (var y = 0; y < 7; y++) {
-                AllNodes.Add(new MapNode() { x = x, y = y });
+                AllNodes.Add(new VirtualMapNode()
+                {
+                    Coordinates = new Coordinates { x = x, y = y },
+                    type = MapNodeType.Empty,
+                    Next = new List<Coordinates>(),
+                    Prev = new List<Coordinates>()
+                });
             }
         }
 
     }
 
-    private MapNode GetRandomStarterNode()
+    private VirtualMapNode GetRandomStarterNode()
     {
-        var allFirstNodes = AllNodes.Where(node => node.x == 0).ToList();
+        var allFirstNodes = AllNodes.Where(node => node.Coordinates.x == 0).ToList();
         var allFirstNodesWithoutNext = allFirstNodes.Where(node => node.Next.Count == 0).ToList();
         var randomFirstNode = allFirstNodesWithoutNext.OrderBy(x => Random.Range(0, 20)).First();
+        randomFirstNode.type = MapNodeType.Start;
         return randomFirstNode;
     }
 
-    private MapNode GetNextNodeFor(MapNode currentNode)
+    private VirtualMapNode GetNextNodeFor(VirtualMapNode currentNode)
     {
-        MapNode nextNodeInPath;
+        VirtualMapNode nextNodeInPath;
 
-        var nodesInNextColumn = AllNodes.Where(node => node.x == currentNode.x + 1).ToList();
+        var nodesInNextColumn = AllNodes.Where(node => node.Coordinates.x == currentNode.Coordinates.x + 1).ToList();
         if (!nodesInNextColumn.Any()) // if there are no next nodes
             throw new IndexOutOfRangeException();
 
         if (currentNode.Prev.Count > 1) { // if current node has more than 1 previous node, we must find a different next node
 
             var reachableNodesInNextColumn = nodesInNextColumn.Where(node =>
-                node.y != currentNode.y - 1 ||
-                node.y != currentNode.y ||
-                node.y != currentNode.y + 1
+                node.Coordinates.y != currentNode.Coordinates.y - 1 ||
+                node.Coordinates.y != currentNode.Coordinates.y ||
+                node.Coordinates.y != currentNode.Coordinates.y + 1
             ).ToList();
 
             var existingPathYValues = currentNode.Next.Select(prevNode => prevNode.y).ToList();
-            var possibleNextNodes = reachableNodesInNextColumn.Where(node => !existingPathYValues.Contains(node.y));
+            var possibleNextNodes = reachableNodesInNextColumn.Where(node => !existingPathYValues.Contains(node.Coordinates.y));
 
             nextNodeInPath = Random.Range(0, 2) == 0 // coinflip
                 ? possibleNextNodes.First()
@@ -113,8 +148,8 @@ public class MapGenerator : MonoBehaviour
             return nextNodeInPath;
         }
 
-        var nextY = GetRandomNextY(currentNode.y);
-        nextNodeInPath = nodesInNextColumn.First(node => node.y == nextY);
+        var nextY = GetRandomNextY(currentNode.Coordinates.y);
+        nextNodeInPath = nodesInNextColumn.First(node => node.Coordinates.y == nextY);
         return nextNodeInPath;
     }
 
@@ -124,7 +159,7 @@ public class MapGenerator : MonoBehaviour
 
         while (true)
         {
-            MapNode nextPathNode;
+            VirtualMapNode nextPathNode;
             try
             {
                 nextPathNode = GetNextNodeFor(currentNode);
@@ -133,9 +168,9 @@ public class MapGenerator : MonoBehaviour
             {
                 break;
             }
-            currentNode.Next.Add(nextPathNode);
-            currentNode.type = MapNodeType.Empty;
+            currentNode.Next.Add(nextPathNode.Coordinates);
             currentNode = nextPathNode;
+            currentNode.type = MapNodeType.PartOfPath;
         }
     }
 
