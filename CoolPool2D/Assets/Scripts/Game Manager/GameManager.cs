@@ -43,7 +43,8 @@ public class GameManager : MonoBehaviour
         }
         activeArtifacts = new List<ScriptableArtifactBase>()
         {
-            new HomingDevice()
+            new HomingDevice(),
+            new PinballMachine(),
         };
     }
 
