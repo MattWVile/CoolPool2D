@@ -18,7 +18,6 @@ public class Coordinates
     public int y;
 }
 
-
 public class MapNode : MonoBehaviour
 {
     public MapNodeType? type { get; set; }

@@ -1,7 +1,5 @@
 using UnityEngine;
 
-
-
 public class DataManager : MonoBehaviour
 {
     public static DataManager Instance { get; private set; }
@@ -13,7 +11,6 @@ public class DataManager : MonoBehaviour
         if (Instance == null)
         {
             LoadDataFromFileSafely();
-
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
@@ -24,14 +21,15 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    public void Update()
-    {
-        // For testing purposes: Press Ctrl+S to create a new save file and overwrite the existing one.
-        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.P)) {
-            CreateNewSaveFile();
-            Debug.Log("New save file created.");
-        }
-    }
+    //public void Update()
+    //{
+    //    //For testing purposes: Press Ctrl+P to create a new save file and overwrite the existing one.
+    //    if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.P))
+    //    {
+    //        CreateNewSaveFile();
+    //        Debug.Log("New save file created.");
+    //    }
+    //}
 
     private void LoadDataFromFileSafely()
     {

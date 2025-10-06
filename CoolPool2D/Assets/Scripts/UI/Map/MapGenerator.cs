@@ -5,7 +5,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-
 public class MapGenerator : MonoBehaviour
 {
     public List<VirtualMapNode> AllNodes;
@@ -39,8 +38,6 @@ public class MapGenerator : MonoBehaviour
         CreateNodePath();
         CreateNodePath();
         CreateNodePath();
-
-
         // TODO: ValidateMap();
         // Check map validity
         // (2 shops in a row, no nodes of certain type, path too intertwined etc)

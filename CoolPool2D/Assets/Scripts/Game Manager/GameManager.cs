@@ -17,9 +17,6 @@ public class GameManager : MonoBehaviour
 
     public int amountOfCueBallsSpawned = 0;
 
-
-
-
     // legacy score / aiming fields kept (but NO dictionary)
     public int lastShotScore;
 
@@ -42,11 +39,6 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-    }
-
-    public void Update()
-    {
-
     }
 
     private void Start()
