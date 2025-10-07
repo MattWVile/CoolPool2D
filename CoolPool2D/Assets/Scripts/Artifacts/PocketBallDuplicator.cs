@@ -8,11 +8,18 @@ public class PocketBallDuplicator : BaseArtifact<BallPocketedEvent>
     private PocketLocation lastPocketLocation;
     private BallData lastDuplicatedBallData;
 
+    private bool isSubscribedToScoringFinishedEvent = false;
+
     protected override void OnEvent(BallPocketedEvent ballPocketedEvent)
     {
         lastPocketLocation = ballPocketedEvent.PocketLocation;
         lastDuplicatedBallData = ballPocketedEvent.BallData;
-        EventBus.Subscribe<ScoringFinishedEvent>(OnScoringFinishedEvent);
+
+        if (!isSubscribedToScoringFinishedEvent)
+        {
+            EventBus.Subscribe<ScoringFinishedEvent>(OnScoringFinishedEvent);
+            isSubscribedToScoringFinishedEvent = true;
+        }
     }
 
     private void OnScoringFinishedEvent(ScoringFinishedEvent scoringFinishedEvent)
