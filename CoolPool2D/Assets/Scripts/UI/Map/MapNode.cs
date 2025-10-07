@@ -124,9 +124,9 @@ public class MapNode : MonoBehaviour
     private void SetColour(SpriteRenderer spriteRenderer = null)
     {
         if (spriteRenderer == null) spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
-
-        if (DataManager.Instance.Data.MapData.CurrentNode.Coordinates.x == x &&
-            DataManager.Instance.Data.MapData.CurrentNode.Coordinates.y == y)
+        var dataManagerCurrentNode = DataManager.Instance.Data.MapData.CurrentNode;
+        if (dataManagerCurrentNode != null && dataManagerCurrentNode.Coordinates.x == x &&
+            dataManagerCurrentNode.Coordinates.y == y)
         {
             spriteRenderer.color = Color.yellow;
         }
