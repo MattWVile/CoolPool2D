@@ -45,6 +45,7 @@ public class GameManager : MonoBehaviour
         {
             new HomingDevice(),
             new PinballMachine(),
+            new PocketBallDuplicator()
         };
     }
 
@@ -225,6 +226,9 @@ public class GameManager : MonoBehaviour
         lastPottedBall = @event.BallData;
         ballGameObjects.Remove(@event.BallData.gameObject);
         deterministicBalls.Remove(@event.BallData.gameObject.GetComponent<DeterministicBall>());
+        if(@event.BallData.ballColour == BallColour.Cue){
+            possibleTargets.Remove(@event.BallData.gameObject);
+        }
         Destroy(@event.BallData.gameObject);
     }
 

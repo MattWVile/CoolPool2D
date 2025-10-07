@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public sealed class PinballMachine : BaseArtifact<BallCollidedWithRailEvent> {
 
     public string name = "Pinball Machine";
