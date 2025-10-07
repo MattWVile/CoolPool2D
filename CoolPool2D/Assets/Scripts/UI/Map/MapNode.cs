@@ -31,7 +31,7 @@ public class MapNode : MonoBehaviour
 
     private LineRenderer lineRenderer;
     private const string PATH_COLOUR = "#BBBBC5";
-    private const float LINE_WIDTH = .08f;
+    private const float LINE_WIDTH = .1f;
     private const int AMOUNT_OF_POINTS = 2;
 
     public void Instantiate(VirtualMapNode node)
@@ -99,7 +99,9 @@ public class MapNode : MonoBehaviour
         lineRenderer.useWorldSpace = true;
         lineRenderer.startWidth = LINE_WIDTH;
         lineRenderer.endWidth = LINE_WIDTH;
-        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.material = new Material(Resources.Load<Material>("Sprites/Materials/CobbledStreetMaterial"));
+        lineRenderer.textureMode = LineTextureMode.Tile;
+        lineRenderer.textureScale = new Vector2(10f, 1.5f);
         Color pathColour;
         ColorUtility.TryParseHtmlString(PATH_COLOUR, out pathColour);
         lineRenderer.startColor = pathColour;
