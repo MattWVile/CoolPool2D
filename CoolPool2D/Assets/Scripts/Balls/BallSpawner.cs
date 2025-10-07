@@ -7,19 +7,24 @@ using UnityEngine;
 public enum BallSpawnLocations
 {
     TriangleCenter,
-    NextToLowCenterPocket,
-    cueBallInitialPosition,
+    InFrontOfToBottomCenterPocket,
+    InFrontOfToBottomLeftPocket,
+    InFrontOfToBottomRightPocket,
+    InFrontOfToTopCenterPocket,
+    InFrontOfToTopLeftPocket,
+    InFrontOfToTopRightPocket,
+    CueBallInitialPosition,
     Random
 }
 
 public class BallSpawner : MonoBehaviour
 {
-    public static Vector2 cueBallInitialPosition = new(-1.91f, 0.0384333f);
+    public static Vector2 CueBallInitialPosition = new(-1.91f, 0.0384333f);
     public static Bounds ClothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
     public static Vector2 ClothCenterVector = ClothBounds.center;
     public static Vector2 ClothDimensionsVector = ClothBounds.size;
-    public static Vector2 TriangleCenterVector = new(ClothCenterVector.x + ClothDimensionsVector.x / 5, ClothCenterVector.y);
-    private static Vector2 NextToLowCenterPocketVector = new(1.804565f, -2.938997f);
+    public static Vector2 TriangleCenter = new(ClothCenterVector.x + ClothDimensionsVector.x / 5, ClothCenterVector.y);
+    private static Vector2 InFrontOfToBottomCenterPocket = new(1.804565f, -2.938997f);
 
     public static void SpawnLastShotBalls(IReadOnlyList<BallSnapshot> ballsToSpawn)
     {
@@ -45,7 +50,7 @@ public class BallSpawner : MonoBehaviour
         var ballRadius = deterministic.GetComponent<SpriteRenderer>().bounds.size.x / 2f;
 
         var firstBallOfLineVector = Vector2.zero;
-        var ballSpawnVector = TriangleCenterVector;
+        var ballSpawnVector = TriangleCenter;
         ballSpawnVector.x += ballRadius * 3.45f;
 
         var ballIndex = 0; // index into ballsToSpawn
@@ -70,7 +75,7 @@ public class BallSpawner : MonoBehaviour
         int positionInRow = ballIndex - firstIndexOfRow;
 
         // Calculate base position
-        Vector2 pos = new(){x = TriangleCenterVector.x, y = TriangleCenterVector.y };
+        Vector2 pos = new(){x = TriangleCenter.x, y = TriangleCenter.y };
         pos.x += ((ballRadius * 2) * row);                             
         pos.y += ((ballRadius * 2) * (row-1));
         pos.y -= (ballRadius * Math.Abs(positionInRow) * 2f);
@@ -79,29 +84,29 @@ public class BallSpawner : MonoBehaviour
         return pos;
     }
 
-    public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector)
+    public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector, BallData specificBallData = null)
     {
         Vector2 spawnPosition;
-        switch (spawnPositionSelector)
-        {
-            case BallSpawnLocations.cueBallInitialPosition:
-                spawnPosition = cueBallInitialPosition;
-                break;
-            case BallSpawnLocations.TriangleCenter:
-                spawnPosition = TriangleCenterVector;
-                break;
-            case BallSpawnLocations.NextToLowCenterPocket:
-                spawnPosition = NextToLowCenterPocketVector;
-                break;
-            case BallSpawnLocations.Random:
-                spawnPosition = GetRandomSpawnPosition();
-                break;
 
-            default:
-                throw new InvalidOperationException($"Unexpected spawn position selector: {spawnPositionSelector}");
+        if (spawnPositionSelector == BallSpawnLocations.Random)
+        {
+            spawnPosition = GetRandomSpawnPosition();
+        }
+        else
+        {
+            // Use reflection to get the static field with the same name as the enum value
+            var field = typeof(BallSpawner).GetField(spawnPositionSelector.ToString(), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            if (field != null && field.FieldType == typeof(Vector2))
+            {
+                spawnPosition = (Vector2)field.GetValue(null);
+            }
+            else
+            {
+                throw new InvalidOperationException($"No Vector2 field found for spawn position selector: {spawnPositionSelector}");
+            }
         }
 
-        if(ballColour == BallColour.Random)
+        if (ballColour == BallColour.Random)
         {
             ballColour = (BallColour)UnityEngine.Random.Range(1, Enum.GetNames(typeof(BallColour)).Length - 3);
 
@@ -110,6 +115,16 @@ public class BallSpawner : MonoBehaviour
         var ballGameObject = Instantiate(Resources.Load($"Prefabs/{ballColour}Ball"), spawnPosition, Quaternion.identity) as GameObject;
 
         if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
+
+        if (specificBallData != null)
+        {
+            var ballData = ballGameObject.GetComponent<BallData>();
+            ballData.ballColour = specificBallData.ballColour;
+            ballData.ballPoints = specificBallData.ballPoints;
+            ballData.ballMultiplier = specificBallData.ballMultiplier;
+            ballData.numberOfOnBallHitEffectsTriggeredThisTurn = specificBallData.numberOfOnBallHitEffectsTriggeredThisTurn;
+            ballData.numberOfOnBallHitEffects = specificBallData.numberOfOnBallHitEffects;
+        }
         GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
     }
@@ -145,7 +160,7 @@ public class BallSpawner : MonoBehaviour
 
     public static GameObject SpawnCueBall(int cueBallIndex)
     {
-        var ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), cueBallInitialPosition, Quaternion.identity) as GameObject;
+        var ballGameObject = Instantiate(Resources.Load("Prefabs/CueBall"), CueBallInitialPosition, Quaternion.identity) as GameObject;
         GameManager.Instance.amountOfCueBallsSpawned++;
         GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
