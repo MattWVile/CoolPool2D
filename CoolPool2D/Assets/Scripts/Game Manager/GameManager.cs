@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
     public List<DeterministicBall> deterministicBalls;
     public GameStateManager gameStateManager;
 
+    public List<ScriptableArtifactBase> activeArtifacts;
+
     public int amountOfCueBallsSpawned = 0;
 
     // legacy score / aiming fields kept (but NO dictionary)
@@ -39,6 +41,16 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        activeArtifacts = new List<ScriptableArtifactBase>()
+        {
+            new HomingDevice(),
+            new PinballMachine(),
+        };
+    }
+
+    public void Update()
+    {
+
     }
 
     private void Start()

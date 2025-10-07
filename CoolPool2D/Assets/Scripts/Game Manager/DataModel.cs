@@ -40,6 +40,7 @@ public enum GameState {
     PrepareNextLevel
 }
 
+[Serializable]
 public enum BallColour
 {
     Blue,

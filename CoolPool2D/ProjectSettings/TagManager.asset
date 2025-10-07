@@ -10,6 +10,7 @@ TagManager:
   - RedBall
   - BlackBall
   - MapNode
+  - Pocket
   layers:
   - Default
   - TransparentFX

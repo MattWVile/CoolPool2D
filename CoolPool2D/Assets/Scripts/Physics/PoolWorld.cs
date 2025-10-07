@@ -584,6 +584,8 @@ public class PoolWorld : MonoBehaviour
             IsFoul = false
         };
         EventBus.Publish(evt);
+
+        Debug.Log($"[BallKissedEvent] ball: {aData.BallColour} kissed {bData.BallColour}");
     }
 
     private void PublishBallCollidedWithEdgeEvent(EdgeKey key, GameObject ball)
