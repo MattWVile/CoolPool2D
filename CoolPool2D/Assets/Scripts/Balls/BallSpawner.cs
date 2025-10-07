@@ -4,6 +4,29 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
+public static class PocketLocations
+{
+    private static Dictionary<BallSpawnLocations, Vector2> pocketLocationVectors = new()
+    {
+        { BallSpawnLocations.InFrontOfToBottomCenterPocket, new Vector2(1.835f, -3f) },
+        { BallSpawnLocations.InFrontOfToBottomLeftPocket, new Vector2(-4.478f, -3f) },
+        { BallSpawnLocations.InFrontOfToBottomRightPocket, new Vector2(8.17f, -3f) },
+        { BallSpawnLocations.InFrontOfToTopCenterPocket, new Vector2(1.835f, 3f) },
+        { BallSpawnLocations.InFrontOfToTopLeftPocket, new Vector2(-4.478f, 3f) },
+        { BallSpawnLocations.InFrontOfToTopRightPocket, new Vector2(8.17f, 3f) },
+        { BallSpawnLocations.TriangleCenter, BallSpawner.TriangleCenter },
+        { BallSpawnLocations.CueBallInitialPosition, BallSpawner.CueBallInitialPosition }
+    };
+
+    public static Vector2 GetPocketLocationVector(BallSpawnLocations location)
+    {
+        if (pocketLocationVectors.TryGetValue(location, out var vector))
+        {
+            return vector;
+        }
+        throw new ArgumentException($"No pocket location vector found for {location}");
+    }
+}
 public enum BallSpawnLocations
 {
     TriangleCenter,
@@ -24,7 +47,6 @@ public class BallSpawner : MonoBehaviour
     public static Vector2 ClothCenterVector = ClothBounds.center;
     public static Vector2 ClothDimensionsVector = ClothBounds.size;
     public static Vector2 TriangleCenter = new(ClothCenterVector.x + ClothDimensionsVector.x / 5, ClothCenterVector.y);
-    private static Vector2 InFrontOfToBottomCenterPocket = new(1.804565f, -2.938997f);
 
     public static void SpawnLastShotBalls(IReadOnlyList<BallSnapshot> ballsToSpawn)
     {
@@ -94,16 +116,7 @@ public class BallSpawner : MonoBehaviour
         }
         else
         {
-            // Use reflection to get the static field with the same name as the enum value
-            var field = typeof(BallSpawner).GetField(spawnPositionSelector.ToString(), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
-            if (field != null && field.FieldType == typeof(Vector2))
-            {
-                spawnPosition = (Vector2)field.GetValue(null);
-            }
-            else
-            {
-                throw new InvalidOperationException($"No Vector2 field found for spawn position selector: {spawnPositionSelector}");
-            }
+            spawnPosition = PocketLocations.GetPocketLocationVector(spawnPositionSelector);
         }
 
         if (ballColour == BallColour.Random)

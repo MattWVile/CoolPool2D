@@ -7,20 +7,18 @@ public class PocketBallDuplicator : BaseArtifact<BallPocketedEvent>
 
     private PocketLocation lastPocketLocation;
     private BallData lastDuplicatedBallData;
-    public void Start()
-    {
-        EventBus.Subscribe<ScoringFinishedEvent>(OnScoringFinishedEvent);
-    }
 
     protected override void OnEvent(BallPocketedEvent ballPocketedEvent)
     {
         lastPocketLocation = ballPocketedEvent.PocketLocation;
         lastDuplicatedBallData = ballPocketedEvent.BallData;
+        EventBus.Subscribe<ScoringFinishedEvent>(OnScoringFinishedEvent);
     }
 
     private void OnScoringFinishedEvent(ScoringFinishedEvent scoringFinishedEvent)
     {
         BallSpawner.SpawnSpecificColourBall(lastDuplicatedBallData.ballColour, ConvertPocketLocationToSpawnLocation(lastPocketLocation), lastDuplicatedBallData);
+        EventBus.Unsubscribe<ScoringFinishedEvent>(OnScoringFinishedEvent);
     }
 
     private BallSpawnLocations ConvertPocketLocationToSpawnLocation(PocketLocation pocketLocation)
