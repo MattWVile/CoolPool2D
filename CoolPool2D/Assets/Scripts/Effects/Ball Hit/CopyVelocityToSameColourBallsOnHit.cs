@@ -5,7 +5,11 @@ public class CopyVelocityToSameColourBallsOnHit : MonoBehaviour, IOnBallHitEffec
     public void OnBallHit(GameObject self, GameObject other)
     {
         var selfBallData = self.GetComponent<BallData>();
+
         if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn >= selfBallData.numberOfOnBallHitEffects) return;
+
+        if (other.GetComponent<BallData>().BallColour != BallColour.Cue) return;
+
         foreach (GameObject gameObject in GameManager.Instance.ballGameObjects)
         {
             BallData ballData = gameObject.GetComponent<BallData>();
