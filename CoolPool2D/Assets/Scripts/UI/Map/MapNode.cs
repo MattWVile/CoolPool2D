@@ -63,23 +63,7 @@ public class MapNode : MonoBehaviour
             MapNodeType.RandomEvent => Resources.Load<Sprite>("Sprites/PaddysPub"),
             _ => null,
         };
-        if (!IsTraversable())
-        {
-            spriteRenderer.color = Color.red;
-        }
-    }
-
-    private void SetColour()
-    {
-        SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
-        if (!IsTraversable())
-        {
-            spriteRenderer.color = Color.red;
-        }
-        else
-        {
-            spriteRenderer.color = Color.white;
-        }
+        SetColour(spriteRenderer);
     }
 
     private void AddPolygonCollider()
@@ -137,6 +121,25 @@ public class MapNode : MonoBehaviour
         }
     }
 
+    private void SetColour(SpriteRenderer spriteRenderer = null)
+    {
+        if (spriteRenderer == null) spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+
+        if (DataManager.Instance.Data.MapData.CurrentNode.Coordinates.x == x &&
+            DataManager.Instance.Data.MapData.CurrentNode.Coordinates.y == y)
+        {
+            spriteRenderer.color = Color.yellow;
+        }
+        else if (!IsTraversable())
+        {
+            spriteRenderer.color = Color.red;
+        }
+        else
+        {
+            spriteRenderer.color = Color.white;
+        }
+    }
+
     private void OnMouseDown()
     {
         if (type == null) return;
@@ -144,6 +147,7 @@ public class MapNode : MonoBehaviour
         {
             var traversalNode = DataManager.Instance.Data.MapData.GeneratedMap.Find(node => node.Coordinates.x == x && node.Coordinates.y == y);
             DataManager.Instance.Data.MapData.CurrentNode = traversalNode;
+            DataManager.Instance.SaveData();
             Debug.Log($"type:{type} X:{x} Y:{y} clicked on traversable node");
         }
         GameObject.FindGameObjectsWithTag("MapNode").ToList().ForEach(node => node.GetComponent<MapNode>().SetColour());    
