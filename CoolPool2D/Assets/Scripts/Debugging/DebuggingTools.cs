@@ -36,6 +36,12 @@ public class DebuggingTools : MonoBehaviour
             }
             Debug.Log($"[DEBUG] Deleted all balls");
         }
+
+        // when a button is prssed
+        if (Input.GetKeyDown(KeyCode.O)) {
+            GameManager.Instance.activeArtifacts.ForEach(a => a.ApplyEffect());
+            Debug.Log($"Triggered ApplyEffect");
+        }
     }
     private void HandleGameTools()
     {
