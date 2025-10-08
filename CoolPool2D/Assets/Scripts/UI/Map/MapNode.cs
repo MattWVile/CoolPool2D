@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
@@ -168,8 +169,7 @@ public class MapNode : MonoBehaviour
     {
         if (traversalNode == null) return;
         // create a black overlay and fade it in
-        FadeMapToBlack();
-
+        StartCoroutine(FadeToBlackCoroutine(1f));
 
         // update current node in data manager
         DataManager.Instance.Data.MapData.CurrentNode = traversalNode;
@@ -212,21 +212,43 @@ public class MapNode : MonoBehaviour
         }
     }
 
-    public void FadeMapToBlack()
-    {
+    private IEnumerator FadeToBlackCoroutine(float duration) {
+        // Create overlay
         var fadeOverlay = new GameObject("FadeOverlay");
-        var spriteRenderer = fadeOverlay.AddComponent<SpriteRenderer>();
-        spriteRenderer.sprite = Resources.Load<Sprite>("Sprites/WhiteSquare");
-        spriteRenderer.color = new Color(0, 0, 0, 0);
-        fadeOverlay.transform.localScale = new Vector3(100, 100, 1);
-        fadeOverlay.transform.position = new Vector3(0, 0, -1); // Ensure it's in front of the camera
-        var fadeDuration = 1f;
-        var elapsedTime = 0f;
-        while (elapsedTime < fadeDuration) {
-            var alpha = Mathf.Clamp01(elapsedTime / fadeDuration);
-            spriteRenderer.color = new Color(0, 0, 0, alpha);
-            elapsedTime += Time.deltaTime;
+        var sr = fadeOverlay.AddComponent<SpriteRenderer>();
+        sr.sprite = Resources.Load<Sprite>("Sprites/WhiteSquare");
+        sr.color = new Color(0, 0, 0, 0);
+        sr.sortingLayerName = "UI";   // ensure on top
+        sr.sortingOrder = 9999;
+
+        // Place just in front of the camera
+        var cam = Camera.main;
+        fadeOverlay.transform.position = cam.transform.position + cam.transform.forward * 1f;
+
+        // Scale to cover the screen (orthographic-safe)
+        if (cam.orthographic) {
+            float height = cam.orthographicSize * 2f;
+            float width = height * cam.aspect;
+            // Assumes your WhiteSquare sprite is 1 unit; overscale a bit for safety
+            fadeOverlay.transform.localScale = new Vector3(width * 100f, height * 100f, 1f);
+        } else {
+            // For perspective cameras, just use a big scale
+            fadeOverlay.transform.localScale = new Vector3(2000, 2000, 1);
         }
+
+        // Fade across frames
+        float t = 0f;
+        while (t < duration) {
+            t += Time.unscaledDeltaTime; // use unscaled if your game might pause Time.timeScale
+            float a = Mathf.Clamp01(t / duration);
+            sr.color = new Color(0, 0, 0, a);
+            yield return null; // let Unity render
+        }
+
+        // Ensure fully black
+        sr.color = new Color(0, 0, 0, 1f);
+        // Optional: keep it, or destroy after a delay
+        // Destroy(fadeOverlay);
     }
 
 }
