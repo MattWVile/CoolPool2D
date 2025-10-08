@@ -150,9 +150,7 @@ public class MapNode : MonoBehaviour
         if (IsTraversable())
         {
             var traversalNode = DataManager.Instance.Data.MapData.GeneratedMap.Find(node => node.Coordinates.x == x && node.Coordinates.y == y);
-            DataManager.Instance.Data.MapData.CurrentNode = traversalNode;
-            DataManager.Instance.SaveData();
-            Debug.Log($"type:{type} X:{x} Y:{y} clicked on traversable node");
+            TraverseToNode(traversalNode);
         }
         GameObject.FindGameObjectsWithTag("MapNode").ToList().ForEach(node => node.GetComponent<MapNode>().SetColour());    
     }
@@ -165,4 +163,70 @@ public class MapNode : MonoBehaviour
         if (DataManager.Instance.Data.MapData.CurrentNode.Next.Any(node => node.x == x && node.y == y)) return true;
         return false;
     }
+
+    public void TraverseToNode(VirtualMapNode traversalNode)
+    {
+        if (traversalNode == null) return;
+        // create a black overlay and fade it in
+        FadeMapToBlack();
+
+
+        // update current node in data manager
+        DataManager.Instance.Data.MapData.CurrentNode = traversalNode;
+        DataManager.Instance.SaveData();
+        Debug.Log($"type:{type} X:{x} Y:{y} clicked on traversable node");
+
+
+        // load encounter scene based on node type
+        LoadNextSceneForNode(traversalNode);
+
+    }
+
+    private static void LoadNextSceneForNode(VirtualMapNode traversalNode)
+    {
+        switch (traversalNode.type) {
+            case MapNodeType.Treasure:
+                // Load treasure scene
+                UnityEngine.SceneManagement.SceneManager.LoadScene("TreasureScene");
+                break;
+            case MapNodeType.PoolEncounter:
+                // Load pool encounter scene
+                UnityEngine.SceneManagement.SceneManager.LoadScene("UIScene");
+                break;
+            case MapNodeType.Shop:
+                // Load shop scene
+                UnityEngine.SceneManagement.SceneManager.LoadScene("ShopScene");
+                break;
+            case MapNodeType.RandomEvent:
+                // Load random event scene
+                UnityEngine.SceneManagement.SceneManager.LoadScene("RandomEventScene");
+                break;
+            case MapNodeType.Start:
+                // Starting node, perhaps load a special scene or just return
+                Debug.Log("Starting node clicked.");
+                UnityEngine.SceneManagement.SceneManager.LoadScene("UIScene");
+                break;
+            default:
+                Debug.LogWarning("Unknown node type.");
+                break;
+        }
+    }
+
+    public void FadeMapToBlack()
+    {
+        var fadeOverlay = new GameObject("FadeOverlay");
+        var spriteRenderer = fadeOverlay.AddComponent<SpriteRenderer>();
+        spriteRenderer.sprite = Resources.Load<Sprite>("Sprites/WhiteSquare");
+        spriteRenderer.color = new Color(0, 0, 0, 0);
+        fadeOverlay.transform.localScale = new Vector3(100, 100, 1);
+        fadeOverlay.transform.position = new Vector3(0, 0, -1); // Ensure it's in front of the camera
+        var fadeDuration = 1f;
+        var elapsedTime = 0f;
+        while (elapsedTime < fadeDuration) {
+            var alpha = Mathf.Clamp01(elapsedTime / fadeDuration);
+            spriteRenderer.color = new Color(0, 0, 0, alpha);
+            elapsedTime += Time.deltaTime;
+        }
+    }
+
 }
