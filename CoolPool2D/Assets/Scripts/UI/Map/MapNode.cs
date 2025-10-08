@@ -159,7 +159,8 @@ public class MapNode : MonoBehaviour
 
     public bool IsTraversable()
     {
-        if (type == MapNodeType.Start && DataManager.Instance.Data.MapData.CurrentNode == null) return true;
+        var currentNodeIsEmpty = DataManager.Instance.Data.MapData.CurrentNode == null || DataManager.Instance.Data.MapData.CurrentNode.type == MapNodeType.Empty;
+        if (type == MapNodeType.Start && currentNodeIsEmpty) return true;
         if (DataManager.Instance.Data.MapData.CurrentNode == null) return false;
         if (DataManager.Instance.Data.MapData.CurrentNode.Next.Any(node => node.x == x && node.y == y)) return true;
         return false;
