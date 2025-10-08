@@ -14,6 +14,6 @@ public class StartRunCutScene : MonoBehaviour
 
     private void OnCutsceneFinished(VideoPlayer vp)
     {
-        SceneManager.LoadScene("UIScene");
+        SceneManager.LoadScene("MapScene");
     }
 }
