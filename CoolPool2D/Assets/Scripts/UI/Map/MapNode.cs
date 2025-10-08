@@ -102,6 +102,8 @@ public class MapNode : MonoBehaviour
         lineRenderer.material = new Material(Resources.Load<Material>("Sprites/Materials/CobbledStreetMaterial"));
         lineRenderer.textureMode = LineTextureMode.Tile;
         lineRenderer.textureScale = new Vector2(10f, 1.5f);
+        lineRenderer.sortingLayerName = "Default";
+        lineRenderer.sortingOrder = -1; // lower number = drawn behind
         Color pathColour;
         ColorUtility.TryParseHtmlString(PATH_COLOUR, out pathColour);
         lineRenderer.startColor = pathColour;
@@ -155,7 +157,7 @@ public class MapNode : MonoBehaviour
         GameObject.FindGameObjectsWithTag("MapNode").ToList().ForEach(node => node.GetComponent<MapNode>().SetColour());    
     }
 
-    private bool IsTraversable()
+    public bool IsTraversable()
     {
         if (type == MapNodeType.Start && DataManager.Instance.Data.MapData.CurrentNode == null) return true;
         if (DataManager.Instance.Data.MapData.CurrentNode == null) return false;

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8753874623060609949}
   - component: {fileID: 4928251312942517435}
   - component: {fileID: 6826153452413763407}
+  - component: {fileID: 4579174992892570199}
   m_Layer: 0
   m_Name: MapNode
   m_TagString: MapNode
@@ -99,3 +100,17 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &4579174992892570199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5228645268273470289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95e7ca155cc19af4190d13cb8389d55a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 2
+  amount: 0.1
