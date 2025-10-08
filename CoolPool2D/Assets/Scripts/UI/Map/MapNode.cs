@@ -151,7 +151,7 @@ public class MapNode : MonoBehaviour
         if (IsTraversable())
         {
             var traversalNode = DataManager.Instance.Data.MapData.GeneratedMap.Find(node => node.Coordinates.x == x && node.Coordinates.y == y);
-            TraverseToNode(traversalNode);
+            StartCoroutine(TraverseToNode(traversalNode));
         }
         GameObject.FindGameObjectsWithTag("MapNode").ToList().ForEach(node => node.GetComponent<MapNode>().SetColour());    
     }
@@ -165,22 +165,22 @@ public class MapNode : MonoBehaviour
         return false;
     }
 
-    public void TraverseToNode(VirtualMapNode traversalNode)
+    public IEnumerator TraverseToNode(VirtualMapNode traversalNode)
     {
-        if (traversalNode == null) return;
         // create a black overlay and fade it in
-        StartCoroutine(FadeToBlackCoroutine(1f));
+        yield return StartCoroutine(FadeToBlackCoroutine(1f));
 
         // update current node in data manager
         DataManager.Instance.Data.MapData.CurrentNode = traversalNode;
         DataManager.Instance.SaveData();
         Debug.Log($"type:{type} X:{x} Y:{y} clicked on traversable node");
 
-
         // load encounter scene based on node type
         LoadNextSceneForNode(traversalNode);
 
     }
+
+
 
     private static void LoadNextSceneForNode(VirtualMapNode traversalNode)
     {
@@ -247,8 +247,7 @@ public class MapNode : MonoBehaviour
 
         // Ensure fully black
         sr.color = new Color(0, 0, 0, 1f);
-        // Optional: keep it, or destroy after a delay
-        // Destroy(fadeOverlay);
+
     }
 
 }
