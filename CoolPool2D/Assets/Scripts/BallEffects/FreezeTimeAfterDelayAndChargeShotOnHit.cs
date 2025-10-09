@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class FreezeTimeAfterDelayAndChargeShotOnHit : MonoBehaviour, IOnBallHitEffect
+public class FreezeTimeAfterDelayAndChargeShotOnHit : MonoBehaviour
 {
     // Tunables (can be made public if you want to tweak per-effect in Inspector)
     public float delaySeconds = 0.1f;           // small delay after hit before freezing
@@ -10,24 +10,33 @@ public class FreezeTimeAfterDelayAndChargeShotOnHit : MonoBehaviour, IOnBallHitE
     public float transitionFraction = 0.15f;    // fraction of hold to use for transitions (clamped)
     public float minTransition = 0.05f;         // min transition time
     public float maxTransition = 0.6f;          // max transition time
-
-    public void OnBallHit(GameObject self, GameObject other)
+    void Start()
     {
-        // only apply when OTHER is the cue ball
-        var otherBallData = other.GetComponent<BallData>();
+        EventBus.Subscribe<BallKissedEvent>(OnBallKissedEvent);
+        gameObject.GetComponent<BallData>().numberOfOnBallHitEffects++;
+    }
+
+    void OnDestroy()
+    {
+        EventBus.Unsubscribe<BallKissedEvent>(OnBallKissedEvent);
+    }
+
+    public void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
+    {
+        var selfBallData = ballKissedEvent.BallData;
+        var otherBallData = ballKissedEvent.CollisionBallData;
         if (otherBallData.BallColour != BallColour.Cue) return;
 
         // enforce per-turn trigger limits if you're using that counter
-        var selfBallData = self.GetComponent<BallData>();
         if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn >= selfBallData.numberOfOnBallHitEffects) return;
 
 
         // start coroutine for the effect (runs in real time)
-        StartCoroutine(FreezeThenShootCoroutine(self, other));
+        StartCoroutine(FreezeThenShootCoroutine());
         // mark triggered
         selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn++;
     }
-    private IEnumerator FreezeThenShootCoroutine(GameObject self, GameObject cueBall)
+    private IEnumerator FreezeThenShootCoroutine()
     {
         // small delay in real time
         yield return new WaitForSecondsRealtime(delaySeconds);

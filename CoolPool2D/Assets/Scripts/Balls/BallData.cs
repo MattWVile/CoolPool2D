@@ -16,30 +16,4 @@ public class BallData : MonoBehaviour
     public float BallPoints => ballPoints;
     public float BallMultiplier => ballMultiplier;
 
-    public void Start()
-    {
-        var effects = GetComponents<IOnBallHitEffect>();
-        foreach (var effect in effects)
-            numberOfOnBallHitEffects ++;
-    }
-    public void TriggerBallHitEffect(GameObject other)
-    {
-        var ballHitEffects = GetComponents<IOnBallHitEffect>();
-        foreach (var effect in ballHitEffects)
-            effect.OnBallHit(base.gameObject, other);
-    }
-
-    //public void TriggerPotEffect()
-    //{
-    //    var effects = GetComponents<IOnBallPotEffect>();
-    //    foreach (var effect in effects)
-    //        effect.OnBallPot(base.gameObject);
-    //}
-
-    //public void TriggerRailEffect(RailLocation rail)
-    //{
-    //    var effects = GetComponents<IOnBallRailEffect>();
-    //    foreach (var effect in effects)
-    //        effect.OnBallRailBounce(base.gameObject, rail);
-    //}
 }

@@ -107,9 +107,9 @@ public class GameManager : MonoBehaviour
 
         //BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.TriangleCenter);
 
-        var specificBall = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        //var specificBall = BallSpawner.SpawnSpecificColourBall(BallColour.Purple, BallSpawnLocations.Random);
 
-        var specificBall2 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        //var specificBall2 = BallSpawner.SpawnSpecificColourBall(BallColour.Blue, BallSpawnLocations.Random);
 
         var specificBall3 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 

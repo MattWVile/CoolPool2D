@@ -17,4 +17,16 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/StartRunCutScene.unity
     guid: 0308713c0068d4a419641e098565883d
+  - enabled: 1
+    path: Assets/Scenes/MapScene.unity
+    guid: e551678738b64914484aa7fe9a6e5552
+  - enabled: 1
+    path: Assets/Scenes/RandomEventScene.unity
+    guid: 62bc67bf23c4fc040b8e2a17ab3cf495
+  - enabled: 1
+    path: Assets/Scenes/ShopScene.unity
+    guid: bad1847201b2db94195f4bd06f024423
+  - enabled: 1
+    path: Assets/Scenes/TreasureScene.unity
+    guid: d43a1bf15828ec440854aac75a72123f
   m_configObjects: {}
