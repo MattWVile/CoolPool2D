@@ -1,11 +1,11 @@
 using UnityEngine;
 
 public class SwapPositionAndVelocityOnBallHit : MonoBehaviour 
-{ 
+{
+    public bool hasEffectTriggeredThisShot = false;
     void Start()
     {
         EventBus.Subscribe<BallKissedEvent>(OnBallKissedEvent);
-        gameObject.GetComponent<BallData>().numberOfOnBallHitEffects++;
     }
 
     void OnDestroy()
@@ -15,6 +15,8 @@ public class SwapPositionAndVelocityOnBallHit : MonoBehaviour
 
     public void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
+        if (hasEffectTriggeredThisShot) return;
+
         GameObject otherGameObject = ballKissedEvent.BallData.gameObject;
         GameObject selfGameObject = ballKissedEvent.CollisionBallData.gameObject;
         BallData selfBallData = ballKissedEvent.CollisionBallData;
@@ -22,15 +24,12 @@ public class SwapPositionAndVelocityOnBallHit : MonoBehaviour
         DeterministicBall selfDeterministicBall = selfGameObject.GetComponent<DeterministicBall>();
         DeterministicBall otherDeterministicBall = otherGameObject.GetComponent<DeterministicBall>();
 
-        if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn == selfBallData.numberOfOnBallHitEffects)
-            return;
-
         selfGameObject.transform.position = selfDeterministicBall.stationaryPosition;
         otherDeterministicBall.velocity = selfDeterministicBall.velocity;
 
         otherGameObject.transform.position = otherDeterministicBall.stationaryPosition;
         selfDeterministicBall.velocity = otherDeterministicBall.initialVelocity * .9f;
 
-        selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn ++;
+        hasEffectTriggeredThisShot = true;
     }
 }

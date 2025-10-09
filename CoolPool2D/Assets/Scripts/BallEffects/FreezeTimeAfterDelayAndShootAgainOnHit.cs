@@ -10,15 +10,16 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour
     public float minTransition = 0.05f;         // min transition time
     public float maxTransition = 0.8f;          // max transition time
 
+    public bool hasEffectTriggeredThisShot = false;
 
     public GameManager gameManager;
     public CueMovement cueMovement;
+
     public void Start()
     {
         gameManager = GameManager.Instance;
         cueMovement = gameManager.cue.GetComponent<CueMovement>();
         EventBus.Subscribe<BallKissedEvent>(OnBallKissedEvent);
-        gameObject.GetComponent<BallData>().numberOfOnBallHitEffects++;
     }
     void OnDestroy()
     {
@@ -27,17 +28,15 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour
 
     public void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
+        if (hasEffectTriggeredThisShot) return;
         BallData otherBallData = ballKissedEvent.BallData;
         BallData selfBallData = ballKissedEvent.CollisionBallData;
 
         if (otherBallData.BallColour != BallColour.Cue) return;
-            
-        if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn >= selfBallData.numberOfOnBallHitEffects) return;
-
         
         PoolWorld.Instance.RunFreezeCoroutine(FreezeThenShootCoroutine(otherBallData.gameObject));
 
-        selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn++;
+        hasEffectTriggeredThisShot = true;
     }
 
     private IEnumerator FreezeThenShootCoroutine(GameObject cueBall)

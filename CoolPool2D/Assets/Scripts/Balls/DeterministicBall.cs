@@ -43,7 +43,7 @@ public class DeterministicBall : MonoBehaviour
     {
         stationaryPosition = (Vector2)transform.position;
         // TODO move this to new TurnManager
-        gameObject.GetComponent<BallData>().numberOfOnBallHitEffectsTriggeredThisTurn = 0;
+        gameObject.GetComponent<BallData>().hasEffectTriggeredThisShot = false;
     }
 
     public void Shoot(float angleRad, float speed)

@@ -9,6 +9,7 @@ public class BallSnapshot
     public Vector2 Position;
     public Vector2 Velocity;
     public bool Active;
+    public BallData BallData;
 }
 
 public class ShotRecorder
@@ -25,15 +26,16 @@ public class ShotRecorder
             if (ballGameObject == null) continue;
             var data = ballGameObject.GetComponent<BallData>();
             if (data == null) continue;
-            var det = ballGameObject.GetComponent<DeterministicBall>();
+            var deterministicBall = ballGameObject.GetComponent<DeterministicBall>();
 
             var snap = new BallSnapshot
             {
                 InstanceId = ballGameObject.GetInstanceID(),
                 Colour = data.BallColour,
                 Position = (Vector2)ballGameObject.transform.position,
-                Velocity = det != null ? det.velocity : Vector2.zero,
-                Active = det != null ? det.active : ballGameObject.activeInHierarchy
+                Velocity = deterministicBall != null ? deterministicBall.velocity : Vector2.zero,
+                Active = deterministicBall != null ? deterministicBall.active : ballGameObject.activeInHierarchy,
+                BallData = data
             };
             _lastShotSnapshot.Add(snap);
         }

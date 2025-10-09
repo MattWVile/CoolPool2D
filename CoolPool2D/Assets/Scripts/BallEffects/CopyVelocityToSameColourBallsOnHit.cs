@@ -2,10 +2,10 @@ using UnityEngine;
 
 public class CopyVelocityToSameColourBallsOnHit : MonoBehaviour
 {
+    public bool hasEffectTriggeredThisShot = false;
     void Start()
     {
         EventBus.Subscribe<BallKissedEvent>(OnBallKissedEvent);
-        gameObject.GetComponent<BallData>().numberOfOnBallHitEffects++;
     }
 
     void OnDestroy()
@@ -15,11 +15,11 @@ public class CopyVelocityToSameColourBallsOnHit : MonoBehaviour
 
     public void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
+        if (hasEffectTriggeredThisShot) return;
+
         GameObject selfGameObject = ballKissedEvent.CollisionBallData.gameObject;
         GameObject other = ballKissedEvent.BallData.gameObject;
         BallData selfBallData = ballKissedEvent.CollisionBallData;
-
-        if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn >= selfBallData.numberOfOnBallHitEffects) return;
 
         if (other.GetComponent<BallData>().BallColour != BallColour.Cue) return;
 
@@ -33,6 +33,6 @@ public class CopyVelocityToSameColourBallsOnHit : MonoBehaviour
                 deterministicBall.velocity = selfGameObject.GetComponent<DeterministicBall>().velocity;
             }
         }
-        selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn++;
+        hasEffectTriggeredThisShot = true;
     }
 }
