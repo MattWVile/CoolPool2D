@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class FreezeTimeAfterDelayAndChargeShotOnHit : MonoBehaviour, IOnBallHitEffect
+public class FreezeTimeAfterDelayAndChargeShotOnHit : BaseBallKissEffect
 {
     // Tunables (can be made public if you want to tweak per-effect in Inspector)
     public float delaySeconds = 0.1f;           // small delay after hit before freezing
@@ -11,23 +11,22 @@ public class FreezeTimeAfterDelayAndChargeShotOnHit : MonoBehaviour, IOnBallHitE
     public float minTransition = 0.05f;         // min transition time
     public float maxTransition = 0.6f;          // max transition time
 
-    public void OnBallHit(GameObject self, GameObject other)
+    public void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
-        // only apply when OTHER is the cue ball
-        var otherBallData = other.GetComponent<BallData>();
-        if (otherBallData.BallColour != BallColour.Cue) return;
+        if (hasEffectTriggeredThisShot) return;
 
-        // enforce per-turn trigger limits if you're using that counter
-        var selfBallData = self.GetComponent<BallData>();
-        if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn >= selfBallData.numberOfOnBallHitEffects) return;
+        var selfBallData = ballKissedEvent.BallData;
+        var otherBallData = ballKissedEvent.CollisionBallData;
+        if (otherBallData.BallColour != BallColour.Cue) return;
 
 
         // start coroutine for the effect (runs in real time)
-        StartCoroutine(FreezeThenShootCoroutine(self, other));
-        // mark triggered
-        selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn++;
+        StartCoroutine(FreezeThenShootCoroutine());
+
+        hasEffectTriggeredThisShot = true;
     }
-    private IEnumerator FreezeThenShootCoroutine(GameObject self, GameObject cueBall)
+
+    private IEnumerator FreezeThenShootCoroutine()
     {
         // small delay in real time
         yield return new WaitForSecondsRealtime(delaySeconds);

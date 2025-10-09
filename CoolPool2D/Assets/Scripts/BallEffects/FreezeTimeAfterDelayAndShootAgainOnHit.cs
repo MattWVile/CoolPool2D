@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitEffect
+public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour
 {
     public float delaySeconds = 0.1f;           // small delay after hit before freezing
     public float freezeDuration = 3.0f;      // how long time stays frozen (real seconds)
@@ -10,31 +10,36 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
     public float minTransition = 0.05f;         // min transition time
     public float maxTransition = 0.8f;          // max transition time
 
+    public bool hasEffectTriggeredThisShot = false;
 
     public GameManager gameManager;
     public CueMovement cueMovement;
+
     public void Start()
     {
-
         gameManager = GameManager.Instance;
         cueMovement = gameManager.cue.GetComponent<CueMovement>();
+        EventBus.Subscribe<BallKissedEvent>(OnBallKissedEvent);
     }
-
-    public void OnBallHit(GameObject self, GameObject other)
+    void OnDestroy()
     {
-        var otherBallData = other.GetComponent<BallData>();
-        if (otherBallData.BallColour != BallColour.Cue) return;
-            
-        var selfBallData = self.GetComponent<BallData>();
-        if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn >= selfBallData.numberOfOnBallHitEffects) return;
-
-        
-        PoolWorld.Instance.RunFreezeCoroutine(FreezeThenShootCoroutine(self, other));
-
-        selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn++;
+        EventBus.Unsubscribe<BallKissedEvent>(OnBallKissedEvent);
     }
 
-    private IEnumerator FreezeThenShootCoroutine(GameObject self, GameObject cueBall)
+    public void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
+    {
+        if (hasEffectTriggeredThisShot) return;
+        BallData otherBallData = ballKissedEvent.BallData;
+        BallData selfBallData = ballKissedEvent.CollisionBallData;
+
+        if (otherBallData.BallColour != BallColour.Cue) return;
+        
+        PoolWorld.Instance.RunFreezeCoroutine(FreezeThenShootCoroutine(otherBallData.gameObject));
+
+        hasEffectTriggeredThisShot = true;
+    }
+
+    private IEnumerator FreezeThenShootCoroutine(GameObject cueBall)
     {
         yield return new WaitForSecondsRealtime(delaySeconds);
 

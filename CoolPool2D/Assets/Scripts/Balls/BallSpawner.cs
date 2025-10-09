@@ -82,7 +82,7 @@ public class BallSpawner : MonoBehaviour
         foreach (var ball in ballList.Where(ball => ball.Active && ball.Colour != BallColour.Cue)) // skip inactive and cue balls
         {
             var spawnPosition = GetBallPositionWithinTriangle(ballList.IndexOf(ball), ballRadius);
-            var ballGameObject = SpawnSpecificColourBallWithVector(ball.Colour, spawnPosition);
+            var ballGameObject = SpawnSpecificColourBallWithVector(ball.Colour, spawnPosition, ball.BallData);
             if (ballGameObject == null)
                 Debug.LogError($"Failed to spawn ball for colour {ball.Colour} at triangle position {spawnPosition}");
         }
@@ -135,14 +135,12 @@ public class BallSpawner : MonoBehaviour
             ballData.ballColour = specificBallData.ballColour;
             ballData.ballPoints = specificBallData.ballPoints;
             ballData.ballMultiplier = specificBallData.ballMultiplier;
-            ballData.numberOfOnBallHitEffectsTriggeredThisTurn = specificBallData.numberOfOnBallHitEffectsTriggeredThisTurn;
-            ballData.numberOfOnBallHitEffects = specificBallData.numberOfOnBallHitEffects;
         }
         GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
     }
 
-    public static GameObject SpawnSpecificColourBallWithVector(BallColour ballColour, Vector2 spawnPosition)
+    public static GameObject SpawnSpecificColourBallWithVector(BallColour ballColour, Vector2 spawnPosition, BallData specificBallData = null)
     {
         if (ballColour == BallColour.Random)
         {
@@ -150,6 +148,14 @@ public class BallSpawner : MonoBehaviour
         }
 
         var ballGameObject = Instantiate(Resources.Load($"Prefabs/{ballColour}Ball"), spawnPosition, Quaternion.identity) as GameObject;
+
+        if (specificBallData != null)
+        {
+            var ballData = ballGameObject.GetComponent<BallData>();
+            ballData.ballColour = specificBallData.ballColour;
+            ballData.ballPoints = specificBallData.ballPoints;
+            ballData.ballMultiplier = specificBallData.ballMultiplier;
+        }
 
         if (ballGameObject == null) return null;
         GameManager.Instance.AddBallToLists(ballGameObject);
