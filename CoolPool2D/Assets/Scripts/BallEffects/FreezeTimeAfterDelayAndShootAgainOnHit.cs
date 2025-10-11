@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour
+public class FreezeTimeAfterDelayAndShootAgainOnHit : BaseBallKissEffect
 {
     public float delaySeconds = 0.1f;           // small delay after hit before freezing
     public float freezeDuration = 3.0f;      // how long time stays frozen (real seconds)
@@ -10,25 +10,19 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour
     public float minTransition = 0.05f;         // min transition time
     public float maxTransition = 0.8f;          // max transition time
 
-    public bool hasEffectTriggeredThisShot = false;
-
     public GameManager gameManager;
     public CueMovement cueMovement;
 
-    public void Start()
+    private void Awake()
     {
         gameManager = GameManager.Instance;
-        cueMovement = gameManager.cue.GetComponent<CueMovement>();
-        EventBus.Subscribe<BallKissedEvent>(OnBallKissedEvent);
-    }
-    void OnDestroy()
-    {
-        EventBus.Unsubscribe<BallKissedEvent>(OnBallKissedEvent);
+        if (gameManager != null && gameManager.cue != null)
+            cueMovement = gameManager.cue.GetComponent<CueMovement>();
     }
 
-    public void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
+    protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
-        if (hasEffectTriggeredThisShot) return;
+        if (hasEffectTriggeredThisShot) return; 
         BallData otherBallData = ballKissedEvent.BallData;
         BallData selfBallData = ballKissedEvent.CollisionBallData;
 

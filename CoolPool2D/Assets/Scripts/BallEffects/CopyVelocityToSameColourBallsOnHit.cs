@@ -1,19 +1,8 @@
 using UnityEngine;
 
-public class CopyVelocityToSameColourBallsOnHit : MonoBehaviour
+public class CopyVelocityToSameColourBallsOnHit : BaseBallKissEffect
 {
-    public bool hasEffectTriggeredThisShot = false;
-    void Start()
-    {
-        EventBus.Subscribe<BallKissedEvent>(OnBallKissedEvent);
-    }
-
-    void OnDestroy()
-    {
-        EventBus.Unsubscribe<BallKissedEvent>(OnBallKissedEvent);
-    }
-
-    public void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
+    protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
         if (hasEffectTriggeredThisShot) return;
 

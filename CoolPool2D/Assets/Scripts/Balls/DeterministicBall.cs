@@ -42,8 +42,6 @@ public class DeterministicBall : MonoBehaviour
     private void OnBallStopped(BallStoppedEvent ballStoppedEvent)
     {
         stationaryPosition = (Vector2)transform.position;
-        // TODO move this to new TurnManager
-        gameObject.GetComponent<BallData>().hasEffectTriggeredThisShot = false;
     }
 
     public void Shoot(float angleRad, float speed)

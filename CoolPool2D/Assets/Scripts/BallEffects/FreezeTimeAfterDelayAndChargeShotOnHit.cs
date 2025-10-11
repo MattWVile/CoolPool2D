@@ -11,7 +11,7 @@ public class FreezeTimeAfterDelayAndChargeShotOnHit : BaseBallKissEffect
     public float minTransition = 0.05f;         // min transition time
     public float maxTransition = 0.6f;          // max transition time
 
-    public void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
+    protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
         if (hasEffectTriggeredThisShot) return;
 
