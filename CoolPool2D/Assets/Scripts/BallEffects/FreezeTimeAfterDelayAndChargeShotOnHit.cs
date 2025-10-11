@@ -13,8 +13,6 @@ public class FreezeTimeAfterDelayAndChargeShotOnHit : BaseBallKissEffect
 
     protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
-        if (hasEffectTriggeredThisShot) return;
-
         var selfBallData = ballKissedEvent.BallData;
         var otherBallData = ballKissedEvent.CollisionBallData;
         if (otherBallData.BallColour != BallColour.Cue) return;

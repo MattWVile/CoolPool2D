@@ -6,10 +6,6 @@ public class CopyVelocityToSameColourBallsOnHit : BaseBallKissEffect
     {
         GameObject selfGameObject = this.gameObject;
 
-        if (selfGameObject != ballKissedEvent.BallData.gameObject && selfGameObject != ballKissedEvent.CollisionBallData.gameObject) return;
-
-        if (hasEffectTriggeredThisShot) return;
-
         GameObject otherGameObject = (ballKissedEvent.BallData.gameObject == selfGameObject)
         ? ballKissedEvent.CollisionBallData.gameObject 
         : ballKissedEvent.BallData.gameObject;

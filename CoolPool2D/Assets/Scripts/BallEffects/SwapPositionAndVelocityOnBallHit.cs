@@ -5,7 +5,6 @@ public class SwapPositionAndVelocityOnBallHit : BaseBallKissEffect
 
     protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
-        if (hasEffectTriggeredThisShot) return;
 
         GameObject otherGameObject = ballKissedEvent.BallData.gameObject;
         GameObject selfGameObject = ballKissedEvent.CollisionBallData.gameObject;

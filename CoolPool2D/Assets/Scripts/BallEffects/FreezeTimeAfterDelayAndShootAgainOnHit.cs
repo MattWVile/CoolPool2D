@@ -22,7 +22,6 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : BaseBallKissEffect
 
     protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
-        if (hasEffectTriggeredThisShot) return; 
         BallData otherBallData = ballKissedEvent.BallData;
         BallData selfBallData = ballKissedEvent.CollisionBallData;
 

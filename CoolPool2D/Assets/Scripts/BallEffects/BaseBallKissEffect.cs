@@ -21,6 +21,8 @@ public abstract class BaseBallKissEffect : MonoBehaviour
     {
         if (!hasEffectTriggeredThisShot)
         {
+            if (this.gameObject != evt.BallData.gameObject &&
+                this.gameObject != evt.CollisionBallData.gameObject) return;
             OnBallKissedEvent(evt);
             hasEffectTriggeredThisShot = true;
         }
