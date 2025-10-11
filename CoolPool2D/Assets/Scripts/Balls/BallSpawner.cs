@@ -47,6 +47,7 @@ public class BallSpawner : MonoBehaviour
     public static Vector2 ClothCenterVector = ClothBounds.center;
     public static Vector2 ClothDimensionsVector = ClothBounds.size;
     public static Vector2 TriangleCenter = new(ClothCenterVector.x + ClothDimensionsVector.x / 5, ClothCenterVector.y);
+    public static int numberOfBalls = 0;
 
     public static void SpawnLastShotBalls(IReadOnlyList<BallSnapshot> ballsToSpawn)
     {
@@ -136,6 +137,8 @@ public class BallSpawner : MonoBehaviour
             ballData.ballPoints = specificBallData.ballPoints;
             ballData.ballMultiplier = specificBallData.ballMultiplier;
         }
+        ballGameObject.name = $"{ballColour}Ball{numberOfBalls}";
+        numberOfBalls++;
         GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
     }
@@ -158,6 +161,8 @@ public class BallSpawner : MonoBehaviour
         }
 
         if (ballGameObject == null) return null;
+        ballGameObject.name = $"Prefabs/{ballColour}Ball{numberOfBalls}";
+        numberOfBalls ++;
         GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
     }

@@ -4,20 +4,25 @@ public class CopyVelocityToSameColourBallsOnHit : BaseBallKissEffect
 {
     protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
+        GameObject selfGameObject = this.gameObject;
+
+        if (selfGameObject != ballKissedEvent.BallData.gameObject && selfGameObject != ballKissedEvent.CollisionBallData.gameObject) return;
+
         if (hasEffectTriggeredThisShot) return;
 
-        GameObject selfGameObject = ballKissedEvent.CollisionBallData.gameObject;
-        GameObject other = ballKissedEvent.BallData.gameObject;
-        BallData selfBallData = ballKissedEvent.CollisionBallData;
+        GameObject otherGameObject = (ballKissedEvent.BallData.gameObject == selfGameObject)
+        ? ballKissedEvent.CollisionBallData.gameObject 
+        : ballKissedEvent.BallData.gameObject;
 
-        if (other.GetComponent<BallData>().BallColour != BallColour.Cue) return;
+        if (otherGameObject.GetComponent<BallData>().BallColour != BallColour.Cue) return;
 
+        BallData selfBallData = selfGameObject.GetComponent<BallData>();
         foreach (GameObject gameObject in GameManager.Instance.ballGameObjects)
         {
             BallData ballData = gameObject.GetComponent<BallData>();
             DeterministicBall deterministicBall = gameObject.GetComponent<DeterministicBall>();
 
-            if (ballData.BallColour == selfBallData.BallColour && gameObject != selfGameObject && gameObject != other)
+            if (ballData.BallColour == selfBallData.BallColour && gameObject != selfGameObject && gameObject != otherGameObject)
             {
                 deterministicBall.velocity = selfGameObject.GetComponent<DeterministicBall>().velocity;
             }
