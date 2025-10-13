@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3257443262695396514}
   - component: {fileID: 3092828180257088002}
   - component: {fileID: -9070866126238369617}
+  - component: {fileID: -5590603214600987084}
   m_Layer: 8
   m_Name: GreenBall
   m_TagString: ObjectBall
@@ -140,8 +141,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9da01b6659da38941a646c1b347b9487, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballColour: 7
+  ballColour: 5
   ballPoints: 50
   ballMultiplier: 1
-  numberOfOnBallHitEffectsTriggeredThisTurn: 0
-  numberOfOnBallHitEffects: 0
+--- !u!114 &-5590603214600987084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6997192344708437271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fee037b3fb9efd54090627be66f01cca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  StartingPosition: {x: 0, y: 0}
