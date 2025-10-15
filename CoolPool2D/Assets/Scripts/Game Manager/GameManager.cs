@@ -49,11 +49,6 @@ public class GameManager : MonoBehaviour
         };
     }
 
-    public void Update()
-    {
-
-    }
-
     private void Start()
     {
         cue = GameObject.Find("Cue");

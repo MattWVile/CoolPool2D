@@ -1,11 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class RewindBallToStartingPosition : MonoBehaviour
 {
+    public bool hasRewindedThisShot = false;
     public Vector2 StartingPosition;
+
+    private float initialTransitionStepDistance = 0.02f;
+    private int initialTransitionMinSteps = 2;
+    private int initialTransitionMaxSteps = 60;
+    private float snapThreshold = 0.05f;
+
     public struct PositionVelocityPair
     {
         public Vector2 Position;
@@ -24,6 +31,7 @@ public class RewindBallToStartingPosition : MonoBehaviour
     {
         EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
         EventBus.Subscribe<BallStoppedEvent>(OnBallStopped);
+        EventBus.Subscribe<NewGameStateEvent>(OnNewGameStateEvent);
         StartingPosition = gameObject.transform.position;
     }
 
@@ -31,7 +39,18 @@ public class RewindBallToStartingPosition : MonoBehaviour
     {
         EventBus.Unsubscribe<IScorableEvent>(OnScorableEvent);
         EventBus.Unsubscribe<BallStoppedEvent>(OnBallStopped);
+        EventBus.Unsubscribe<NewGameStateEvent>(OnNewGameStateEvent);
     }
+
+    public void OnNewGameStateEvent(NewGameStateEvent @event)
+    {
+        if (@event.NewGameState == GameState.Aiming)
+        {
+            hasRewindedThisShot = false;
+            StopAllCoroutines();
+        }
+    }
+
     public void OnScorableEvent(IScorableEvent @event)
     {
         if (@event is BallPocketedEvent) return;
@@ -64,49 +83,63 @@ public class RewindBallToStartingPosition : MonoBehaviour
 
     public void OnBallStopped(BallStoppedEvent ballStoppedEvent)
     {
-        StartCoroutine(RewindCoroutine());
+        if (!hasRewindedThisShot)
+        {
+            StartCoroutine(RewindCoroutine());
+        }
+        hasRewindedThisShot = true;
     }
 
     private IEnumerator RewindCoroutine()
     {
-        var selfDeterministicBall = gameObject.GetComponent<DeterministicBall>();
-        var rb = selfDeterministicBall; // For clarity
+        DeterministicBall deterministicBall = gameObject.GetComponent<DeterministicBall>();
+        int count = PositionAndNewVelocity.Count;
+        if (count == 0)
+            yield break;
 
-        // Go through the list in reverse
-        for (int i = PositionAndNewVelocity.Count - 1; i >= 0; i--)
+        for (int i = count - 1; i >= 0; i--)
         {
-            var pair = PositionAndNewVelocity[i];
-            Vector2 targetPosition = pair.Position;
-            Vector2 rewindVelocity = -pair.Velocity;
+            PositionVelocityPair newPositionAndVelocityPair = PositionAndNewVelocity[i];
+            Vector2 targetPosition = newPositionAndVelocityPair.Position;
+            Vector2 rewindVelocity = -newPositionAndVelocityPair.Velocity;
 
-            // Only apply velocity once per rewind step
-            rb.velocity = rewindVelocity;
-            rb.initialVelocity = rewindVelocity;
-
-            // Wait until the ball is close to the target position
-            while (Vector2.Distance(rb.transform.position, targetPosition) > 0.05f)
+            if (i == count - 1)
             {
-                // If the ball has stopped (velocity is very low), nudge it again
-                if (rb.velocity.magnitude < 0.01f)
+                float distanceToFirstSample = Vector2.Distance(deterministicBall.transform.position, targetPosition);
+                if (distanceToFirstSample > snapThreshold)
                 {
-                    rb.velocity = rewindVelocity;
-                    rb.initialVelocity = rewindVelocity;
+                    int steps = Mathf.Clamp(Mathf.CeilToInt(distanceToFirstSample / initialTransitionStepDistance), initialTransitionMinSteps, initialTransitionMaxSteps);
+                    Vector2 requiredVelocity = (targetPosition - (Vector2)deterministicBall.transform.position) / (steps * Time.fixedDeltaTime);
+                    deterministicBall.velocity = requiredVelocity;
+                    deterministicBall.initialVelocity = requiredVelocity;
                 }
+                else
+                {
+                    deterministicBall.velocity = rewindVelocity;
+                    deterministicBall.initialVelocity = rewindVelocity;
+                }
+            }
+            else
+            {
+                deterministicBall.velocity = rewindVelocity;
+                deterministicBall.initialVelocity = rewindVelocity;
+            }
+
+            float prevDistance = Vector2.Distance(deterministicBall.transform.position, targetPosition);
+
+            while (Vector2.Distance(deterministicBall.transform.position, targetPosition) > snapThreshold)
+            {
+                float currentDistance = Vector2.Distance(deterministicBall.transform.position, targetPosition);
+
+                prevDistance = currentDistance;
                 yield return new WaitForFixedUpdate();
             }
 
-            // Snap to the target position and stop the ball
-            rb.transform.position = targetPosition;
-            rb.velocity = Vector2.zero;
-            rb.initialVelocity = Vector2.zero;
+            deterministicBall.transform.position = targetPosition;
             yield return null;
         }
 
-        // Final snap to starting position
-        rb.transform.position = StartingPosition;
-        rb.velocity = Vector2.zero;
-        rb.initialVelocity = Vector2.zero;
         PositionAndNewVelocity.Clear();
-        StartingPosition = rb.transform.position;
+        StartingPosition = deterministicBall.transform.position;
     }
 }
