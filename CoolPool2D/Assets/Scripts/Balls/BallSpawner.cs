@@ -47,7 +47,7 @@ public class BallSpawner : MonoBehaviour
     public static Vector2 ClothCenterVector = ClothBounds.center;
     public static Vector2 ClothDimensionsVector = ClothBounds.size;
     public static Vector2 TriangleCenter = new(ClothCenterVector.x + ClothDimensionsVector.x / 5, ClothCenterVector.y);
-    public static int numberOfBalls = 0;
+    public static int numberOfBallsSpawned = 0;
 
     public static void SpawnLastShotBalls(IReadOnlyList<BallSnapshot> ballsToSpawn)
     {
@@ -107,7 +107,7 @@ public class BallSpawner : MonoBehaviour
         return pos;
     }
 
-    public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector, BallDataSnapshot specificBallDataSnapshot = default(BallDataSnapshot))
+    public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector, BallScoringDataSnapshot specificBallDataSnapshot = default(BallScoringDataSnapshot))
     {
         Vector2 spawnPosition;
 
@@ -130,20 +130,20 @@ public class BallSpawner : MonoBehaviour
 
         if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
 
-        if (!specificBallDataSnapshot.Equals(default(BallDataSnapshot)))
+        if (!specificBallDataSnapshot.Equals(default(BallScoringDataSnapshot)))
         {
-            var ballData = ballGameObject.GetComponent<BallData>();
+            var ballData = ballGameObject.GetComponent<BallScoringData>();
             ballData.ballColour = specificBallDataSnapshot.ballColour;
             ballData.ballPoints = specificBallDataSnapshot.ballPoints;
             ballData.ballMultiplier = specificBallDataSnapshot.ballMultiplier;
         }
-        ballGameObject.name = $"{ballColour}Ball{numberOfBalls}";
-        numberOfBalls++;
+        ballGameObject.name = $"{ballColour}Ball{numberOfBallsSpawned}";
+        numberOfBallsSpawned++;
         GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
     }
 
-    public static GameObject SpawnSpecificColourBallWithVector(BallColour ballColour, Vector2 spawnPosition, BallData specificBallData = null)
+    public static GameObject SpawnSpecificColourBallWithVector(BallColour ballColour, Vector2 spawnPosition, BallScoringData specificBallData = null)
     {
         if (ballColour == BallColour.Random)
         {
@@ -154,15 +154,15 @@ public class BallSpawner : MonoBehaviour
 
         if (specificBallData != null)
         {
-            var ballData = ballGameObject.GetComponent<BallData>();
+            var ballData = ballGameObject.GetComponent<BallScoringData>();
             ballData.ballColour = specificBallData.ballColour;
             ballData.ballPoints = specificBallData.ballPoints;
             ballData.ballMultiplier = specificBallData.ballMultiplier;
         }
 
         if (ballGameObject == null) return null;
-        ballGameObject.name = $"Prefabs/{ballColour}Ball{numberOfBalls}";
-        numberOfBalls ++;
+        ballGameObject.name = $"Prefabs/{ballColour}Ball{numberOfBallsSpawned}";
+        numberOfBallsSpawned ++;
         GameManager.Instance.AddBallToLists(ballGameObject);
         return ballGameObject;
     }

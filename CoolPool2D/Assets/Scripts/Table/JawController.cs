@@ -9,7 +9,7 @@ public class JawController : MonoBehaviour
 
     public void PublishBallCollidedWithJawEvent(GameObject ballThatHitJaw)
     {
-        BallData ballData = ballThatHitJaw.gameObject.GetComponent<BallData>();
+        BallScoringData ballData = ballThatHitJaw.gameObject.GetComponent<BallScoringData>();
         {
             var ballCollidedWithJawEvent = new BallCollidedWithJawEvent
             {

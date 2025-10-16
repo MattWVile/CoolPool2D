@@ -52,7 +52,7 @@ public class RewindBallToStartingPosition : MonoBehaviour
     {
         if (@event is BallPocketedEvent) return;
 
-        var selfBallData = gameObject.GetComponent<BallData>();
+        var selfBallData = gameObject.GetComponent<BallScoringData>();
 
         if (@event is BallKissedEvent kissedEvent)
         {

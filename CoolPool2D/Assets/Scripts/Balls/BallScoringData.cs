@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class BallData : MonoBehaviour
+public class BallScoringData : MonoBehaviour
 {
     [Header("Ball Settings")]
     public BallColour ballColour;
@@ -14,13 +14,14 @@ public class BallData : MonoBehaviour
     public float BallMultiplier => ballMultiplier;
 
 }
-public struct BallDataSnapshot
+
+public struct BallScoringDataSnapshot
 {
     public BallColour ballColour;
     public float ballPoints;
     public float ballMultiplier;
 
-    public BallDataSnapshot(BallData data)
+    public BallScoringDataSnapshot(BallScoringData data)
     {
         ballColour = data.ballColour;
         ballPoints = data.ballPoints;

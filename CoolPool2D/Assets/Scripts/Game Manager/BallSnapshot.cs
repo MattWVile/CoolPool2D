@@ -9,7 +9,7 @@ public class BallSnapshot
     public Vector2 Position;
     public Vector2 Velocity;
     public bool Active;
-    public BallData BallData;
+    public BallScoringData BallData;
 }
 
 public class ShotRecorder
@@ -24,7 +24,7 @@ public class ShotRecorder
         foreach (var ballGameObject in balls)
         {
             if (ballGameObject == null) continue;
-            var data = ballGameObject.GetComponent<BallData>();
+            var data = ballGameObject.GetComponent<BallScoringData>();
             if (data == null) continue;
             var deterministicBall = ballGameObject.GetComponent<DeterministicBall>();
 

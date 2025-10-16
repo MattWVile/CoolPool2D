@@ -16,7 +16,7 @@ public class ShotContext
 public class ShotEvent
 {
     public ShotEventType Type;
-    public BallData Ball;
+    public BallScoringData Ball;
     public float Time; // optional timestamp
 }
 

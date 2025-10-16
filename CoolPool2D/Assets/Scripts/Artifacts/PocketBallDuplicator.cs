@@ -6,14 +6,14 @@ public class PocketBallDuplicator : BaseArtifact<BallPocketedEvent>
     public string description = "When pocketing a ball, that ball is duplicated next to the pocket on your next shot";
 
     private PocketLocation lastPocketLocation;
-    private BallDataSnapshot lastDuplicatedBallData;
+    private BallScoringDataSnapshot lastDuplicatedBallData;
 
     private bool isSubscribedToScoringFinishedEvent = false;
 
     protected override void OnEvent(BallPocketedEvent ballPocketedEvent)
     {
         lastPocketLocation = ballPocketedEvent.PocketLocation;
-        lastDuplicatedBallData = new BallDataSnapshot(ballPocketedEvent.BallData);
+        lastDuplicatedBallData = new BallScoringDataSnapshot(ballPocketedEvent.BallData);
 
         if (!isSubscribedToScoringFinishedEvent)
         {

@@ -8,7 +8,7 @@ public class SwapPositionAndVelocityOnBallHit : BaseBallKissEffect
 
         GameObject otherGameObject = ballKissedEvent.BallData.gameObject;
         GameObject selfGameObject = ballKissedEvent.CollisionBallData.gameObject;
-        BallData selfBallData = ballKissedEvent.CollisionBallData;
+        BallScoringData selfBallData = ballKissedEvent.CollisionBallData;
 
         DeterministicBall selfDeterministicBall = selfGameObject.GetComponent<DeterministicBall>();
         DeterministicBall otherDeterministicBall = otherGameObject.GetComponent<DeterministicBall>();

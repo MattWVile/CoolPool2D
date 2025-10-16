@@ -22,8 +22,8 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : BaseBallKissEffect
 
     protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
     {
-        BallData otherBallData = ballKissedEvent.BallData;
-        BallData selfBallData = ballKissedEvent.CollisionBallData;
+        BallScoringData otherBallData = ballKissedEvent.BallData;
+        BallScoringData selfBallData = ballKissedEvent.CollisionBallData;
 
         if (otherBallData.BallColour != BallColour.Cue) return;
         
@@ -37,7 +37,7 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : BaseBallKissEffect
         yield return new WaitForSecondsRealtime(delaySeconds);
 
         // safety: bail if cue ball got potted during the delay
-        var cueBallData = cueBall.GetComponent<BallData>();
+        var cueBallData = cueBall.GetComponent<BallScoringData>();
         if (cueBallData == null || !cueBall.activeInHierarchy)
             yield break;
 
