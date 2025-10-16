@@ -109,7 +109,6 @@ public class RewindBallToStartingPosition : MonoBehaviour
                 float currentDistance = Vector2.Distance(deterministicBall.transform.position, targetPosition);
                 yield return new WaitForFixedUpdate();
             }
-            deterministicBall.transform.position = targetPosition;
             yield return null;
         }
         PositionAndNewVelocity.Clear();

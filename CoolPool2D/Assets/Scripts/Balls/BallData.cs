@@ -14,3 +14,16 @@ public class BallData : MonoBehaviour
     public float BallMultiplier => ballMultiplier;
 
 }
+public struct BallDataSnapshot
+{
+    public BallColour ballColour;
+    public float ballPoints;
+    public float ballMultiplier;
+
+    public BallDataSnapshot(BallData data)
+    {
+        ballColour = data.ballColour;
+        ballPoints = data.ballPoints;
+        ballMultiplier = data.ballMultiplier;
+    }
+}

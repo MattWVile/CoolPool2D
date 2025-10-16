@@ -101,7 +101,7 @@ public class ScoreCalculator : MonoBehaviour
 
     private void HandleNewGameStateEventScoring(NewGameStateEvent newGameStateEvent)
     {
-        Debug.Log("HandleCalculatePoints");
+        //Debug.Log("HandleCalculatePoints");
         switch(newGameStateEvent?.NewGameState) {
             case GameState.CalculatePoints:
                 StartCoroutine(HandleScoringSequence());

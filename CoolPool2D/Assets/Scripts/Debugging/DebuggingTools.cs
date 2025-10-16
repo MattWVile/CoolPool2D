@@ -17,6 +17,7 @@ public class DebuggingTools : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Debug.Log($"{GameManager.Instance.lastPottedBall} potted ball");
         HandleTimeControl();
         HandleGameTools();
         HandleDeleteAllBalls();

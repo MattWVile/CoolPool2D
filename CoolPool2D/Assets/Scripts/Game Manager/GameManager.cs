@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
 
     private readonly ShotRecorder shotRecorder = new ShotRecorder();
 
-    public BallData lastPottedBall;
+    public BallDataSnapshot lastPottedBall;
 
     public bool playerHasShotsRemaining = true;
     private void Awake()
@@ -100,13 +100,13 @@ public class GameManager : MonoBehaviour
     {
         BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
 
-        //BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.TriangleCenter);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.TriangleCenter);
 
         //var specificBall = BallSpawner.SpawnSpecificColourBall(BallColour.Purple, BallSpawnLocations.Random);
 
         //var specificBall2 = BallSpawner.SpawnSpecificColourBall(BallColour.Blue, BallSpawnLocations.Random);
 
-        var specificBall3 = BallSpawner.SpawnSpecificColourBall(BallColour.Green, BallSpawnLocations.Random);
+        //var specificBall3 = BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.Random);
 
         //var specificBall4 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
@@ -153,7 +153,7 @@ public class GameManager : MonoBehaviour
 
     private void HandlePrepareNextTurnState()
     {
-        Debug.Log("Preparing next turn.");
+        //Debug.Log("Preparing next turn.");
 
         try
         {
@@ -164,7 +164,7 @@ public class GameManager : MonoBehaviour
         }
         catch (NullReferenceException)
         {
-            Debug.Log("No shootable found. placing one.");
+            //Debug.Log("No shootable found. placing one.");
             var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
         }
 
@@ -222,20 +222,20 @@ public class GameManager : MonoBehaviour
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
     }
 
-    private void HandlePocketedBall(BallPocketedEvent @event)
+    private void HandlePocketedBall(BallPocketedEvent ballPocketedEvent)
     {
-        lastPottedBall = @event.BallData;
-        ballGameObjects.Remove(@event.BallData.gameObject);
-        deterministicBalls.Remove(@event.BallData.gameObject.GetComponent<DeterministicBall>());
-        if(@event.BallData.ballColour == BallColour.Cue){
-            possibleTargets.Remove(@event.BallData.gameObject);
+        lastPottedBall = new BallDataSnapshot(ballPocketedEvent.BallData);
+        ballGameObjects.Remove(ballPocketedEvent.BallData.gameObject);
+        deterministicBalls.Remove(ballPocketedEvent.BallData.gameObject.GetComponent<DeterministicBall>());
+        if(ballPocketedEvent.BallData.ballColour == BallColour.Cue){
+            possibleTargets.Remove(ballPocketedEvent.BallData.gameObject);
         }
-        Destroy(@event.BallData.gameObject);
+        Destroy(ballPocketedEvent.BallData.gameObject);
     }
 
     private void HandleAimingState()
     {
-        Debug.Log("HandleAimingState");
+        //Debug.Log("HandleAimingState");
         var targetGameObject = possibleTargets.FirstOrDefault();
         if (targetGameObject == null)
         {
@@ -247,7 +247,7 @@ public class GameManager : MonoBehaviour
 
     private void HandleShootingState()
     {
-        Debug.Log("HandleShootingState");
+        //Debug.Log("HandleShootingState");
         StartCoroutine(CheckIfAllBallsStopped(true));
         cueMovement?.RunDisableRoutine(cueMovement.Disable(0.05f));
     }
@@ -262,7 +262,7 @@ public class GameManager : MonoBehaviour
     {
         if (ballToAdd == null)
         {
-            Debug.LogWarning("GameManager.AddBallToLists your ballToAdd param is null");
+            //Debug.LogWarning("GameManager.AddBallToLists your ballToAdd param is null");
             return;
         }
 

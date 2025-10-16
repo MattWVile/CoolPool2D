@@ -107,7 +107,7 @@ public class BallSpawner : MonoBehaviour
         return pos;
     }
 
-    public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector, BallData specificBallData = null)
+    public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector, BallDataSnapshot specificBallDataSnapshot = default(BallDataSnapshot))
     {
         Vector2 spawnPosition;
 
@@ -130,12 +130,12 @@ public class BallSpawner : MonoBehaviour
 
         if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
 
-        if (specificBallData != null)
+        if (!specificBallDataSnapshot.Equals(default(BallDataSnapshot)))
         {
             var ballData = ballGameObject.GetComponent<BallData>();
-            ballData.ballColour = specificBallData.ballColour;
-            ballData.ballPoints = specificBallData.ballPoints;
-            ballData.ballMultiplier = specificBallData.ballMultiplier;
+            ballData.ballColour = specificBallDataSnapshot.ballColour;
+            ballData.ballPoints = specificBallDataSnapshot.ballPoints;
+            ballData.ballMultiplier = specificBallDataSnapshot.ballMultiplier;
         }
         ballGameObject.name = $"{ballColour}Ball{numberOfBalls}";
         numberOfBalls++;
