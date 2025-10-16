@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class FreezeTimeAfterDelayAndChargeShotOnHit : BaseBallKissEffect
+public class FreezeTimeAfterDelayAndChargeShotOnHit : BaseBallEffect<BallKissedEvent>
 {
     // Tunables (can be made public if you want to tweak per-effect in Inspector)
     public float delaySeconds = 0.1f;           // small delay after hit before freezing
@@ -11,7 +11,7 @@ public class FreezeTimeAfterDelayAndChargeShotOnHit : BaseBallKissEffect
     public float minTransition = 0.05f;         // min transition time
     public float maxTransition = 0.6f;          // max transition time
 
-    protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
+    protected override void OnEvent(BallKissedEvent ballKissedEvent)
     {
         var selfBallData = ballKissedEvent.BallData;
         var otherBallData = ballKissedEvent.CollisionBallData;

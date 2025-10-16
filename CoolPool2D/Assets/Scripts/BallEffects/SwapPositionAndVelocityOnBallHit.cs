@@ -1,9 +1,9 @@
 using UnityEngine;
 
-public class SwapPositionAndVelocityOnBallHit : BaseBallKissEffect 
+public class SwapPositionAndVelocityOnBallHit : BaseBallEffect<BallKissedEvent>
 {
 
-    protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
+    protected override void OnEvent(BallKissedEvent ballKissedEvent)
     {
 
         GameObject otherGameObject = ballKissedEvent.BallData.gameObject;

@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class FreezeTimeAfterDelayAndShootAgainOnHit : BaseBallKissEffect
+public class FreezeTimeAfterDelayAndShootAgainOnHit : BaseBallEffect<BallKissedEvent>
 {
     public float delaySeconds = 0.1f;           // small delay after hit before freezing
     public float freezeDuration = 3.0f;      // how long time stays frozen (real seconds)
@@ -20,13 +20,13 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : BaseBallKissEffect
             cueMovement = gameManager.cue.GetComponent<CueMovement>();
     }
 
-    protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
+    protected override void OnEvent(BallKissedEvent ballKissedEvent)
     {
         BallScoringData otherBallData = ballKissedEvent.BallData;
         BallScoringData selfBallData = ballKissedEvent.CollisionBallData;
 
         if (otherBallData.BallColour != BallColour.Cue) return;
-        
+
         PoolWorld.Instance.RunFreezeCoroutine(FreezeThenShootCoroutine(otherBallData.gameObject));
 
         hasEffectTriggeredThisShot = true;

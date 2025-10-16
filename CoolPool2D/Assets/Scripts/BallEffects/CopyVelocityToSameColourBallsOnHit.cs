@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class CopyVelocityToSameColourBallsOnHit : BaseBallKissEffect
+public class CopyVelocityToSameColourBallsOnHit : BaseBallEffect<BallKissedEvent>
 {
-    protected override void OnBallKissedEvent(BallKissedEvent ballKissedEvent)
+    protected override void OnEvent(BallKissedEvent ballKissedEvent)
     {
         GameObject selfGameObject = this.gameObject;
 

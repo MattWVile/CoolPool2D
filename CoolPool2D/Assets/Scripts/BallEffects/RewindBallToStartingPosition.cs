@@ -2,11 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RewindBallToStartingPosition : MonoBehaviour
+public class RewindBallToStartingPosition : BaseBallEffect<BallStoppedEvent>
 {
-    public bool hasRewoundThisShot = false;
     public Vector2 StartingPosition;
-
     private float snapThreshold = 0.1f;
 
     public struct PositionVelocityPair
@@ -23,32 +21,32 @@ public class RewindBallToStartingPosition : MonoBehaviour
 
     public List<PositionVelocityPair> PositionAndNewVelocity = new();
 
-    void Start()
+    protected override void Start()
     {
-        EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
-        EventBus.Subscribe<BallStoppedEvent>(OnBallStopped);
+        base.Start();
         EventBus.Subscribe<NewGameStateEvent>(OnNewGameStateEvent);
+        EventBus.Subscribe<IScorableEvent>(OnScoreableEvent);
         StartingPosition = gameObject.transform.position;
     }
 
-    void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         StopAllCoroutines();
-        EventBus.Unsubscribe<IScorableEvent>(OnScorableEvent);
-        EventBus.Unsubscribe<BallStoppedEvent>(OnBallStopped);
         EventBus.Unsubscribe<NewGameStateEvent>(OnNewGameStateEvent);
+        EventBus.Unsubscribe<IScorableEvent>(OnScoreableEvent);
     }
 
     public void OnNewGameStateEvent(NewGameStateEvent @event)
     {
         if (@event.NewGameState == GameState.Aiming)
         {
-            hasRewoundThisShot = false;
+            hasEffectTriggeredThisShot = false;
             StopAllCoroutines();
         }
     }
 
-    public void OnScorableEvent(IScorableEvent @event)
+    private void OnScoreableEvent(IScorableEvent @event)
     {
         if (@event is BallPocketedEvent) return;
 
@@ -78,13 +76,13 @@ public class RewindBallToStartingPosition : MonoBehaviour
         );
     }
 
-    public void OnBallStopped(BallStoppedEvent ballStoppedEvent)
+    protected override void OnEvent(BallStoppedEvent ballStoppedEvent)
     {
-        if (!hasRewoundThisShot)
+        if (!hasEffectTriggeredThisShot)
         {
             StartCoroutine(RewindCoroutine());
         }
-        hasRewoundThisShot = true;
+        hasEffectTriggeredThisShot = true;
     }
 
     private IEnumerator RewindCoroutine()
@@ -106,7 +104,6 @@ public class RewindBallToStartingPosition : MonoBehaviour
 
             while (Vector2.Distance(deterministicBall.transform.position, targetPosition) > snapThreshold)
             {
-                float currentDistance = Vector2.Distance(deterministicBall.transform.position, targetPosition);
                 yield return new WaitForFixedUpdate();
             }
             yield return null;

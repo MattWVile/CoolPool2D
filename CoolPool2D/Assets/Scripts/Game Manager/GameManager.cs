@@ -100,19 +100,19 @@ public class GameManager : MonoBehaviour
     {
         BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
 
-        BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.TriangleCenter);
+        //BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.TriangleCenter);
 
         BallSpawner.SpawnSpecificColourBall(BallColour.Purple, BallSpawnLocations.Random);
 
-        //BallSpawner.SpawnSpecificColourBall(BallColour.Blue, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Blue, BallSpawnLocations.Random);
 
-        //BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Green, BallSpawnLocations.Random);
 
-        //BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
-        //BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
-        //BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
         CaptureCurrentShotSnapshot();
         UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
