@@ -102,7 +102,7 @@ public class RewindBallToStartingPosition : MonoBehaviour
 
             deterministicBall.velocity = rewindVelocity;
             deterministicBall.initialVelocity = rewindVelocity;
-            if (i >= count - 2) rewindVelocity *= rewindVelocity * 2;
+            if (i >= count - 2) deterministicBall.velocity *= 2.5f;
 
             float prevDistance = Vector2.Distance(deterministicBall.transform.position, targetPosition);
 
