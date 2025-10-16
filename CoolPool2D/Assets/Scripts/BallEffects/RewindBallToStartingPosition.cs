@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class RewindBallToStartingPosition : MonoBehaviour
 {
-    public bool hasRewindedThisShot = false;
+    public bool hasRewoundThisShot = false;
     public Vector2 StartingPosition;
 
     private float snapThreshold = 0.1f;
@@ -43,7 +43,7 @@ public class RewindBallToStartingPosition : MonoBehaviour
     {
         if (@event.NewGameState == GameState.Aiming)
         {
-            hasRewindedThisShot = false;
+            hasRewoundThisShot = false;
             StopAllCoroutines();
         }
     }
@@ -80,11 +80,11 @@ public class RewindBallToStartingPosition : MonoBehaviour
 
     public void OnBallStopped(BallStoppedEvent ballStoppedEvent)
     {
-        if (!hasRewindedThisShot)
+        if (!hasRewoundThisShot)
         {
             StartCoroutine(RewindCoroutine());
         }
-        hasRewindedThisShot = true;
+        hasRewoundThisShot = true;
     }
 
     private IEnumerator RewindCoroutine()
@@ -104,12 +104,9 @@ public class RewindBallToStartingPosition : MonoBehaviour
             deterministicBall.initialVelocity = rewindVelocity;
             if (i >= count - 2) deterministicBall.velocity *= 2.5f;
 
-            float prevDistance = Vector2.Distance(deterministicBall.transform.position, targetPosition);
-
             while (Vector2.Distance(deterministicBall.transform.position, targetPosition) > snapThreshold)
             {
                 float currentDistance = Vector2.Distance(deterministicBall.transform.position, targetPosition);
-                prevDistance = currentDistance;
                 yield return new WaitForFixedUpdate();
             }
             deterministicBall.transform.position = targetPosition;
