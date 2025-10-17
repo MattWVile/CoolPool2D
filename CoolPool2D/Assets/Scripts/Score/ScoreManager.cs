@@ -1,3 +1,4 @@
+using DamageNumbersPro;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ public class ScoreManager : MonoBehaviour
 
     public int scoreToBeat = 500;
 
+    public DamageNumber scorePrefab;
     void Awake()
     {
         if (Instance == null)
@@ -47,6 +49,7 @@ public class ScoreManager : MonoBehaviour
             scoreTypeHeader += @event.ScoreTypeHeader;
         }
             AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
+            DamageNumber damageNumber = scorePrefab.Spawn(@event.BallData.transform.position, scoreTypePoints);
     }
 
     private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
