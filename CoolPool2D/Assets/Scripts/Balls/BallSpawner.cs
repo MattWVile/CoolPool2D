@@ -37,6 +37,7 @@ public enum BallSpawnLocations
     InFrontOfToTopLeftPocket,
     InFrontOfToTopRightPocket,
     CueBallInitialPosition,
+    RandomInFrontOfBalkLine,
     Random
 }
 
@@ -110,10 +111,13 @@ public class BallSpawner : MonoBehaviour
     public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector, BallScoringDataSnapshot specificBallDataSnapshot = default(BallScoringDataSnapshot))
     {
         Vector2 spawnPosition;
-
         if (spawnPositionSelector == BallSpawnLocations.Random)
         {
             spawnPosition = GetRandomSpawnPosition();
+        }
+        else if (spawnPositionSelector == BallSpawnLocations.RandomInFrontOfBalkLine)
+        {
+            spawnPosition = GetRandomSpawnPositionInFrontOfBalkLine();
         }
         else
         {
@@ -167,6 +171,27 @@ public class BallSpawner : MonoBehaviour
         return ballGameObject;
     }
 
+    public static GameObject SpawnAdvanceToBalkLineBall(BallSpawnLocations spawnPositionSelector, BallScoringDataSnapshot specificBallDataSnapshot = default(BallScoringDataSnapshot))
+    {
+        Vector2 spawnPosition = GetRandomSpawnPositionInFrontOfBalkLine();
+
+        var ballGameObject = Instantiate(Resources.Load($"Prefabs/AdvancetoBalkLineBall"), spawnPosition, Quaternion.identity) as GameObject;
+
+        if (ballGameObject == null) throw new InvalidOperationException("ballGameObject is null.");
+
+        if (!specificBallDataSnapshot.Equals(default(BallScoringDataSnapshot)))
+        {
+            var ballData = ballGameObject.GetComponent<BallScoringData>();
+            ballData.ballColour = specificBallDataSnapshot.ballColour;
+            ballData.ballPoints = specificBallDataSnapshot.ballPoints;
+            ballData.ballMultiplier = specificBallDataSnapshot.ballMultiplier;
+        }
+        ballGameObject.name = $"AdvancetoBalkLineBall{numberOfBallsSpawned}";
+        numberOfBallsSpawned++;
+        GameManager.Instance.AddBallToLists(ballGameObject);
+        return ballGameObject;
+    }
+
 
     public static Vector2 GetRandomSpawnPosition()
     {
@@ -175,6 +200,20 @@ public class BallSpawner : MonoBehaviour
         var clothDimensionsVector = clothBounds.size;
         var clothCenterVector = clothBounds.center;
         float xMin = clothCenterVector.x - (clothDimensionsVector.x / 2) + ballRadius;
+        float xMax = clothCenterVector.x + (clothDimensionsVector.x / 2) - ballRadius;
+        float yMin = clothCenterVector.y - (clothDimensionsVector.y / 2) + ballRadius;
+        float yMax = clothCenterVector.y + (clothDimensionsVector.y / 2) - ballRadius;
+        Vector2 spawnPosition = new Vector2(UnityEngine.Random.Range(xMin, xMax), UnityEngine.Random.Range(yMin, yMax));
+        return spawnPosition;
+    }
+
+    public static Vector2 GetRandomSpawnPositionInFrontOfBalkLine()
+    {
+        var ballRadius = Resources.Load("Prefabs/DeterministicBall", typeof(GameObject)).GetComponent<SpriteRenderer>().bounds.size.x / 2;
+        var clothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
+        var clothDimensionsVector = clothBounds.size;
+        var clothCenterVector = clothBounds.center;
+        float xMin = clothCenterVector.x - (clothDimensionsVector.x / 4) + ballRadius;
         float xMax = clothCenterVector.x + (clothDimensionsVector.x / 2) - ballRadius;
         float yMin = clothCenterVector.y - (clothDimensionsVector.y / 2) + ballRadius;
         float yMax = clothCenterVector.y + (clothDimensionsVector.y / 2) - ballRadius;
