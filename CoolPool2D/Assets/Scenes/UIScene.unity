@@ -1440,8 +1440,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: 0, y: -0.00000011920929, z: 0}
-    m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
+    m_Center: {x: 0, y: -0.0000001192093, z: 0}
+    m_Extent: {x: 0.9985302, y: 0.9985303, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -1589,7 +1589,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaa188ff299a2654ba650ee34928cdbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scoreToBeat: 50
+  scoreToBeat: 5000000
 --- !u!4 &830456692
 Transform:
   m_ObjectHideFlags: 0
@@ -2462,7 +2462,6 @@ MonoBehaviour:
   amountOfCueBallsSpawned: 0
   lastShotScore: 0
   scoreCalculator: {fileID: 0}
-  lastPottedBall: {fileID: 0}
   playerHasShotsRemaining: 1
 --- !u!4 &1469342013
 Transform:
