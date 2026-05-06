@@ -99,8 +99,8 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-        BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.RandomInFrontOfBalkLine);
-        BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.RandomInFrontOfBalkLine);
+        BallSpawner.SpawnAdvanceToBalkLineBall(BallSpawnLocations.RandomInFrontOfBalkLine);
+        BallSpawner.SpawnAdvanceToBalkLineBall(BallSpawnLocations.RandomInFrontOfBalkLine);
 
         CaptureCurrentShotSnapshot();
         //UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);

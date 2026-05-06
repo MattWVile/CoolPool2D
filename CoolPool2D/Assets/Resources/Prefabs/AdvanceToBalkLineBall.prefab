@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 3257443262695396514}
   - component: {fileID: 3092828180257088002}
   - component: {fileID: -9070866126238369617}
+  - component: {fileID: -3369028888067029311}
   m_Layer: 8
-  m_Name: AdvanceToCueLineBall
+  m_Name: AdvanceToBalkLineBall
   m_TagString: ObjectBall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -143,3 +144,16 @@ MonoBehaviour:
   ballColour: 3
   ballPoints: 100
   ballMultiplier: 1
+--- !u!114 &-3369028888067029311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6997192344708437271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 521dbdd1f6347b54f95a17be59e1a94b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  forceMagnitude: 2
