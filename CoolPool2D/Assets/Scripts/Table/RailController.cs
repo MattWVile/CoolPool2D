@@ -9,7 +9,7 @@ public class RailController : MonoBehaviour
 
     public void PublishBallCollidedWithRailEvent(GameObject ballThatHitRail)
     {
-        BallData ballData = ballThatHitRail.gameObject.GetComponent<BallData>();
+        BallScoringData ballData = ballThatHitRail.gameObject.GetComponent<BallScoringData>();
         {
             var ballCollidedWithRailEvent = new BallCollidedWithRailEvent
             {

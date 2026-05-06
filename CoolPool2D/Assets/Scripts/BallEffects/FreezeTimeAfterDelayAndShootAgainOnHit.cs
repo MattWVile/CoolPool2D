@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitEffect
+public class FreezeTimeAfterDelayAndShootAgainOnHit : BaseBallEffect<BallKissedEvent>
 {
     public float delaySeconds = 0.1f;           // small delay after hit before freezing
     public float freezeDuration = 3.0f;      // how long time stays frozen (real seconds)
@@ -10,36 +10,34 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : MonoBehaviour, IOnBallHitE
     public float minTransition = 0.05f;         // min transition time
     public float maxTransition = 0.8f;          // max transition time
 
-
     public GameManager gameManager;
     public CueMovement cueMovement;
-    public void Start()
-    {
 
+    private void Awake()
+    {
         gameManager = GameManager.Instance;
-        cueMovement = gameManager.cue.GetComponent<CueMovement>();
+        if (gameManager != null && gameManager.cue != null)
+            cueMovement = gameManager.cue.GetComponent<CueMovement>();
     }
 
-    public void OnBallHit(GameObject self, GameObject other)
+    protected override void OnEvent(BallKissedEvent ballKissedEvent)
     {
-        var otherBallData = other.GetComponent<BallData>();
+        BallScoringData otherBallData = ballKissedEvent.BallData;
+        BallScoringData selfBallData = ballKissedEvent.CollisionBallData;
+
         if (otherBallData.BallColour != BallColour.Cue) return;
-            
-        var selfBallData = self.GetComponent<BallData>();
-        if (selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn >= selfBallData.numberOfOnBallHitEffects) return;
 
-        
-        PoolWorld.Instance.RunFreezeCoroutine(FreezeThenShootCoroutine(self, other));
+        PoolWorld.Instance.RunFreezeCoroutine(FreezeThenShootCoroutine(otherBallData.gameObject));
 
-        selfBallData.numberOfOnBallHitEffectsTriggeredThisTurn++;
+        hasEffectTriggeredThisShot = true;
     }
 
-    private IEnumerator FreezeThenShootCoroutine(GameObject self, GameObject cueBall)
+    private IEnumerator FreezeThenShootCoroutine(GameObject cueBall)
     {
         yield return new WaitForSecondsRealtime(delaySeconds);
 
         // safety: bail if cue ball got potted during the delay
-        var cueBallData = cueBall.GetComponent<BallData>();
+        var cueBallData = cueBall.GetComponent<BallScoringData>();
         if (cueBallData == null || !cueBall.activeInHierarchy)
             yield break;
 

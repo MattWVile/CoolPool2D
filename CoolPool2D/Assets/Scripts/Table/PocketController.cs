@@ -17,7 +17,7 @@ public class PocketController : MonoBehaviour
 
     public void PublishBallPocketedEvent(GameObject pocketedBall)
     {
-        BallData ballData = pocketedBall.gameObject.GetComponent<BallData>();
+        BallScoringData ballData = pocketedBall.gameObject.GetComponent<BallScoringData>();
         {
             var ballPocketedEvent = new BallPocketedEvent
             {

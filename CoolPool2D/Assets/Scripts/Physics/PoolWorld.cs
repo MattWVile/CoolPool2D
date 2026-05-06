@@ -99,7 +99,6 @@ public class PoolWorld : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) Debug.LogWarning("Multiple PoolWorld instances found. Using the last one.");
         Instance = this;
         _originalFixedDeltaTime = Time.fixedDeltaTime;
 
@@ -198,7 +197,6 @@ public class PoolWorld : MonoBehaviour
                 if (!b.active || !b.pocketable) continue;
                 if (IsBallInPocket(b.transform.position, b.ballRadius, out PocketStruct pocket))
                 {
-                    if (enableDebugLogs) Debug.Log($"Ball pocketed at {b.transform.position} into {pocket.pocketController}");
                     pocket.pocketController.PublishBallPocketedEvent(b.gameObject);
                 }
             }
@@ -207,7 +205,6 @@ public class PoolWorld : MonoBehaviour
             {
                 if (railBallIndex >= 0 && edgeHitKey.HasValue)
                 {
-                    // TODO fix error when potting balls here
                     var impacted = registeredBalls[railBallIndex];
                     if (impacted.active)
                     {
@@ -310,7 +307,6 @@ public class PoolWorld : MonoBehaviour
                 float abLen2 = AB.sqrMagnitude;
                 if (abLen2 <= SharedDeterministicPhysics.MIN_DIRECTION_EPSILON)
                 {
-                    // treat as endpoint-only (degenerate)
                     if (SolvePointCollision(p0, v, radius, A, maxTime, out float tPoint, out Vector2 nPoint))
                     {
                         if (tPoint < time)
@@ -443,7 +439,6 @@ public class PoolWorld : MonoBehaviour
         foreach (var rc in FindObjectsOfType<RailController>())
         {
             var coll = rc.GetComponent<Collider2D>();
-            if (coll == null) { if (enableDebugLogs) Debug.LogWarning($"RailController {rc.name} missing Collider2D"); continue; }
 
             if (!railDictionary.ContainsKey(rc.railLocation))
                 railDictionary[rc.railLocation] = new RailData { Controller = rc, Segments = new List<RailSegment>() };
@@ -489,7 +484,6 @@ public class PoolWorld : MonoBehaviour
         foreach (var jc in FindObjectsOfType<JawController>())
         {
             var coll = jc.GetComponent<Collider2D>();
-            if (coll == null) { if (enableDebugLogs) Debug.LogWarning($"JawController {jc.name} missing Collider2D"); continue; }
 
             if (!jawDictionary.ContainsKey(jc.jawLocation))
                 jawDictionary[jc.jawLocation] = new JawData { Controller = jc, Segments = new List<JawSegment>() };
@@ -531,8 +525,6 @@ public class PoolWorld : MonoBehaviour
                 AddJawSegment(aLocal, bLocal);
             }
         }
-
-        if (enableDebugLogs) Debug.Log($"Built edges: rails={railDictionary.Count}, jaws={jawDictionary.Count}, edges={edgeDictionary.Count}");
     }
 
     private void MoveBallsAndSimulateDrag(float dt)
@@ -570,8 +562,8 @@ public class PoolWorld : MonoBehaviour
 
     private void PublishBallKissedEvent(DeterministicBall a, DeterministicBall b)
     {
-        var aData = a.gameObject.GetComponent<BallData>();
-        var bData = b.gameObject.GetComponent<BallData>();
+        var aData = a.gameObject.GetComponent<BallScoringData>();
+        var bData = b.gameObject.GetComponent<BallScoringData>();
         string header = $"{aData.BallColour} ball kissed {bData.BallColour} ball";
 
         var evt = new BallKissedEvent
@@ -584,8 +576,6 @@ public class PoolWorld : MonoBehaviour
             IsFoul = false
         };
         EventBus.Publish(evt);
-
-        Debug.Log($"[BallKissedEvent] ball: {aData.BallColour} kissed {bData.BallColour}");
     }
 
     private void PublishBallCollidedWithEdgeEvent(EdgeKey key, GameObject ball)

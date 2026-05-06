@@ -27,7 +27,6 @@ public sealed class HomingDevice : BaseArtifact<BallKissedEvent> {
         var ball = e.CollisionBallData.gameObject.GetComponent<DeterministicBall>();
         CoroutineRunner.Instance.StartCoroutine(GradualNudge(ball, directionToPocket, NUDGE_STRENGTH, NUDGE_DURATION));
 
-        Debug.Log($"Gradually nudging ball: {e.CollisionBallData.BallColour} to {closestPocket.gameObject.name}");
     }
     private IEnumerator GradualNudge(DeterministicBall ball, Vector2 dir, float totalStrength, float duration) {
         float elapsed = 0f;

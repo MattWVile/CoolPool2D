@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
 
     private readonly ShotRecorder shotRecorder = new ShotRecorder();
 
-    public BallData lastPottedBall;
+    public BallScoringDataSnapshot lastPottedBall;
 
     public bool playerHasShotsRemaining = true;
     private void Awake()
@@ -49,11 +49,6 @@ public class GameManager : MonoBehaviour
         };
     }
 
-    public void Update()
-    {
-
-    }
-
     private void Start()
     {
         cue = GameObject.Find("Cue");
@@ -71,7 +66,7 @@ public class GameManager : MonoBehaviour
 
         EventBus.Subscribe<BallStoppedEvent>((@event) =>
         {
-            gameStateManager.SubmitEndOfState(GameState.Shooting);
+            StartCoroutine(WaitForBallsStoppedThenSubmitEndOfState());
         });
 
         EventBus.Subscribe<ScoringFinishedEvent>(HandleScoringFinishedEvent);
@@ -107,17 +102,17 @@ public class GameManager : MonoBehaviour
 
         //BallSpawner.SpawnSpecificColourBall(BallColour.Black, BallSpawnLocations.TriangleCenter);
 
-        var specificBall = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Purple, BallSpawnLocations.Random);
 
-        var specificBall2 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Blue, BallSpawnLocations.Random);
 
-        var specificBall3 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Green, BallSpawnLocations.Random);
 
-        var specificBall4 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
-        var specificBall5 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
-        var specificBall6 = BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
+        BallSpawner.SpawnSpecificColourBall(BallColour.Orange, BallSpawnLocations.Random);
 
         CaptureCurrentShotSnapshot();
         UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
@@ -158,8 +153,6 @@ public class GameManager : MonoBehaviour
 
     private void HandlePrepareNextTurnState()
     {
-        Debug.Log("Preparing next turn.");
-
         try
         {
             var target = PoolWorld.Instance.GetNextTarget();
@@ -169,7 +162,7 @@ public class GameManager : MonoBehaviour
         }
         catch (NullReferenceException)
         {
-            Debug.Log("No shootable found. placing one.");
+            //("No shootable found. placing one.");
             var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
         }
 
@@ -227,20 +220,19 @@ public class GameManager : MonoBehaviour
         deterministicBalls = ballGameObjects.Select(ball => ball.GetComponent<DeterministicBall>()).ToList();
     }
 
-    private void HandlePocketedBall(BallPocketedEvent @event)
+    private void HandlePocketedBall(BallPocketedEvent ballPocketedEvent)
     {
-        lastPottedBall = @event.BallData;
-        ballGameObjects.Remove(@event.BallData.gameObject);
-        deterministicBalls.Remove(@event.BallData.gameObject.GetComponent<DeterministicBall>());
-        if(@event.BallData.ballColour == BallColour.Cue){
-            possibleTargets.Remove(@event.BallData.gameObject);
+        lastPottedBall = new BallScoringDataSnapshot(ballPocketedEvent.BallData);
+        ballGameObjects.Remove(ballPocketedEvent.BallData.gameObject);
+        deterministicBalls.Remove(ballPocketedEvent.BallData.gameObject.GetComponent<DeterministicBall>());
+        if(ballPocketedEvent.BallData.ballColour == BallColour.Cue){
+            possibleTargets.Remove(ballPocketedEvent.BallData.gameObject);
         }
-        Destroy(@event.BallData.gameObject);
+        Destroy(ballPocketedEvent.BallData.gameObject);
     }
 
     private void HandleAimingState()
     {
-        Debug.Log("HandleAimingState");
         var targetGameObject = possibleTargets.FirstOrDefault();
         if (targetGameObject == null)
         {
@@ -252,8 +244,7 @@ public class GameManager : MonoBehaviour
 
     private void HandleShootingState()
     {
-        Debug.Log("HandleShootingState");
-        StartCoroutine(CheckIfAllBallsStopped());
+        StartCoroutine(CheckIfAllBallsStopped(true));
         cueMovement?.RunDisableRoutine(cueMovement.Disable(0.05f));
     }
 
@@ -267,7 +258,7 @@ public class GameManager : MonoBehaviour
     {
         if (ballToAdd == null)
         {
-            Debug.LogWarning("GameManager.AddBallToLists your ballToAdd param is null");
+            //Warning("GameManager.AddBallToLists your ballToAdd param is null");
             return;
         }
 
@@ -275,14 +266,19 @@ public class GameManager : MonoBehaviour
         deterministicBalls.Add(ballToAdd.GetComponent<DeterministicBall>());
     }
 
-    private IEnumerator CheckIfAllBallsStopped()
+    private IEnumerator CheckIfAllBallsStopped(bool publishEvent)
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.1f);
         while (!AllBallsStopped())
         {
             yield return new WaitForSeconds(0.5f);
         }
-        EventBus.Publish(new BallStoppedEvent());
+        if (publishEvent) EventBus.Publish(new BallStoppedEvent());
+    }
+    private IEnumerator WaitForBallsStoppedThenSubmitEndOfState()
+    {
+        yield return StartCoroutine(CheckIfAllBallsStopped(false));
+        gameStateManager.SubmitEndOfState(GameState.Shooting);
     }
 
     public bool AllBallsStopped()
