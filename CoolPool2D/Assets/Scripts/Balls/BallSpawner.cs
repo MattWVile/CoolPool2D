@@ -213,11 +213,21 @@ public class BallSpawner : MonoBehaviour
         var clothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
         var clothDimensionsVector = clothBounds.size;
         var clothCenterVector = clothBounds.center;
-        float xMin = clothCenterVector.x - (clothDimensionsVector.x / 4) + ballRadius;
+        float xMin = clothCenterVector.x - (clothDimensionsVector.x / 4.3f) + ballRadius;
         float xMax = clothCenterVector.x + (clothDimensionsVector.x / 2) - ballRadius;
-        float yMin = clothCenterVector.y - (clothDimensionsVector.y / 2) + ballRadius;
-        float yMax = clothCenterVector.y + (clothDimensionsVector.y / 2) - ballRadius;
+        float yMin = clothCenterVector.y - (clothDimensionsVector.y / 2.02f) + ballRadius;
+        float yMax = clothCenterVector.y + (clothDimensionsVector.y / 2.02f) - ballRadius;
         Vector2 spawnPosition = new Vector2(UnityEngine.Random.Range(xMin, xMax), UnityEngine.Random.Range(yMin, yMax));
+        //ensure no balls spawn on top of each other by checking against existing ball positions
+        var existingBallPositions = GameManager.Instance.ballGameObjects.Select(ball => (Vector2)ball.transform.position).ToList();
+        int maxAttempts = 10;   
+        int attempts = 0;
+        while (existingBallPositions.Any(pos => Vector2.Distance(pos, spawnPosition) < ballRadius * 2) && attempts < maxAttempts)
+        {
+            spawnPosition = new Vector2(UnityEngine.Random.Range(xMin, xMax), UnityEngine.Random.Range(yMin, yMax));
+            attempts++;
+        }
+
         return spawnPosition;
     }
 

@@ -141,19 +141,7 @@ public class GameManager : MonoBehaviour
 
     private void HandlePrepareNextTurnState()
     {
-        try
-        {
-            var target = PoolWorld.Instance.GetNextTarget();
-            if(target.gameObject && !possibleTargets.Contains(target.gameObject))
-                possibleTargets.Add(target.gameObject);
-
-        }
-        catch (NullReferenceException)
-        {
-            //("No shootable found. placing one.");
-            var cueBall = BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
-        }
-
+        TurnManager.Instance.PrepareForNextTurn();
         StartCoroutine(WaitThenEndState(.1f, GameState.PrepareNextTurn));
     }
 

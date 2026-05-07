@@ -1,12 +1,13 @@
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
 {
     public float forceMagnitude = 10f;
+    public bool hasBallTakenLife = false;
     protected override void Start()
     {
         base.Start();
+        hasEffectTriggeredThisShot = false;
         EventBus.Subscribe<NewGameStateEvent>(OnNewGameStateEvent);
     }
 
@@ -22,7 +23,7 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
         {
             hasEffectTriggeredThisShot = false;
         }
-        else if (@event.NewGameState == GameState.PrepareNextTurn)
+        else if (@event.NewGameState == GameState.PrepareNextTurn && !hasBallTakenLife)
         {
             var balkLine = GameObject.Find("BalkLine");
             Vector3 directionToBalkLine = (balkLine.transform.position - gameObject.transform.position).normalized;
@@ -47,6 +48,7 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
                 if(directionToBalkLine.x >= 0)
                 {
                     EventBus.Publish(new BallStoppedBeyondBalkLineEvent());
+                    hasBallTakenLife = true;
                     return;
                 }
                 directionToBalkLine.y = 0; 

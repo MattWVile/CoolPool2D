@@ -60,9 +60,9 @@ public class PlayerRemainingShotsManager : MonoBehaviour
             case GameState.PrepareNextLevel:
                 ResetAmountOfShots();
                 break;
-            case GameState.PrepareNextTurn:
-                HandlePrepareNextTurn();
-                break;
+            //case GameState.PrepareNextTurn:
+            //    HandlePrepareNextTurn();
+            //    break;
         }
     }
 
@@ -88,15 +88,15 @@ public class PlayerRemainingShotsManager : MonoBehaviour
         UIManager.Instance?.UpdateRemainingShotsIcons(amountOfShotsRemaining, maxAmountOfShots);
     }
 
-    private void HandlePrepareNextTurn()
-    {
-        if (GameManager.Instance.ballGameObjects.Count <= 1 && amountOfShotsRemaining > 1)
-        {
-            if(GameManager.Instance.lastPottedBall.ballColour != BallColour.Cue)
-            {
-                BallSpawner.SpawnSpecificColourBall(GameManager.Instance.lastPottedBall.ballColour, BallSpawnLocations.TriangleCenter);
-                ReduceAmountOfShotsByOne();
-            }
-        }
-    }
+    //private void HandlePrepareNextTurn()
+    //{
+    //    if (GameManager.Instance.ballGameObjects.Count <= 1 && amountOfShotsRemaining > 1)
+    //    {
+    //        if(GameManager.Instance.lastPottedBall.ballColour != BallColour.Cue)
+    //        {
+    //            BallSpawner.SpawnSpecificColourBall(GameManager.Instance.lastPottedBall.ballColour, BallSpawnLocations.TriangleCenter);
+    //            ReduceAmountOfShotsByOne();
+    //        }
+    //    }
+    //}
 }
