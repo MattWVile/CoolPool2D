@@ -119,8 +119,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e68e49004bc655f4cba292f61c040ea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxReflections: 5
-  maxRayDistance: 60
+  maxReflections: 2
+  maxRayDistance: 5
   stepOffset: 0.01
   lineRendererWidthMultiplier: 0.2
   lineRendererCornerRoundness: 20
@@ -156,4 +156,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 521dbdd1f6347b54f95a17be59e1a94b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forceMagnitude: 2
+  forceMagnitude: 1.8
