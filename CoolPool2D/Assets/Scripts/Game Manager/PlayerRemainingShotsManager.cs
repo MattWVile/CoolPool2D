@@ -18,6 +18,7 @@ public class PlayerRemainingShotsManager : MonoBehaviour
         EventBus.Subscribe<BallHasBeenShotEvent>(OnBallHasBeenShot);
         EventBus.Subscribe<NewGameStateEvent>(OnNewGameState);
         EventBus.Subscribe<BallPocketedEvent>(OnBallHasBeenPocketed);
+        EventBus.Subscribe<BallStoppedBeyondBalkLineEvent>(OnBallStoppedBeyondBalkLine);
     }
 
     private void OnDisable()
@@ -25,9 +26,15 @@ public class PlayerRemainingShotsManager : MonoBehaviour
         EventBus.Unsubscribe<BallHasBeenShotEvent>(OnBallHasBeenShot);
         EventBus.Unsubscribe<NewGameStateEvent>(OnNewGameState);
         EventBus.Unsubscribe<BallPocketedEvent>(OnBallHasBeenPocketed);
+        EventBus.Unsubscribe<BallStoppedBeyondBalkLineEvent>(OnBallStoppedBeyondBalkLine);
     }
 
     private void OnBallHasBeenShot(BallHasBeenShotEvent @event)
+    {
+        ReduceAmountOfShotsByOne();
+    }
+
+    private void OnBallStoppedBeyondBalkLine(BallStoppedBeyondBalkLineEvent @event)
     {
         ReduceAmountOfShotsByOne();
     }
