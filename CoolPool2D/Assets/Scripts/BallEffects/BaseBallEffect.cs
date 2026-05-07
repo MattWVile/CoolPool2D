@@ -41,7 +41,6 @@ public abstract class BaseBallEffect<TEvent> : MonoBehaviour where TEvent : Base
 
     private void OnBallStoppedEventInternal(BallStoppedEvent evt)
     {
-        hasEffectTriggeredThisShot = false;
         OnBallStoppedEvent(evt);
     }
 

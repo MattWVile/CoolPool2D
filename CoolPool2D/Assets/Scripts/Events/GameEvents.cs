@@ -28,6 +28,11 @@ public class BallStoppedEvent : BaseGameEvent
     public new DeterministicBall Sender { get; set; } // overridden Sender to specify the sender type
 }
 
+public class BallStoppedBeyondBalkLineEvent : BaseGameEvent
+{
+    public new DeterministicBall Sender { get; set; } // overridden Sender to specify the sender type
+}
+
 //public class BallIsBeingMovedEvent : BaseGameEvent
 //{
 //    public new BallController Sender { get; set; } // overridden Sender to specify the sender type

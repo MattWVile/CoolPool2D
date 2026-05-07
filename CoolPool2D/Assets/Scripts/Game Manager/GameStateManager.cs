@@ -36,18 +36,18 @@ public class GameStateManager : MonoBehaviour
                 CurrentGameState = GameState.Shooting;
                 break;
             case GameState.Shooting:
-                CurrentGameState = GameState.CalculatePoints;
+                CurrentGameState = GameState.PrepareNextTurn;
                 break;
-            case GameState.CalculatePoints:
-                if(!GameManager.Instance.playerHasShotsRemaining)
-                {
-                    CurrentGameState = GameState.GameOver;
-                }
-                else
-                {
-                    CurrentGameState = GameState.PrepareNextTurn;
-                }
-                break;
+            //case GameState.AllowBallsToAdvance:
+            //    if(!GameManager.Instance.playerHasShotsRemaining)
+            //    {
+            //        CurrentGameState = GameState.GameOver;
+            //    }
+            //    else
+            //    {
+            //        CurrentGameState = GameState.PrepareNextTurn;
+            //    }
+            //    break;
             case GameState.PrepareNextTurn:
                 CurrentGameState = GameState.Aiming;
                 break;

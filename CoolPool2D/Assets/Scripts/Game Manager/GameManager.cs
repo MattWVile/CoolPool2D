@@ -100,7 +100,7 @@ public class GameManager : MonoBehaviour
     {
         BallSpawner.SpawnCueBall(amountOfCueBallsSpawned);
         BallSpawner.SpawnAdvanceToBalkLineBall(BallSpawnLocations.RandomInFrontOfBalkLine);
-        BallSpawner.SpawnAdvanceToBalkLineBall(BallSpawnLocations.RandomInFrontOfBalkLine);
+        //BallSpawner.SpawnAdvanceToBalkLineBall(BallSpawnLocations.RandomInFrontOfBalkLine);
 
         CaptureCurrentShotSnapshot();
         //UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
@@ -165,9 +165,9 @@ public class GameManager : MonoBehaviour
         deterministicBalls.Clear();
         amountOfCueBallsSpawned = 0;
         lastShotScore = 0;
-        scoreCalculator.totalScore = 0;
+        //scoreCalculator.totalScore = 0;
         playerHasShotsRemaining = true;
-        UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
+        //UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
         gameStateManager.SetGameState(GameState.GameStart);
     }
     public void HandleGameOverState()
