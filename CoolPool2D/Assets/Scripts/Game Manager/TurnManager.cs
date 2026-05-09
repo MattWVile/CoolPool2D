@@ -1,3 +1,4 @@
+using DamageNumbersPro;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +7,8 @@ public class TurnManager : MonoBehaviour
 {
     public static TurnManager Instance { get; private set; }
     public int currentTurn = 1;
+    public List<GameObject> ballGameObjectsThatHaveHitRailsThisTurn;
+    public bool shouldBallsAdvance;
 
     private void Awake()
     {
@@ -18,6 +21,30 @@ public class TurnManager : MonoBehaviour
         {
             Destroy(gameObject);
             return;
+        }
+    }
+
+    void Start()
+    {
+        EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
+        shouldBallsAdvance = true;
+    }
+    public void OnScorableEvent(IScorableEvent @event)
+    {
+        switch (@event)
+        {
+            case BallCollidedWithRailEvent:
+                if (@event.BallData.ballColour != BallColour.Cue)
+                {
+                    ballGameObjectsThatHaveHitRailsThisTurn.Add(@event.BallData.gameObject);
+                }
+                break;
+            case BallPocketedEvent:
+                if (ballGameObjectsThatHaveHitRailsThisTurn.Contains(@event.BallData.gameObject))
+                {
+                    shouldBallsAdvance = false;
+                }
+                break;
         }
     }
 
@@ -40,6 +67,8 @@ public class TurnManager : MonoBehaviour
             BallSpawner.SpawnAdvanceToBalkLineBall(BallSpawnLocations.RandomInFrontOfBalkLine);
         }
         BallSpawner.SpawnAdvanceToBalkLineBall(BallSpawnLocations.RandomInFrontOfBalkLine);
-        currentTurn ++;
+        ballGameObjectsThatHaveHitRailsThisTurn.Clear();
+        shouldBallsAdvance = true;
+        currentTurn++;
     }
 }

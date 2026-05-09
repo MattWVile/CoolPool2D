@@ -7,7 +7,6 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
     protected override void Start()
     {
         base.Start();
-        hasEffectTriggeredThisShot = false;
         EventBus.Subscribe<NewGameStateEvent>(OnNewGameStateEvent);
     }
 
@@ -37,7 +36,7 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
 
     protected override void OnEvent(BallStoppedEvent ballStoppedEvent)
     {
-        if (!hasEffectTriggeredThisShot)
+        if (!hasEffectTriggeredThisShot && TurnManager.Instance.shouldBallsAdvance)
         {
             DeterministicBall deterministicBall = gameObject.GetComponent<DeterministicBall>();
             var balkLine = GameObject.Find("BalkLine");
