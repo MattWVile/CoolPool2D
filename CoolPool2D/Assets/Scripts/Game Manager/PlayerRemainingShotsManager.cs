@@ -39,14 +39,15 @@ public class PlayerRemainingShotsManager : MonoBehaviour
         ReduceAmountOfShotsByOne();
     }
 
-    private void OnBallHasBeenPocketed(BallPocketedEvent @event)
+    private void OnBallHasBeenPocketed(BallPocketedEvent ballPocketedEvent)
     {
-        if (!@event.BallData.CompareTag("CueBall"))
+        if (ballPocketedEvent.BallData.ballVariant != BallVariant.Cue)
         {
-            if (amountOfShotsRemaining != 0 && GameManager.Instance.ballGameObjects.Count != 1)
-            {
-                IncreaseAmountOfShotsByOne();
-            }
+            IncreaseAmountOfShotsByOne();
+        }
+        else
+        {
+            ReduceAmountOfShotsByOne();
         }
     }
 

@@ -25,7 +25,7 @@ public class FreezeTimeAfterDelayAndShootAgainOnHit : BaseBallEffect<BallKissedE
         BallScoringData otherBallData = ballKissedEvent.BallData;
         BallScoringData selfBallData = ballKissedEvent.CollisionBallData;
 
-        if (otherBallData.BallColour != BallColour.Cue) return;
+        if (otherBallData.BallVariant != BallVariant.Cue) return;
 
         PoolWorld.Instance.RunFreezeCoroutine(FreezeThenShootCoroutine(otherBallData.gameObject));
 

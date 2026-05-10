@@ -1,27 +1,23 @@
-using DamageNumbersPro;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ScoreManager : MonoBehaviour
 {
+    public float currentScore = 0f;
+
     public static ScoreManager Instance { get; private set; }
-
-    public List<ScoreType> currentScoreTypes = new List<ScoreType>();
-
-    public int scoreToBeat = 500;
-
-    public DamageNumber scorePrefab;
-    void Awake()
-    {
-        if (Instance == null)
+    
+        private void Awake()
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+                return;
+            }
     }
 
     void Start()
@@ -29,63 +25,24 @@ public class ScoreManager : MonoBehaviour
         EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
     }
 
-    public void IncreaseScoreToBeat()
+    private void OnScorableEvent(IScorableEvent @event)
     {
-        scoreToBeat = (int)(scoreToBeat * 2f);
-    }
-
-    public void OnScorableEvent(IScorableEvent @event)
-    {
-        string scoreTypeHeader = string.Empty;
-        float scoreTypePoints = @event.ScoreTypePoints;
-        bool isFoul = @event.IsFoul;
-        scoreTypeHeader = $"{@event.BallData.BallColour} ball";
-        if (@event is BallKissedEvent)
+        if (@event.BallData.ballVariant != BallVariant.Cue)
         {
-            scoreTypeHeader = @event.ScoreTypeHeader;
-        }
-        else
-        {
-            scoreTypeHeader += @event.ScoreTypeHeader;
-        }
-            AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
-            DamageNumber damageNumber = scorePrefab.Spawn(@event.BallData.transform.position, scoreTypePoints);
-    }
-
-    private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
-    {
-        ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeHeader == scoreTypeHeader);
-        if (scoreType == null)
-        {
-            scoreType = new ScoreType(scoreTypeHeader, scoreTypePoints, isScoreTypeAFoul);
-            currentScoreTypes.Add(scoreType);
-        }
-        else if (isScoreTypeAFoul)
-        {
-            if (!scoreType.IsScoreFoul)
+            switch (@event)
             {
-                scoreType.IsScoreFoul = true;
+                case BallCollidedWithRailEvent:
+                    @event.BallData.ballMultiplier += 1;
+                    break;
+                case BallPocketedEvent:
+                    IncreaseScore(@event.BallData.ballPoints * @event.BallData.ballMultiplier);
+                    break;
             }
         }
-        else
-        {
-            scoreType.NumberOfThisScoreType++;
-        }
-        if (scoreType.ScoreTypeHeader.Contains("kissed") && scoreType.NumberOfThisScoreType <= 1)
-        {
-            return;
-        }
-
-        PublishShotScoreTypeUpdatedEvent(scoreType);
     }
-    private void PublishShotScoreTypeUpdatedEvent(ScoreType scoreType)
+    private void IncreaseScore(float amountToIncreaseBy)
     {
-        var scorePublishedEvent = new ShotScoreTypeUpdatedEvent
-        {
-            Sender = this,
-            ScoreType = scoreType
-        };
-
-        EventBus.Publish(scorePublishedEvent);
+        currentScore += amountToIncreaseBy;
+        UIManager.Instance?.UpdateCurrentScore(currentScore);
     }
 }

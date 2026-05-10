@@ -16,5 +16,5 @@ public class MapData {
 
 [Serializable]
 public class InventoryData {
-    public List<BallColour> OwnedCueBalls;
+    public List<BallVariant> OwnedCueBalls;
 }

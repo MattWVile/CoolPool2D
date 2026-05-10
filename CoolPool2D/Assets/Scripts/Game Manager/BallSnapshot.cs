@@ -5,7 +5,7 @@ using UnityEngine;
 public class BallSnapshot
 {
     public int InstanceId;
-    public BallColour Colour;
+    public BallVariant Colour;
     public Vector2 Position;
     public Vector2 Velocity;
     public bool Active;
@@ -31,7 +31,7 @@ public class ShotRecorder
             var snap = new BallSnapshot
             {
                 InstanceId = ballGameObject.GetInstanceID(),
-                Colour = data.BallColour,
+                Colour = data.BallVariant,
                 Position = (Vector2)ballGameObject.transform.position,
                 Velocity = deterministicBall != null ? deterministicBall.velocity : Vector2.zero,
                 Active = deterministicBall != null ? deterministicBall.active : ballGameObject.activeInHierarchy,

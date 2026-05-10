@@ -46,103 +46,19 @@ public class UIManager : MonoBehaviour
         scoreTypes = new List<VisualElement>();
 
         // subscribe to score updates
-        EventBus.Subscribe<ShotScoreTypeUpdatedEvent>(OnScoreUpdated);
+        //EventBus.Subscribe<ShotScoreTypeUpdatedEvent>(OnScoreUpdated);
     }
 
-    private void OnDestroy()
+    public void UpdateCurrentScore(float newTotalScoreFloat)
     {
-        EventBus.Unsubscribe<ShotScoreTypeUpdatedEvent>(OnScoreUpdated);
-    }
-
-    public void OnScoreUpdated(ShotScoreTypeUpdatedEvent shotScoreTypeUpdatedEvent)
-    {
-        AddScoreType(shotScoreTypeUpdatedEvent.ScoreType.ScoreTypeHeader);
-    }
-
-    public void UpdateTotalScore(float newTotalScoreFloat)
-    {
-        root.Q<Label>("TotalScore").text = newTotalScoreFloat.ToString();
-    }
-
-    public void AddToShotScore(float shotScoreToAdd)
-    {
-        string shotScoreText = root.Q<Label>("ShotScoreScore").text;
-        if (float.TryParse(shotScoreText, out float currentShotScore))
-        {
-            float newShotScore = currentShotScore + shotScoreToAdd;
-            root.Q<Label>("ShotScoreScore").text = newShotScore.ToString();
-        }
-        else
-        {
-            root.Q<Label>("ShotScoreScore").text = shotScoreToAdd.ToString();   
-        }
-    }
-
-    public void UpdateShotScore(float shotScoreToAdd)
-    {
-        string shotScoreText = root.Q<Label>("ShotScoreScore").text;
-        root.Q<Label>("ShotScoreScore").text = shotScoreToAdd.ToString();
-    }
-
-    public void ClearShotScore()
-    {
-        ClearScoreTypes();
-        root.Q<Label>("ShotScoreScore").text = "";
-    }
-
-    public void AddScoreType(string scoreTypeHeader)
-    {
-        if (shotTypeTemplate == null)
-        {
-            Debug.LogError("ShotTypeTemplate is not assigned in the Inspector!");
-            return;
-        }
-
-        ScoreType scoreType = ScoreManager.Instance.currentScoreTypes.Find(scoreType => scoreType.ScoreTypeHeader == scoreTypeHeader);
-        if (scoreType == null)
-        {
-            Debug.LogError($"ScoreType with header {scoreTypeHeader} not found in ScoreManager!");
-            return;
-        }
-
-        VisualElement existingShotType = scoreTypes.Find(scoreType => scoreType.Q<Label>("ScoreTypeHeading").text == scoreTypeHeader);
-        if (existingShotType != null)
-        {
-            IncrementShotTypeAmount(existingShotType);
-        }
-        else
-        {
-            CreateNewScoreTypeElement(scoreTypeHeader, scoreType);
-        }
-    }
-
-    private void CreateNewScoreTypeElement(string scoreTypeHeader, ScoreType scoreType)
-    {
-        VisualElement scoreTypeVisualElement = shotTypeTemplate.Instantiate();
-        scoreTypeVisualElement.Q<Label>("ScoreTypeHeading").text = scoreTypeHeader;
-        scoreTypeVisualElement.Q<Label>("ScoreTypeMultValue").text = scoreType.ScoreTypeMultiplierAddition == 0 ? "" : scoreType.ScoreTypeMultiplierAddition.ToString();
-        scoreTypeVisualElement.Q<Label>("ScoreTypeMultAdditionSymbol").text = scoreType.ScoreTypeMultiplierAddition == 0 ? "" : "+";
-        scoreTypeVisualElement.Q<Label>("ScoreTypeMultAsterix").text = scoreType.ScoreTypeMultiplierAddition == 0 ? "" : "*";
-        scoreTypeVisualElement.Q<Label>("ScoreTypeAmount").text = scoreType.NumberOfThisScoreType.ToString();
-        scoreTypeVisualElement.Q<Label>("ScoreTypeScore").text = scoreType.ScoreTypePoints.ToString();
-        scoreTypes.Add(scoreTypeVisualElement);
-
-        VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreTypes");
-        if (shotScoreBackground != null)
-        {
-            shotScoreBackground.Add(scoreTypeVisualElement);
-        }
-        else
-        {
-            Debug.LogError("Container 'ShotScoreTypes' not found in the UI!");
-        }
+        root.Q<Label>("CurrentScoreValue").text = newTotalScoreFloat.ToString();
     }
 
     public void EnableGameOverScreen(int totalScore, int scoreToBeat)
     {
         VisualElement gameOverScreen = gameOverScreenAsset.Instantiate();
         gameOverScreen.Q<Label>("TotalScoreValue").text = totalScore.ToString();
-        gameOverScreen.Q<Label>("ScoreToBeatValue").text = scoreToBeat.ToString();
+        //gameOverScreen.Q<Label>("ScoreToBeatValue").text = scoreToBeat.ToString();
         root.Add(gameOverScreen);
 
         resetGameButton = gameOverScreen.Q<Button>("ResetGameButton");
@@ -164,42 +80,6 @@ public class UIManager : MonoBehaviour
         });
 
     }
-
-    public void EnableLevelCompleteScreen(int totalScore, int scoreToBeat)
-    {
-        VisualElement levelCompleteScreen = levelCompleteScreenAsset.Instantiate();
-        levelCompleteScreen.Q<Label>("TotalScoreValue").text = totalScore.ToString();
-        levelCompleteScreen.Q<Label>("ScoreToBeatValue").text = scoreToBeat.ToString();
-        root.Add(levelCompleteScreen);
-
-        resetGameButton = levelCompleteScreen.Q<Button>("ContinueButton");
-        resetGameButton.RegisterCallback<ClickEvent>(ev => {
-            GameManager.Instance.StartNextLevel();
-            levelCompleteScreen.RemoveFromHierarchy();
-        });
-
-        exitGameButton = levelCompleteScreen.Q<Button>("ExitGameButton");
-        exitGameButton.RegisterCallback<ClickEvent>(ev => {
-            GameManager.Instance.ExitGame();
-            levelCompleteScreen.RemoveFromHierarchy();
-        });
-
-    }
-
-    public void IncrementShotTypeAmount(VisualElement scoreType)
-    {
-        scoreType.Q<Label>("ScoreTypeAmount").text = (int.Parse(scoreType.Q<Label>("ScoreTypeAmount").text) + 1).ToString();
-    }
-
-    private void ClearScoreTypes()
-    {
-        foreach (VisualElement scoreType in scoreTypes)
-        {
-            scoreType.RemoveFromHierarchy();
-        }
-        scoreTypes.Clear();
-    }
-
 
     public void DisplayMultiplierPopUp(int amountToTrigger, string label, float factor)
     {
@@ -282,13 +162,132 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void SetScoreToBeat(int scoreToBeat)
-    {
-        if (root == null && uiDocument != null) root = uiDocument.rootVisualElement;
-        var label = root.Q<Label>("ScoreToBeatValue");
-        if (label != null)
-        {
-            label.text = scoreToBeat.ToString();
-        }
-    }   
+    //public void SetScoreToBeat(int scoreToBeat)
+    //{
+    //    if (root == null && uiDocument != null) root = uiDocument.rootVisualElement;
+    //    var label = root.Q<Label>("ScoreToBeatValue");
+    //    if (label != null)
+    //    {
+    //        label.text = scoreToBeat.ToString();
+    //    }
+    //}   
+
+    //public void AddScoreType(string scoreTypeHeader)
+    //{
+    //    if (shotTypeTemplate == null)
+    //    {
+    //        Debug.LogError("ShotTypeTemplate is not assigned in the Inspector!");
+    //        return;
+    //    }
+
+    //    ScoreType scoreType = OldScoreManager.Instance.currentScoreTypes.Find(scoreType => scoreType.ScoreTypeHeader == scoreTypeHeader);
+    //    if (scoreType == null)
+    //    {
+    //        Debug.LogError($"ScoreType with header {scoreTypeHeader} not found in ScoreManager!");
+    //        return;
+    //    }
+
+    //    VisualElement existingShotType = scoreTypes.Find(scoreType => scoreType.Q<Label>("ScoreTypeHeading").text == scoreTypeHeader);
+    //    if (existingShotType != null)
+    //    {
+    //        IncrementShotTypeAmount(existingShotType);
+    //    }
+    //    else
+    //    {
+    //        CreateNewScoreTypeElement(scoreTypeHeader, scoreType);
+    //    }
+    //}
+
+    //private void CreateNewScoreTypeElement(string scoreTypeHeader, ScoreType scoreType)
+    //{
+    //    VisualElement scoreTypeVisualElement = shotTypeTemplate.Instantiate();
+    //    scoreTypeVisualElement.Q<Label>("ScoreTypeHeading").text = scoreTypeHeader;
+    //    scoreTypeVisualElement.Q<Label>("ScoreTypeMultValue").text = scoreType.ScoreTypeMultiplierAddition == 0 ? "" : scoreType.ScoreTypeMultiplierAddition.ToString();
+    //    scoreTypeVisualElement.Q<Label>("ScoreTypeMultAdditionSymbol").text = scoreType.ScoreTypeMultiplierAddition == 0 ? "" : "+";
+    //    scoreTypeVisualElement.Q<Label>("ScoreTypeMultAsterix").text = scoreType.ScoreTypeMultiplierAddition == 0 ? "" : "*";
+    //    scoreTypeVisualElement.Q<Label>("ScoreTypeAmount").text = scoreType.NumberOfThisScoreType.ToString();
+    //    scoreTypeVisualElement.Q<Label>("ScoreTypeScore").text = scoreType.ScoreTypePoints.ToString();
+    //    scoreTypes.Add(scoreTypeVisualElement);
+
+    //    VisualElement shotScoreBackground = root.Q<VisualElement>("ShotScoreTypes");
+    //    if (shotScoreBackground != null)
+    //    {
+    //        shotScoreBackground.Add(scoreTypeVisualElement);
+    //    }
+    //    else
+    //    {
+    //        Debug.LogError("Container 'ShotScoreTypes' not found in the UI!");
+    //    }
+    //}
+
+    //public void EnableLevelCompleteScreen(int totalScore, int scoreToBeat)
+    //{
+    //    VisualElement levelCompleteScreen = levelCompleteScreenAsset.Instantiate();
+    //    levelCompleteScreen.Q<Label>("TotalScoreValue").text = totalScore.ToString();
+    //    levelCompleteScreen.Q<Label>("ScoreToBeatValue").text = scoreToBeat.ToString();
+    //    root.Add(levelCompleteScreen);
+
+    //    resetGameButton = levelCompleteScreen.Q<Button>("ContinueButton");
+    //    resetGameButton.RegisterCallback<ClickEvent>(ev => {
+    //        GameManager.Instance.StartNextLevel();
+    //        levelCompleteScreen.RemoveFromHierarchy();
+    //    });
+
+    //    exitGameButton = levelCompleteScreen.Q<Button>("ExitGameButton");
+    //    exitGameButton.RegisterCallback<ClickEvent>(ev => {
+    //        GameManager.Instance.ExitGame();
+    //        levelCompleteScreen.RemoveFromHierarchy();
+    //    });
+
+    //}
+
+    //public void IncrementShotTypeAmount(VisualElement scoreType)
+    //{
+    //    scoreType.Q<Label>("ScoreTypeAmount").text = (int.Parse(scoreType.Q<Label>("ScoreTypeAmount").text) + 1).ToString();
+    //}
+
+    //private void ClearScoreTypes()
+    //{
+    //    foreach (VisualElement scoreType in scoreTypes)
+    //    {
+    //        scoreType.RemoveFromHierarchy();
+    //    }
+    //    scoreTypes.Clear();
+    //}
+
+    //private void OnDestroy()
+    //{
+    //    EventBus.Unsubscribe<ShotScoreTypeUpdatedEvent>(OnScoreUpdated);
+    //}
+
+    //public void OnScoreUpdated(ShotScoreTypeUpdatedEvent shotScoreTypeUpdatedEvent)
+    //{
+    //    AddScoreType(shotScoreTypeUpdatedEvent.ScoreType.ScoreTypeHeader);
+    //}
+
+    //public void AddToShotScore(float shotScoreToAdd)
+    //{
+    //    string shotScoreText = root.Q<Label>("ShotScoreScore").text;
+    //    if (float.TryParse(shotScoreText, out float currentShotScore))
+    //    {
+    //        float newShotScore = currentShotScore + shotScoreToAdd;
+    //        root.Q<Label>("ShotScoreScore").text = newShotScore.ToString();
+    //    }
+    //    else
+    //    {
+    //        root.Q<Label>("ShotScoreScore").text = shotScoreToAdd.ToString();   
+    //    }
+    //}
+
+    //public void UpdateShotScore(float shotScoreToAdd)
+    //{
+    //    string shotScoreText = root.Q<Label>("ShotScoreScore").text;
+    //    root.Q<Label>("ShotScoreScore").text = shotScoreToAdd.ToString();
+    //}
+
+    //public void ClearShotScore()
+    //{
+    //    //ClearScoreTypes();
+    //    root.Q<Label>("ShotScoreScore").text = "";
+    //}
 }

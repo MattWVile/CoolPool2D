@@ -81,7 +81,7 @@ public class BallSpawner : MonoBehaviour
 
         var ballList = ballsToSpawn.ToList();
 
-        foreach (var ball in ballList.Where(ball => ball.Active && ball.Colour != BallColour.Cue)) // skip inactive and cue balls
+        foreach (var ball in ballList.Where(ball => ball.Active && ball.Colour != BallVariant.Cue)) // skip inactive and cue balls
         {
             var spawnPosition = GetBallPositionWithinTriangle(ballList.IndexOf(ball), ballRadius);
             var ballGameObject = SpawnSpecificColourBallWithVector(ball.Colour, spawnPosition, ball.BallData);
@@ -108,7 +108,7 @@ public class BallSpawner : MonoBehaviour
         return pos;
     }
 
-    public static GameObject SpawnSpecificColourBall(BallColour ballColour, BallSpawnLocations spawnPositionSelector, BallScoringDataSnapshot specificBallDataSnapshot = default(BallScoringDataSnapshot))
+    public static GameObject SpawnSpecificColourBall(BallVariant ballColour, BallSpawnLocations spawnPositionSelector, BallScoringDataSnapshot specificBallDataSnapshot = default(BallScoringDataSnapshot))
     {
         Vector2 spawnPosition;
         if (spawnPositionSelector == BallSpawnLocations.Random)
@@ -124,9 +124,9 @@ public class BallSpawner : MonoBehaviour
             spawnPosition = PocketLocations.GetPocketLocationVector(spawnPositionSelector);
         }
 
-        if (ballColour == BallColour.Random)
+        if (ballColour == BallVariant.Random)
         {
-            ballColour = (BallColour)UnityEngine.Random.Range(1, Enum.GetNames(typeof(BallColour)).Length - 3);
+            ballColour = (BallVariant)UnityEngine.Random.Range(1, Enum.GetNames(typeof(BallVariant)).Length - 3);
 
         }
 
@@ -137,7 +137,7 @@ public class BallSpawner : MonoBehaviour
         if (!specificBallDataSnapshot.Equals(default(BallScoringDataSnapshot)))
         {
             var ballData = ballGameObject.GetComponent<BallScoringData>();
-            ballData.ballColour = specificBallDataSnapshot.ballColour;
+            ballData.ballVariant = specificBallDataSnapshot.ballVariant;
             ballData.ballPoints = specificBallDataSnapshot.ballPoints;
             ballData.ballMultiplier = specificBallDataSnapshot.ballMultiplier;
         }
@@ -147,11 +147,11 @@ public class BallSpawner : MonoBehaviour
         return ballGameObject;
     }
 
-    public static GameObject SpawnSpecificColourBallWithVector(BallColour ballColour, Vector2 spawnPosition, BallScoringData specificBallData = null)
+    public static GameObject SpawnSpecificColourBallWithVector(BallVariant ballColour, Vector2 spawnPosition, BallScoringData specificBallData = null)
     {
-        if (ballColour == BallColour.Random)
+        if (ballColour == BallVariant.Random)
         {
-            ballColour = (BallColour)UnityEngine.Random.Range(0, Enum.GetNames(typeof(BallColour)).Length - 3);
+            ballColour = (BallVariant)UnityEngine.Random.Range(0, Enum.GetNames(typeof(BallVariant)).Length - 3);
         }
 
         var ballGameObject = Instantiate(Resources.Load($"Prefabs/{ballColour}Ball"), spawnPosition, Quaternion.identity) as GameObject;
@@ -159,7 +159,7 @@ public class BallSpawner : MonoBehaviour
         if (specificBallData != null)
         {
             var ballData = ballGameObject.GetComponent<BallScoringData>();
-            ballData.ballColour = specificBallData.ballColour;
+            ballData.ballVariant = specificBallData.ballVariant;
             ballData.ballPoints = specificBallData.ballPoints;
             ballData.ballMultiplier = specificBallData.ballMultiplier;
         }
@@ -182,7 +182,7 @@ public class BallSpawner : MonoBehaviour
         if (!specificBallDataSnapshot.Equals(default(BallScoringDataSnapshot)))
         {
             var ballData = ballGameObject.GetComponent<BallScoringData>();
-            ballData.ballColour = specificBallDataSnapshot.ballColour;
+            ballData.ballVariant = specificBallDataSnapshot.ballVariant;
             ballData.ballPoints = specificBallDataSnapshot.ballPoints;
             ballData.ballMultiplier = specificBallDataSnapshot.ballMultiplier;
         }

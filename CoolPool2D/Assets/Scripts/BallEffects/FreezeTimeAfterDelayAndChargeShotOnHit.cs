@@ -15,7 +15,7 @@ public class FreezeTimeAfterDelayAndChargeShotOnHit : BaseBallEffect<BallKissedE
     {
         var selfBallData = ballKissedEvent.BallData;
         var otherBallData = ballKissedEvent.CollisionBallData;
-        if (otherBallData.BallColour != BallColour.Cue) return;
+        if (otherBallData.BallVariant != BallVariant.Cue) return;
 
 
         // start coroutine for the effect (runs in real time)
