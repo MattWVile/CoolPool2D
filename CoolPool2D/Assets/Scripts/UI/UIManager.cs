@@ -54,11 +54,11 @@ public class UIManager : MonoBehaviour
         root.Q<Label>("CurrentScoreValue").text = newTotalScoreFloat.ToString();
     }
 
-    public void EnableGameOverScreen(int totalScore, int scoreToBeat)
+    public void EnableGameOverScreen(int totalScore, int highScore)
     {
         VisualElement gameOverScreen = gameOverScreenAsset.Instantiate();
-        gameOverScreen.Q<Label>("TotalScoreValue").text = totalScore.ToString();
-        //gameOverScreen.Q<Label>("ScoreToBeatValue").text = scoreToBeat.ToString();
+        gameOverScreen.Q<Label>("ScoreValue").text = totalScore.ToString();
+        gameOverScreen.Q<Label>("HighScoreValue").text = highScore.ToString();
         root.Add(gameOverScreen);
 
         resetGameButton = gameOverScreen.Q<Button>("ResetGameButton");
@@ -73,11 +73,11 @@ public class UIManager : MonoBehaviour
             gameOverScreen.RemoveFromHierarchy();
         });
 
-        exitGameButton = gameOverScreen.Q<Button>("ExitGameButton");
-        exitGameButton.RegisterCallback<ClickEvent>(ev => {
-            GameManager.Instance.ExitGame();
-            gameOverScreen.RemoveFromHierarchy();
-        });
+        //exitGameButton = gameOverScreen.Q<Button>("ExitGameButton");
+        //exitGameButton.RegisterCallback<ClickEvent>(ev => {
+        //    GameManager.Instance.ExitGame();
+        //    gameOverScreen.RemoveFromHierarchy();
+        //});
 
     }
 

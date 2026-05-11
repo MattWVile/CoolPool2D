@@ -43,6 +43,9 @@ public class DataManager : MonoBehaviour
             MapData = new MapData() {
                 GeneratedMap = null,
                 CurrentNode = null
+            },
+            ScoreData = new ScoreData() {
+                HighScore = 0
             }
         };
         SaveData();

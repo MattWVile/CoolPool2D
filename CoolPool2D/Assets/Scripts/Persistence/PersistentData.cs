@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 public class Data {
     public MapData MapData;
     public InventoryData InventoryData;
+    public ScoreData ScoreData;
 }
 
 [Serializable]
@@ -17,4 +18,8 @@ public class MapData {
 [Serializable]
 public class InventoryData {
     public List<BallVariant> OwnedCueBalls;
+}
+[Serializable]
+public class ScoreData {
+    public int HighScore;
 }

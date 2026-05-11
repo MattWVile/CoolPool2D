@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -163,7 +164,17 @@ public class GameManager : MonoBehaviour
         ballGameObjects.Clear();
         deterministicBalls.Clear();
         //UIManager.Instance?.EnableGameOverScreen(scoreCalculator.totalScore, ScoreManager.Instance.scoreToBeat);
-        UIManager.Instance?.EnableGameOverScreen(1000, 123);
+        int currentScore = ScoreManager.Instance.currentScore;
+        int highScore = ScoreManager.Instance.highScore;
+        if (highScore < currentScore)
+        {
+            DataManager.Instance.Data.ScoreData = new ScoreData()
+            {
+                HighScore = currentScore
+            };
+            DataManager.Instance.SaveData();
+        }
+        UIManager.Instance?.EnableGameOverScreen(currentScore, highScore);
     }
 
     public void CaptureCurrentShotSnapshot()

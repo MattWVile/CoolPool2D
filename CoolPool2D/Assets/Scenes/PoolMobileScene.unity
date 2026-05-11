@@ -3264,6 +3264,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8c8645a89f5c4d4c8989f73967b70ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentScore: 0
 --- !u!4 &1965816783
 Transform:
   m_ObjectHideFlags: 0
@@ -3325,7 +3326,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 897729864}
   shotTypeTemplate: {fileID: 9197481963319205126, guid: 1ceb33886a28b5c4888ebde180db1440, type: 3}
-  gameOverScreenAsset: {fileID: 9197481963319205126, guid: 338ffa44ba859354fb24ea59f8087303, type: 3}
+  gameOverScreenAsset: {fileID: 9197481963319205126, guid: 31bf6edfdffba4843894361c2e595c71, type: 3}
   levelCompleteScreenAsset: {fileID: 9197481963319205126, guid: 3d9066fae0e41be4a83b88fab0dfb3e6, type: 3}
   multiplierPopUpTime: 0.5
 --- !u!1 &2124217143

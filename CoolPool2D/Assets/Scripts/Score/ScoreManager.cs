@@ -2,27 +2,30 @@ using UnityEngine;
 
 public class ScoreManager : MonoBehaviour
 {
-    public float currentScore = 0f;
+    public int currentScore = 0;
+    public int highScore;
 
     public static ScoreManager Instance { get; private set; }
-    
-        private void Awake()
+
+    private void Awake()
+    {
+        if (Instance == null)
         {
-            if (Instance == null)
-            {
-                Instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
-            else
-            {
-                Destroy(gameObject);
-                return;
-            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
     }
 
     void Start()
     {
         EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
+        highScore = DataManager.Instance.Data.ScoreData.HighScore;
     }
 
     private void OnScorableEvent(IScorableEvent @event)
@@ -35,12 +38,13 @@ public class ScoreManager : MonoBehaviour
                     @event.BallData.ballMultiplier += 1;
                     break;
                 case BallPocketedEvent:
-                    IncreaseScore(@event.BallData.ballPoints * @event.BallData.ballMultiplier);
+                    IncreaseScore(Mathf.RoundToInt(@event.BallData.ballPoints * @event.BallData.ballMultiplier));
                     break;
-            }
+            }   
         }
     }
-    private void IncreaseScore(float amountToIncreaseBy)
+
+    private void IncreaseScore(int amountToIncreaseBy)
     {
         currentScore += amountToIncreaseBy;
         UIManager.Instance?.UpdateCurrentScore(currentScore);
