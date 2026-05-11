@@ -13,7 +13,7 @@ public sealed class HomingDevice : BaseArtifact<BallKissedEvent> {
     protected override void OnEvent(BallKissedEvent e)
     {
         if (Random.Range(0, 100) > 20) return; // 20% chance
-        if (e.BallData.ballColour != BallColour.Cue) return; // only apply when cue ball kisses another ball
+        if (e.BallData.ballVariant != BallVariant.Cue) return; // only apply when cue ball kisses another ball
 
 
         var closestPocket = FindClosestPocket(e.CollisionBallData.transform.position);

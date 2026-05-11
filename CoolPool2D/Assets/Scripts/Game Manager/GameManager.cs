@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -21,7 +22,7 @@ public class GameManager : MonoBehaviour
     // legacy score / aiming fields kept (but NO dictionary)
     public int lastShotScore;
 
-    public ScoreCalculator scoreCalculator;
+    public OldScoreCalculator oldScoreCalculator;
 
     private readonly ShotRecorder shotRecorder = new ShotRecorder();
 
@@ -54,7 +55,7 @@ public class GameManager : MonoBehaviour
         cueMovement = cue.GetComponent<CueMovement>();
         var scoreManagerObj = GameObject.Find("ScoreManager");
         if (scoreManagerObj != null)
-            scoreCalculator = scoreManagerObj.GetComponent<ScoreCalculator>();
+            oldScoreCalculator = scoreManagerObj.GetComponent<OldScoreCalculator>();
 
         EventBus.Subscribe<BallPocketedEvent>(HandlePocketedBall);
 
@@ -114,23 +115,23 @@ public class GameManager : MonoBehaviour
         amountOfCueBallsSpawned = 0;
         lastShotScore = 0;
         playerHasShotsRemaining = true;
-        ScoreManager.Instance.IncreaseScoreToBeat();
+        OldScoreManager.Instance.IncreaseScoreToBeat();
 
         BallSpawner.SpawnNextRoundBalls(shotRecorder.GetLastSnapshot());
 
-        UIManager.Instance?.SetScoreToBeat(ScoreManager.Instance.scoreToBeat);
-        UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
+        //UIManager.Instance?.SetScoreToBeat(OldScoreManager.Instance.scoreToBeat);
+        UIManager.Instance?.UpdateCurrentScore(oldScoreCalculator.totalScore);
 
         gameStateManager.SubmitEndOfState(GameState.PrepareNextLevel);
     }
 
     private void HandleScoringFinishedEvent(ScoringFinishedEvent scoringFinishedEvent)
     {
-        if (scoringFinishedEvent.TotalScore >= ScoreManager.Instance.scoreToBeat)
+        if (scoringFinishedEvent.TotalScore >= OldScoreManager.Instance.scoreToBeat)
         {
             playerHasShotsRemaining = false;
             gameStateManager.SetGameState(GameState.PrepareNextLevel);
-            UIManager.Instance?.EnableLevelCompleteScreen(scoringFinishedEvent.TotalScore, ScoreManager.Instance.scoreToBeat);
+            //UIManager.Instance?.EnableLevelCompleteScreen(scoringFinishedEvent.TotalScore, OldScoreManager.Instance.scoreToBeat);
         }
         else
         {
@@ -162,7 +163,10 @@ public class GameManager : MonoBehaviour
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
         deterministicBalls.Clear();
-        UIManager.Instance?.EnableGameOverScreen(scoreCalculator.totalScore, ScoreManager.Instance.scoreToBeat);
+        //UIManager.Instance?.EnableGameOverScreen(scoreCalculator.totalScore, ScoreManager.Instance.scoreToBeat);
+        int currentScore = ScoreManager.Instance.currentScore;
+        int highScore = ScoreManager.Instance.GetHighScore();
+        UIManager.Instance?.EnableGameOverScreen(currentScore, highScore);
     }
 
     public void CaptureCurrentShotSnapshot()
@@ -179,11 +183,11 @@ public class GameManager : MonoBehaviour
 
         BallSpawner.SpawnLastShotBalls(shotRecorder.GetLastSnapshot());
 
-        if (scoreCalculator != null)
+        if (oldScoreCalculator != null)
         {
-            scoreCalculator.totalScore -= lastShotScore;
+            oldScoreCalculator.totalScore -= lastShotScore;
             lastShotScore = 0;
-            UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
+            UIManager.Instance?.UpdateCurrentScore(oldScoreCalculator.totalScore);
         }
         gameStateManager.SetGameState(GameState.Aiming);
     }
@@ -200,7 +204,7 @@ public class GameManager : MonoBehaviour
         lastPottedBall = new BallScoringDataSnapshot(ballPocketedEvent.BallData);
         ballGameObjects.Remove(ballPocketedEvent.BallData.gameObject);
         deterministicBalls.Remove(ballPocketedEvent.BallData.gameObject.GetComponent<DeterministicBall>());
-        if(ballPocketedEvent.BallData.ballColour == BallColour.Cue){
+        if(ballPocketedEvent.BallData.ballVariant == BallVariant.Cue){
             possibleTargets.Remove(ballPocketedEvent.BallData.gameObject);
         }
         Destroy(ballPocketedEvent.BallData.gameObject);

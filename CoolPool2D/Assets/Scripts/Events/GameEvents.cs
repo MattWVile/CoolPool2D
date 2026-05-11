@@ -81,7 +81,7 @@ public class BallKissedEvent : BaseGameEvent, IScorableEvent
 
 public class ShotScoreTypeUpdatedEvent : BaseGameEvent
 {
-    public new ScoreManager Sender { get; set; }        // optional typed sender
+    public new OldScoreManager Sender { get; set; }        // optional typed sender
 
     public ScoreType ScoreType { get; set; } // snapshot for UI
 }
@@ -89,13 +89,13 @@ public class ShotScoreTypeUpdatedEvent : BaseGameEvent
 
 public class ScoringFinishedEvent : BaseGameEvent
 {
-    public new ScoreCalculator Sender { get; set; } // overridden Sender to specify the sender type
+    public new OldScoreCalculator Sender { get; set; } // overridden Sender to specify the sender type
     public int TotalScore { get; set; }
 }
 
 public class DisplayMultiplierPopUpEvent : BaseGameEvent
 {
-    public new ScoreCalculator Sender { get; set; } // overridden Sender to specify the sender type
+    public new OldScoreCalculator Sender { get; set; } // overridden Sender to specify the sender type
     public int MultiplierCount { get; set; }
 
 }

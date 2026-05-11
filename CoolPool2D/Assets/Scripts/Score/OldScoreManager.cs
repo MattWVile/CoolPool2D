@@ -1,0 +1,91 @@
+using DamageNumbersPro;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class OldScoreManager : MonoBehaviour
+{
+    public static OldScoreManager Instance { get; private set; }
+
+    public List<ScoreType> currentScoreTypes = new List<ScoreType>();
+
+    public int scoreToBeat = 500;
+
+    public DamageNumber scorePrefab;
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    void Start()
+    {
+        EventBus.Subscribe<IScorableEvent>(OnScorableEvent);
+    }
+
+    public void IncreaseScoreToBeat()
+    {
+        scoreToBeat = (int)(scoreToBeat * 2f);
+    }
+
+    public void OnScorableEvent(IScorableEvent @event)
+    {
+        string scoreTypeHeader = string.Empty;
+        float scoreTypePoints = @event.ScoreTypePoints;
+        bool isFoul = @event.IsFoul;
+        scoreTypeHeader = $"{@event.BallData.BallVariant} ball";
+        if (@event is BallKissedEvent)
+        {
+            scoreTypeHeader = @event.ScoreTypeHeader;
+        }
+        else
+        {
+            scoreTypeHeader += @event.ScoreTypeHeader;
+        }
+            AddOrUpdateScoreType(scoreTypeHeader, scoreTypePoints, isFoul);
+            DamageNumber damageNumber = scorePrefab.Spawn(@event.BallData.transform.position, scoreTypePoints);
+    }
+
+    private void AddOrUpdateScoreType(string scoreTypeHeader, float scoreTypePoints, bool isScoreTypeAFoul = false)
+    {
+        ScoreType scoreType = currentScoreTypes.Find(scoreType => scoreType.ScoreTypeHeader == scoreTypeHeader);
+        if (scoreType == null)
+        {
+            scoreType = new ScoreType(scoreTypeHeader, scoreTypePoints, isScoreTypeAFoul);
+            currentScoreTypes.Add(scoreType);
+        }
+        else if (isScoreTypeAFoul)
+        {
+            if (!scoreType.IsScoreFoul)
+            {
+                scoreType.IsScoreFoul = true;
+            }
+        }
+        else
+        {
+            scoreType.NumberOfThisScoreType++;
+        }
+        if (scoreType.ScoreTypeHeader.Contains("kissed") && scoreType.NumberOfThisScoreType <= 1)
+        {
+            return;
+        }
+
+        PublishShotScoreTypeUpdatedEvent(scoreType);
+    }
+    private void PublishShotScoreTypeUpdatedEvent(ScoreType scoreType)
+    {
+        var scorePublishedEvent = new ShotScoreTypeUpdatedEvent
+        {
+            Sender = this,
+            ScoreType = scoreType
+        };
+
+        EventBus.Publish(scorePublishedEvent);
+    }
+}

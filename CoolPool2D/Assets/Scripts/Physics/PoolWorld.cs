@@ -564,7 +564,7 @@ public class PoolWorld : MonoBehaviour
     {
         var aData = a.gameObject.GetComponent<BallScoringData>();
         var bData = b.gameObject.GetComponent<BallScoringData>();
-        string header = $"{aData.BallColour} ball kissed {bData.BallColour} ball";
+        string header = $"{aData.BallVariant} ball kissed {bData.BallVariant} ball";
 
         var evt = new BallKissedEvent
         {

@@ -41,7 +41,7 @@ public enum GameState {
 }
 
 [Serializable]
-public enum BallColour
+public enum BallVariant
 {
     Blue,
     Purple,
@@ -49,6 +49,7 @@ public enum BallColour
     Black,
     Cue,
     Green,
+    AdvanceToBalkLine,
     Random
 }
 

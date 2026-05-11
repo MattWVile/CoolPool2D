@@ -141,7 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9da01b6659da38941a646c1b347b9487, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballColour: 3
+  ballVariant: 6
   ballPoints: 100
   ballMultiplier: 1
 --- !u!114 &-3369028888067029311

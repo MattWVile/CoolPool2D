@@ -39,14 +39,15 @@ public class PlayerRemainingShotsManager : MonoBehaviour
         ReduceAmountOfShotsByOne();
     }
 
-    private void OnBallHasBeenPocketed(BallPocketedEvent @event)
+    private void OnBallHasBeenPocketed(BallPocketedEvent ballPocketedEvent)
     {
-        if (!@event.BallData.CompareTag("CueBall"))
+        if (ballPocketedEvent.BallData.ballVariant != BallVariant.Cue)
         {
-            if (amountOfShotsRemaining != 0 && GameManager.Instance.ballGameObjects.Count != 1)
-            {
-                IncreaseAmountOfShotsByOne();
-            }
+            IncreaseAmountOfShotsByOne();
+        }
+        else
+        {
+            ReduceAmountOfShotsByOne();
         }
     }
 
@@ -78,6 +79,10 @@ public class PlayerRemainingShotsManager : MonoBehaviour
 
     private void IncreaseAmountOfShotsByOne()
     {
+        if (amountOfShotsRemaining == 0)
+        {
+            GameManager.Instance.playerHasShotsRemaining = true;
+        }
         amountOfShotsRemaining = Mathf.Max(0, amountOfShotsRemaining + 1);
         UIManager.Instance?.UpdateRemainingShotsIcons(amountOfShotsRemaining, maxAmountOfShots);
     }

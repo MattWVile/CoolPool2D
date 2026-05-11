@@ -10,7 +10,7 @@ public class CopyVelocityToSameColourBallsOnHit : BaseBallEffect<BallKissedEvent
         ? ballKissedEvent.CollisionBallData.gameObject 
         : ballKissedEvent.BallData.gameObject;
 
-        if (otherGameObject.GetComponent<BallScoringData>().BallColour != BallColour.Cue) return;
+        if (otherGameObject.GetComponent<BallScoringData>().BallVariant != BallVariant.Cue) return;
 
         BallScoringData selfBallData = selfGameObject.GetComponent<BallScoringData>();
         foreach (GameObject gameObject in GameManager.Instance.ballGameObjects)
@@ -18,7 +18,7 @@ public class CopyVelocityToSameColourBallsOnHit : BaseBallEffect<BallKissedEvent
             BallScoringData ballData = gameObject.GetComponent<BallScoringData>();
             DeterministicBall deterministicBall = gameObject.GetComponent<DeterministicBall>();
 
-            if (ballData.BallColour == selfBallData.BallColour && gameObject != selfGameObject && gameObject != otherGameObject)
+            if (ballData.BallVariant == selfBallData.BallVariant && gameObject != selfGameObject && gameObject != otherGameObject)
             {
                 deterministicBall.velocity = selfGameObject.GetComponent<DeterministicBall>().velocity;
             }

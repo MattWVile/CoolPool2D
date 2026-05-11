@@ -34,7 +34,7 @@ public class TurnManager : MonoBehaviour
         switch (@event)
         {
             case BallCollidedWithRailEvent:
-                if (@event.BallData.ballColour != BallColour.Cue)
+                if (@event.BallData.ballVariant != BallVariant.Cue)
                 {
                     ballGameObjectsThatHaveHitRailsThisTurn.Add(@event.BallData.gameObject);
                 }
@@ -43,6 +43,7 @@ public class TurnManager : MonoBehaviour
                 if (ballGameObjectsThatHaveHitRailsThisTurn.Contains(@event.BallData.gameObject))
                 {
                     shouldBallsAdvance = false;
+                    @event.BallData.ballMultiplier += 1;
                 }
                 break;
         }

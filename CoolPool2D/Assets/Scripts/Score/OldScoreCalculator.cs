@@ -10,7 +10,7 @@ using UnityEngine;
 /// This version uses ONLY multiplicative factors (no additive logic).
 /// Always rounds scores to whole numbers (no decimals).
 /// </summary>
-public class ScoreCalculator : MonoBehaviour
+public class OldScoreCalculator : MonoBehaviour
 {
     [Serializable]
     public class MultiplierEntry
@@ -119,7 +119,7 @@ public class ScoreCalculator : MonoBehaviour
         BuildMultiplierEntries();
 
         CalculateShotScore();
-        UIManager.Instance?.UpdateShotScore(shotScore);
+        //UIManager.Instance?.UpdateShotScore(shotScore);
 
         if (currentShotMultiplierEntries.Count != 0)
         {
@@ -128,9 +128,9 @@ public class ScoreCalculator : MonoBehaviour
 
         GameManager.Instance.lastShotScore = shotScore;
         totalScore += shotScore;
-        UIManager.Instance?.UpdateTotalScore(totalScore);
-        UIManager.Instance?.ClearShotScore();
-        ScoreManager.Instance.currentScoreTypes.Clear();
+        UIManager.Instance?.UpdateCurrentScore(totalScore);
+        //UIManager.Instance?.ClearShotScore();
+        OldScoreManager.Instance.currentScoreTypes.Clear();
         ResetShotState();
         EventBus.Publish(new ScoringFinishedEvent {Sender = this, TotalScore = totalScore });
     }
@@ -229,7 +229,7 @@ public class ScoreCalculator : MonoBehaviour
         shotScore = 0;
         bool shotFouled = false;
 
-        foreach (var scoreType in ScoreManager.Instance.currentScoreTypes)
+        foreach (var scoreType in OldScoreManager.Instance.currentScoreTypes)
         {
             if (scoreType.IsScoreFoul)
             {
@@ -268,7 +268,7 @@ public class ScoreCalculator : MonoBehaviour
             float raw = shotScore * mult.Factor;
             shotScore = Mathf.RoundToInt(raw);
 
-            UIManager.Instance?.UpdateShotScore(shotScore);
+            //UIManager.Instance?.UpdateShotScore(shotScore);
 
             yield return new WaitForSeconds(uiWaitTime + smallBuffer);
         }
