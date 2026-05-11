@@ -165,15 +165,7 @@ public class GameManager : MonoBehaviour
         deterministicBalls.Clear();
         //UIManager.Instance?.EnableGameOverScreen(scoreCalculator.totalScore, ScoreManager.Instance.scoreToBeat);
         int currentScore = ScoreManager.Instance.currentScore;
-        int highScore = ScoreManager.Instance.highScore;
-        if (highScore < currentScore)
-        {
-            DataManager.Instance.Data.ScoreData = new ScoreData()
-            {
-                HighScore = currentScore
-            };
-            DataManager.Instance.SaveData();
-        }
+        int highScore = ScoreManager.Instance.GetHighScore();
         UIManager.Instance?.EnableGameOverScreen(currentScore, highScore);
     }
 

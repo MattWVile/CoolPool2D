@@ -49,4 +49,22 @@ public class ScoreManager : MonoBehaviour
         currentScore += amountToIncreaseBy;
         UIManager.Instance?.UpdateCurrentScore(currentScore);
     }
+
+    public int GetHighScore()
+    {
+        if (highScore < currentScore)
+        {
+            UpdateHighScore();
+        }
+        return highScore;
+    }
+    private void UpdateHighScore()
+    {
+        DataManager.Instance.Data.ScoreData = new ScoreData()
+        {
+            HighScore = currentScore
+        };
+        DataManager.Instance.SaveData();
+        highScore = currentScore;
+    }
 }
