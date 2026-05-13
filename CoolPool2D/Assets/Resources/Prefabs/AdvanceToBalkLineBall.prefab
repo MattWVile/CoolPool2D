@@ -156,5 +156,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 521dbdd1f6347b54f95a17be59e1a94b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forceMagnitude: 1.8
-  hasBallTakenLife: 0
+  advanceForceMagnitude: 2
+  explosionRadius: 25.48
+  explosionForce: 10
