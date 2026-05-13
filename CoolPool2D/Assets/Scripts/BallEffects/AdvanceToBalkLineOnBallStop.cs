@@ -79,14 +79,10 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
                 continue;
 
             DeterministicBall ballToMoveDeterministicBall = ball.GetComponent<DeterministicBall>();
-            if (ballToMoveDeterministicBall != null)
+            if (ballToMoveDeterministicBall == null)
                 continue;
             ballToMoveDeterministicBall.velocity = offset.normalized * explosionForce;
-
-
         }
-
-
         GameManager.Instance.ballGameObjects.Remove(gameObject);
         Destroy(gameObject);
     }
