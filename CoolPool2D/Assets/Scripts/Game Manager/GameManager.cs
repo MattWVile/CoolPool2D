@@ -153,9 +153,9 @@ public class GameManager : MonoBehaviour
         deterministicBalls.Clear();
         amountOfCueBallsSpawned = 0;
         lastShotScore = 0;
-        //scoreCalculator.totalScore = 0;
+        ScoreManager.Instance.currentScore = 0;
         playerHasShotsRemaining = true;
-        //UIManager.Instance?.UpdateTotalScore(scoreCalculator.totalScore);
+        UIManager.Instance?.UpdateCurrentScore(0);
         gameStateManager.SetGameState(GameState.GameStart);
     }
     public void HandleGameOverState()
@@ -163,7 +163,6 @@ public class GameManager : MonoBehaviour
         ballGameObjects.ForEach(Destroy);
         ballGameObjects.Clear();
         deterministicBalls.Clear();
-        //UIManager.Instance?.EnableGameOverScreen(scoreCalculator.totalScore, ScoreManager.Instance.scoreToBeat);
         int currentScore = ScoreManager.Instance.currentScore;
         int highScore = ScoreManager.Instance.GetHighScore();
         UIManager.Instance?.EnableGameOverScreen(currentScore, highScore);
