@@ -157,5 +157,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   advanceForceMagnitude: 2
-  explosionRadius: 25.48
-  explosionForce: 10
+  explosionRadius: 10
+  explosionForce: 3

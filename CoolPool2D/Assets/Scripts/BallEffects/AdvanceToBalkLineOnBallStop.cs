@@ -30,8 +30,7 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
             Vector3 directionToBalkLine = (balkLine.transform.position - gameObject.transform.position).normalized;
             if (directionToBalkLine.x >= 0)
             {
-                ExplodeBall();
-                EventBus.Publish(new BallStoppedBeyondBalkLineEvent());
+                BallHasStoppedBeyondBalkLine();
                 return;
             }
         }
@@ -49,8 +48,7 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
             {
                 if(directionToBalkLine.x >= 0)
                 {
-                    ExplodeBall();
-                    EventBus.Publish(new BallStoppedBeyondBalkLineEvent());
+                    BallHasStoppedBeyondBalkLine();
                     return;
                 }
                 directionToBalkLine.y = 0; 
@@ -59,31 +57,38 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
         }
     }
 
-    public void ExplodeBall()
-    { 
-        var explosion = Instantiate(Resources.Load<GameObject>("Prefabs/vfx_Explosion_02"), gameObject.transform.position, Quaternion.identity);
-        explosion.GetComponent<ParticleSystem>().Play();
-        Destroy(explosion, explosion.GetComponent<ParticleSystem>().main.duration);
-
-        // push all other balls away from this ball in a circle with a certain radius and force the closer the ball is the more force it receives
-        foreach (GameObject ball in GameManager.Instance.ballGameObjects)
-        {
-            if (ball.GetComponent<BallScoringData>().ballVariant == BallVariant.Cue)
-                continue;
-
-            Vector3 offset = ball.transform.position - transform.position;
-
-            float distance = offset.magnitude;
-
-            if (distance > explosionRadius)
-                continue;
-
-            DeterministicBall ballToMoveDeterministicBall = ball.GetComponent<DeterministicBall>();
-            if (ballToMoveDeterministicBall == null)
-                continue;
-            ballToMoveDeterministicBall.velocity = offset.normalized * explosionForce;
-        }
+    public void BallHasStoppedBeyondBalkLine()
+    {
         GameManager.Instance.ballGameObjects.Remove(gameObject);
         Destroy(gameObject);
+        EventBus.Publish(new BallStoppedBeyondBalkLineEvent());
     }
+
+    //public void ExplodeBall()
+    //{ 
+    //    var explosion = Instantiate(Resources.Load<GameObject>("Prefabs/vfx_Explosion_02"), gameObject.transform.position, Quaternion.identity);
+    //    explosion.GetComponent<ParticleSystem>().Play();
+    //    Destroy(explosion, explosion.GetComponent<ParticleSystem>().main.duration);
+
+    //    // push all other balls away from this ball in a circle with a certain radius and force the closer the ball is the more force it receives
+    //    foreach (GameObject ball in GameManager.Instance.ballGameObjects)
+    //    {
+    //        if (ball.GetComponent<BallScoringData>().ballVariant == BallVariant.Cue)
+    //            continue;
+
+    //        Vector3 offset = ball.transform.position - transform.position;
+
+    //        float distance = offset.magnitude;
+
+    //        if (distance > explosionRadius)
+    //            continue;
+
+    //        DeterministicBall ballToMoveDeterministicBall = ball.GetComponent<DeterministicBall>();
+    //        if (ballToMoveDeterministicBall == null)
+    //            continue;
+    //        ballToMoveDeterministicBall.velocity = offset.normalized * explosionForce;
+    //    }
+    //    GameManager.Instance.ballGameObjects.Remove(gameObject);
+    //    Destroy(gameObject);
+    //}
 }
