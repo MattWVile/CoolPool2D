@@ -215,8 +215,8 @@ public class BallSpawner : MonoBehaviour
         var clothCenterVector = clothBounds.center;
         float yMin = clothCenterVector.y - (clothDimensionsVector.y / 4.3f) + ballRadius;
         float yMax = clothCenterVector.y + (clothDimensionsVector.y / 2) - ballRadius;
-        float xMin = clothCenterVector.x - (clothDimensionsVector.x / 1.9f) + ballRadius;
-        float xMax = clothCenterVector.x + (clothDimensionsVector.x / 1.9f) - ballRadius;
+        float xMin = clothCenterVector.x - (clothDimensionsVector.x / 3f) + ballRadius;
+        float xMax = clothCenterVector.x + (clothDimensionsVector.x / 3f) - ballRadius;
         Vector2 spawnPosition = new Vector2(UnityEngine.Random.Range(xMin, xMax), UnityEngine.Random.Range(yMin, yMax));
         //ensure no balls spawn on top of each other by checking against existing ball positions
         var existingBallPositions = GameManager.Instance.ballGameObjects.Select(ball => (Vector2)ball.transform.position).ToList();
