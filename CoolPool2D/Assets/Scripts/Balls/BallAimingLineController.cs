@@ -55,6 +55,11 @@ public class BallAimingLineController : MonoBehaviour
         lineRenderer = ConfigureLineRenderer(lineRendererColour);
     }
 
+    private void Start()
+    {
+        EventBus.Subscribe<BallHasBeenShotEvent>(_ => HideTrajectory());
+    }
+
     private LineRenderer ConfigureLineRenderer(Color color)
     {
         var existing = GetComponent<LineRenderer>();

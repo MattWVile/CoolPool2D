@@ -43,7 +43,7 @@ public enum BallSpawnLocations
 
 public class BallSpawner : MonoBehaviour
 {
-    public static Vector2 CueBallInitialPosition = new(-1.91f, 0.0384333f);
+    public static Vector2 CueBallInitialPosition = new(0f, -2.19400001f);
     public static Bounds ClothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
     public static Vector2 ClothCenterVector = ClothBounds.center;
     public static Vector2 ClothDimensionsVector = ClothBounds.size;
@@ -213,10 +213,10 @@ public class BallSpawner : MonoBehaviour
         var clothBounds = GameObject.Find("Cloth").GetComponent<SpriteRenderer>().bounds;
         var clothDimensionsVector = clothBounds.size;
         var clothCenterVector = clothBounds.center;
-        float xMin = clothCenterVector.x - (clothDimensionsVector.x / 4.3f) + ballRadius;
-        float xMax = clothCenterVector.x + (clothDimensionsVector.x / 2) - ballRadius;
-        float yMin = clothCenterVector.y - (clothDimensionsVector.y / 2.02f) + ballRadius;
-        float yMax = clothCenterVector.y + (clothDimensionsVector.y / 2.02f) - ballRadius;
+        float yMin = clothCenterVector.y - (clothDimensionsVector.y / 4.3f) + ballRadius;
+        float yMax = clothCenterVector.y + (clothDimensionsVector.y / 2) - ballRadius;
+        float xMin = clothCenterVector.x - (clothDimensionsVector.x / 2.2f) + ballRadius;
+        float xMax = clothCenterVector.x + (clothDimensionsVector.x / 2.2f) - ballRadius;
         Vector2 spawnPosition = new Vector2(UnityEngine.Random.Range(xMin, xMax), UnityEngine.Random.Range(yMin, yMax));
         //ensure no balls spawn on top of each other by checking against existing ball positions
         var existingBallPositions = GameManager.Instance.ballGameObjects.Select(ball => (Vector2)ball.transform.position).ToList();

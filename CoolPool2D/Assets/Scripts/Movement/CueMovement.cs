@@ -1,45 +1,75 @@
 using System.Collections;
 using UnityEngine;
 
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
+#endif
+
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+using System.Runtime.InteropServices;
+#endif
+
 public class CueMovement : MonoBehaviour
 {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int virtualKeyCode);
+
+    private const int virtualKeyCodeRightMouseButton = 0x02;
+#endif
+
     public SpriteRenderer spriteRenderer;
-    public float distanceFromTarget = 4f; // Distance of the cue from the cue ball
-    public GameObject target; // The target ball
-    public DeterministicBall targetBall; // The deterministic ball script
+    public float distanceFromTarget = 4f;
+    public GameObject target;
+    public DeterministicBall targetBall;
     public float aimingAngle;
     public bool fineAimingActive = false;
-
-    private Vector2 previousMouseLocation;
-
     public float shotStrength = 1f;
+    public float aimingSpeed = 1f;
 
-    private float horizontalNudgeAmount = 0f;
+    private BallAimingLineController lineController;
 
-    // store unscaled charge start time (null => not charging)
-    private float? isChargingStart = null;
+    [Header("Drag Shot")]
+    [SerializeField] private float maxDragDistance = 1f;
+    [SerializeField] private float minimumShotStrength = 0.2f;
 
-    // use unscaled time for charge when frozen
-    private float chargeTime => isChargingStart != null
-        ? Mathf.Clamp(GetUnscaledTime() - isChargingStart.Value, 0f, 1f)
-        : 0f;
+    [Tooltip("Closest cue centre/pivot distance from the cue ball while aiming. 3.8 is the confirmed good minimum-power position.")]
+    [SerializeField] private float cueCentreDistanceFromCueBallAtMinimumPower = 3.8f;
 
-    public float aimingSpeed = 1f; // (unused for mouse-based immediate aim but kept for compatibility)
+    [Tooltip("The player must press this close to the cue ball to start aiming.")]
+    [SerializeField] private float dragStartMaximumDistanceFromCueBall = 3f;
+
+    [Header("Cue Strike Animation")]
+    [SerializeField] private float cueStrikeAnimationDuration = 0.58f;
+
+    private float currentShotPower = 0f;
+    private bool isDraggingCue = false;
+    private bool isCueStrikeAnimationPlaying = false;
+    private bool shouldIgnorePrimaryInputUntilReleased = false;
+    private int activePrimaryTouchFingerId = -1;
+    private Vector2 currentCueCentreWorldPosition;
+    private Vector2 cueStrikeAnimationCueCentreWorldPosition;
+    private Coroutine cueStrikeAnimationCoroutine;
+
+    private void Start()
+    {
+        lineController = target.GetComponent<BallAimingLineController>();
+    }
 
     private void Update()
     {
-        SetPosition();
-        HandleInput();
-
-        // Trajectory preview only while not charging and when in aiming state
-        if (target == null) return;
-
-        BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
-        if (lineController != null && isChargingStart == null && GameStateManager.Instance.CurrentGameState == GameState.Aiming)
+        if (isDraggingCue && IsCancelInputPressed())
         {
-            var aimingAngleVector = new Vector2(Mathf.Cos(aimingAngle), Mathf.Sin(aimingAngle));
-            lineController.ShowTrajectory(target.transform.position, aimingAngleVector);
+            CancelAimedShot();
+            SetPosition();
+            lineController.HideTrajectory();
+            return;
         }
+
+        HandleInput();
+        SetPosition();
+        ShowAimingLineIfNeeded();
     }
 
     public void RunDisableRoutine(IEnumerator routine)
@@ -50,157 +80,538 @@ public class CueMovement : MonoBehaviour
     public IEnumerator Disable(float delay = 0f)
     {
         yield return new WaitForSeconds(delay);
+
         target = null;
         targetBall = null;
-        spriteRenderer.enabled = false;
+
+        ResetCueState();
     }
 
-    public void Enable(GameObject targetObj)
+    public void Enable(GameObject targetObject)
     {
-        target = targetObj;
-        if (target != null) targetBall = target.GetComponent<DeterministicBall>();
-        else targetBall = null;
+        target = targetObject;
+        targetBall = target != null ? target.GetComponent<DeterministicBall>() : null;
 
-        spriteRenderer.enabled = true;
+        ResetCueState();
 
-        // Initialize aiming angle to point from cue -> target so rotation starts sensibly
-        if (target != null)
-        {
-            Vector2 dir = (target.transform.position - transform.position);
-            if (dir.sqrMagnitude > 1e-6f)
-                aimingAngle = Mathf.Atan2(dir.y, dir.x);
-        }
+        if (target == null) return;
 
-        // if the player is already holding space, start charging using unscaled time
-        if (Input.GetKey(KeyCode.Space) && isChargingStart == null || Input.GetKey(KeyCode.Mouse0) && isChargingStart == null)
-            isChargingStart = GetUnscaledTime();
+        currentCueCentreWorldPosition = GetMinimumPowerCueCentreWorldPosition(target.transform.position);
+        cueStrikeAnimationCueCentreWorldPosition = currentCueCentreWorldPosition;
     }
 
     private void HandleInput()
     {
-        if (target == null) return;
+        if (target == null || isCueStrikeAnimationPlaying) return;
 
-        Camera cam = Camera.main ?? Camera.current;
-        if (cam != null)
+        Camera camera = Camera.main ?? Camera.current;
+        if (camera == null) return;
+
+        if (shouldIgnorePrimaryInputUntilReleased)
         {
-            Vector2 currentMousePosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-
-            // Detect keyboard input
-            bool horizontalInput = Input.GetAxisRaw("Horizontal") != 0f;
-
-            if (horizontalInput)
+            if (!IsPrimaryInputHeld())
             {
-                fineAimingActive = true;
+                shouldIgnorePrimaryInputUntilReleased = false;
+                activePrimaryTouchFingerId = -1;
             }
-            else if (previousMouseLocation != currentMousePosition)
+
+            return;
+        }
+
+        Vector2 cueBallWorldPosition = target.transform.position;
+
+        if (!isDraggingCue)
+        {
+            if (!WasPrimaryInputPressedThisFrame()) return;
+
+            if (!TryGetPrimaryInputWorldPosition(camera, out Vector2 startInputWorldPosition))
             {
-                // Mouse moved – disable fine aiming
-                fineAimingActive = false;
-                horizontalNudgeAmount = 0f;
+                return;
             }
-            if (fineAimingActive)
+
+            TryStartCueDrag(startInputWorldPosition, cueBallWorldPosition);
+            return;
+        }
+
+        if (IsCancelInputPressed())
+        {
+            CancelAimedShot();
+            return;
+        }
+
+        if (WasPrimaryInputReleasedThisFrame())
+        {
+            ShootAimedShot();
+            return;
+        }
+
+        if (!IsPrimaryInputHeld()) return;
+
+        if (!TryGetPrimaryInputWorldPosition(camera, out Vector2 dragInputWorldPosition))
+        {
+            return;
+        }
+
+        UpdateAimAndPowerFromInputWorldPosition(dragInputWorldPosition, cueBallWorldPosition);
+    }
+
+    private void TryStartCueDrag(Vector2 inputWorldPosition, Vector2 cueBallWorldPosition)
+    {
+        if (!IsInputCloseEnoughToCueBallToStartDrag(inputWorldPosition, cueBallWorldPosition)) return;
+
+        activePrimaryTouchFingerId = GetPrimaryTouchFingerId();
+        isDraggingCue = true;
+        currentShotPower = 0f;
+
+        SetCueVisible(true);
+        UpdateAimAndPowerFromInputWorldPosition(inputWorldPosition, cueBallWorldPosition);
+    }
+
+    private void CancelAimedShot()
+    {
+        StopCueStrikeAnimation();
+
+        isDraggingCue = false;
+        isCueStrikeAnimationPlaying = false;
+        shouldIgnorePrimaryInputUntilReleased = true;
+        currentShotPower = 0f;
+
+        if (target != null)
+        {
+            currentCueCentreWorldPosition = GetMinimumPowerCueCentreWorldPosition(target.transform.position);
+            cueStrikeAnimationCueCentreWorldPosition = currentCueCentreWorldPosition;
+        }
+
+        SetCueVisible(false);
+    }
+
+    private void ShootAimedShot()
+    {
+        float finalShotStrength = Mathf.Lerp(
+            minimumShotStrength,
+            shotStrength,
+            currentShotPower
+        );
+
+        isDraggingCue = false;
+
+        StartCueStrikeAnimation(finalShotStrength);
+    }
+
+    private void StartCueStrikeAnimation(float finalShotStrength)
+    {
+        StopCueStrikeAnimation();
+
+        cueStrikeAnimationCoroutine = StartCoroutine(
+            PlayCueStrikeAnimationThenShoot(finalShotStrength)
+        );
+    }
+
+    private void StopCueStrikeAnimation()
+    {
+        if (cueStrikeAnimationCoroutine == null) return;
+
+        StopCoroutine(cueStrikeAnimationCoroutine);
+        cueStrikeAnimationCoroutine = null;
+    }
+
+    private bool IsPrimaryInputHeld()
+    {
+        return activePrimaryTouchFingerId != -1
+            ? IsTouchStillHeld(activePrimaryTouchFingerId)
+            : IsLeftMouseButtonPressed();
+    }
+
+    private bool WasPrimaryInputPressedThisFrame()
+    {
+        if (Input.touchCount > 0)
+        {
+            return Input.GetTouch(0).phase == TouchPhase.Began;
+        }
+
+        return WasLeftMouseButtonPressedThisFrame();
+    }
+
+    private bool WasPrimaryInputReleasedThisFrame()
+    {
+        return activePrimaryTouchFingerId != -1
+            ? WasTouchReleased(activePrimaryTouchFingerId)
+            : WasLeftMouseButtonReleasedThisFrame();
+    }
+
+    private bool IsCancelInputPressed()
+    {
+        return IsRightMouseButtonPressed() || IsSecondFingerPressed();
+    }
+
+    private bool IsLeftMouseButtonPressed()
+    {
+        if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.Mouse0)) return true;
+
+#if ENABLE_INPUT_SYSTEM
+        return Mouse.current != null && Mouse.current.leftButton.isPressed;
+#else
+        return false;
+#endif
+    }
+
+    private bool WasLeftMouseButtonPressedThisFrame()
+    {
+        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Mouse0)) return true;
+
+#if ENABLE_INPUT_SYSTEM
+        return Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
+#else
+        return false;
+#endif
+    }
+
+    private bool WasLeftMouseButtonReleasedThisFrame()
+    {
+        if (Input.GetMouseButtonUp(0) || Input.GetKeyUp(KeyCode.Mouse0)) return true;
+
+#if ENABLE_INPUT_SYSTEM
+        return Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame;
+#else
+        return false;
+#endif
+    }
+
+    private bool IsRightMouseButtonPressed()
+    {
+        if (Input.GetMouseButton(1) || Input.GetKey(KeyCode.Mouse1)) return true;
+
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+        if ((GetAsyncKeyState(virtualKeyCodeRightMouseButton) & 0x8000) != 0) return true;
+#endif
+
+#if ENABLE_INPUT_SYSTEM
+        return Mouse.current != null && Mouse.current.rightButton.isPressed;
+#else
+        return false;
+#endif
+    }
+
+    private bool IsSecondFingerPressed()
+    {
+        if (Input.touchCount >= 2)
+        {
+            if (activePrimaryTouchFingerId == -1) return true;
+
+            for (int touchIndex = 0; touchIndex < Input.touchCount; touchIndex++)
             {
-                float nudgeSpeed = 0.25f; // tweak to make it faster/slower
+                Touch touch = Input.GetTouch(touchIndex);
 
-                // Nudge smoothly while key is held
-                if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-                    horizontalNudgeAmount += nudgeSpeed * Time.unscaledDeltaTime;
-                else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-                    horizontalNudgeAmount -= nudgeSpeed * Time.unscaledDeltaTime;
-
-                // Use previous mouse position to preserve base aiming direction
-                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(previousMouseLocation.x, previousMouseLocation.y, cam.nearClipPlane));
-                Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
-                Vector2 targetPos = target.transform.position;
-                Vector2 dir = clampedMousePosition - targetPos;
-
-                if (dir.sqrMagnitude > 1e-8f)
+                if (touch.fingerId != activePrimaryTouchFingerId &&
+                    touch.phase != TouchPhase.Ended &&
+                    touch.phase != TouchPhase.Canceled)
                 {
-                    aimingAngle = Mathf.Atan2(dir.y, dir.x + horizontalNudgeAmount);
+                    return true;
+                }
+            }
+        }
+
+#if ENABLE_INPUT_SYSTEM
+        if (Touchscreen.current == null) return false;
+
+        int pressedTouchCount = 0;
+
+        foreach (TouchControl touchControl in Touchscreen.current.touches)
+        {
+            if (++pressedTouchCount >= 2 && touchControl.press.isPressed)
+            {
+                return true;
+            }
+        }
+#endif
+
+        return false;
+    }
+
+    private int GetPrimaryTouchFingerId()
+    {
+        return Input.touchCount > 0 ? Input.GetTouch(0).fingerId : -1;
+    }
+
+    private bool IsTouchStillHeld(int fingerId)
+    {
+        for (int touchIndex = 0; touchIndex < Input.touchCount; touchIndex++)
+        {
+            Touch touch = Input.GetTouch(touchIndex);
+
+            if (touch.fingerId == fingerId)
+            {
+                return touch.phase != TouchPhase.Ended &&
+                       touch.phase != TouchPhase.Canceled;
+            }
+        }
+
+        return false;
+    }
+
+    private bool WasTouchReleased(int fingerId)
+    {
+        for (int touchIndex = 0; touchIndex < Input.touchCount; touchIndex++)
+        {
+            Touch touch = Input.GetTouch(touchIndex);
+
+            if (touch.fingerId == fingerId)
+            {
+                return touch.phase == TouchPhase.Ended ||
+                       touch.phase == TouchPhase.Canceled;
+            }
+        }
+
+        return true;
+    }
+
+    private bool TryGetPrimaryInputWorldPosition(Camera camera, out Vector2 inputWorldPosition)
+    {
+        inputWorldPosition = currentCueCentreWorldPosition;
+
+        if (!TryGetPrimaryInputScreenPosition(out Vector3 inputScreenPosition))
+        {
+            return false;
+        }
+
+        float distanceFromCameraToTarget = Mathf.Abs(
+            camera.transform.position.z - target.transform.position.z
+        );
+
+        if (!IsValidNumber(distanceFromCameraToTarget))
+        {
+            return false;
+        }
+
+        Vector3 inputWorldPosition3D = camera.ScreenToWorldPoint(
+            new Vector3(
+                inputScreenPosition.x,
+                inputScreenPosition.y,
+                distanceFromCameraToTarget
+            )
+        );
+
+        if (!IsValidNumber(inputWorldPosition3D.x) ||
+            !IsValidNumber(inputWorldPosition3D.y))
+        {
+            return false;
+        }
+
+        inputWorldPosition = new Vector2(
+            inputWorldPosition3D.x,
+            inputWorldPosition3D.y
+        );
+
+        return true;
+    }
+
+    private bool IsValidScreenPosition(Vector3 screenPosition)
+    {
+        return !float.IsNaN(screenPosition.x) &&
+               !float.IsNaN(screenPosition.y) &&
+               !float.IsInfinity(screenPosition.x) &&
+               !float.IsInfinity(screenPosition.y);
+    }
+
+    private bool TryGetPrimaryInputScreenPosition(out Vector3 inputScreenPosition)
+    {
+        inputScreenPosition = Vector3.zero;
+
+        if (activePrimaryTouchFingerId != -1)
+        {
+            for (int touchIndex = 0; touchIndex < Input.touchCount; touchIndex++)
+            {
+                Touch touch = Input.GetTouch(touchIndex);
+
+                if (touch.fingerId == activePrimaryTouchFingerId)
+                {
+                    inputScreenPosition = touch.position;
+                    return IsValidScreenPosition(inputScreenPosition);
                 }
             }
 
-            else
-            {
-                // Mouse aiming
-                previousMouseLocation = currentMousePosition;
-
-                Vector3 mouseWorld3 = cam.ScreenToWorldPoint(new Vector3(currentMousePosition.x, currentMousePosition.y, cam.nearClipPlane));
-                Vector2 clampedMousePosition = new Vector2(mouseWorld3.x, mouseWorld3.y);
-                Vector2 targetPos = target.transform.position;
-                Vector2 dir = clampedMousePosition - targetPos;
-
-                if (dir.sqrMagnitude > 1e-8f)
-                {
-                    aimingAngle = Mathf.Atan2(dir.y, dir.x);
-                }
-            }
+            return false;
         }
 
-        // --- Charging Shot ---
-        if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Mouse0))
+        if (Input.touchCount > 0)
         {
-            if (isChargingStart != null) return;
-            isChargingStart = GetUnscaledTime();
+            inputScreenPosition = Input.GetTouch(0).position;
+            return IsValidScreenPosition(inputScreenPosition);
         }
-        else
+
+        inputScreenPosition = Input.mousePosition;
+
+        if (IsValidScreenPosition(inputScreenPosition))
         {
-            if (isChargingStart == null) return;
-
-            // Release to shoot
-            if (targetBall != null)
-            {
-                float finalStrength = Mathf.Lerp(0.2f, shotStrength, chargeTime);
-                targetBall.Shoot(aimingAngle, finalStrength);
-            }
-
-            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
-            isChargingStart = null;
+            return true;
         }
 
+#if ENABLE_INPUT_SYSTEM
+    if (Mouse.current != null)
+    {
+        Vector2 newInputSystemMouseScreenPosition = Mouse.current.position.ReadValue();
 
-        // Charging shot — use unscaled time to allow charging while frozen
-        if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Mouse0))
+        inputScreenPosition = new Vector3(
+            newInputSystemMouseScreenPosition.x,
+            newInputSystemMouseScreenPosition.y,
+            0f
+        );
+
+        return IsValidScreenPosition(inputScreenPosition);
+    }
+#endif
+
+        return false;
+    }
+
+    private bool IsInputCloseEnoughToCueBallToStartDrag(Vector2 inputWorldPosition, Vector2 cueBallWorldPosition)
+    {
+        return Vector2.Distance(inputWorldPosition, cueBallWorldPosition) <= dragStartMaximumDistanceFromCueBall;
+    }
+
+    private void UpdateAimAndPowerFromInputWorldPosition(Vector2 inputWorldPosition, Vector2 cueBallWorldPosition)
+    {
+        Vector2 directionFromInputToCueBall = cueBallWorldPosition - inputWorldPosition;
+        Vector2 shotDirection = directionFromInputToCueBall.sqrMagnitude <= 0.0001f
+            ? GetCurrentShotDirection()
+            : directionFromInputToCueBall.normalized;
+
+        aimingAngle = Mathf.Atan2(shotDirection.y, shotDirection.x);
+
+        float clampedPullBackDistance = Mathf.Clamp(
+            directionFromInputToCueBall.magnitude,
+            0f,
+            maxDragDistance
+        );
+
+        currentShotPower = Mathf.Clamp01(clampedPullBackDistance / maxDragDistance);
+
+        currentCueCentreWorldPosition = cueBallWorldPosition -
+            shotDirection * (cueCentreDistanceFromCueBallAtMinimumPower + clampedPullBackDistance);
+    }
+
+    private IEnumerator PlayCueStrikeAnimationThenShoot(float finalShotStrength)
+    {
+        isCueStrikeAnimationPlaying = true;
+        SetCueVisible(true);
+
+        Vector2 cueBallWorldPosition = target != null ? target.transform.position : Vector2.zero;
+        Vector2 cueStrikeStartCueCentreWorldPosition = currentCueCentreWorldPosition;
+        Vector2 cueStrikeEndCueCentreWorldPosition = GetMinimumPowerCueCentreWorldPosition(cueBallWorldPosition);
+
+        for (float animationElapsedTime = 0f; animationElapsedTime < cueStrikeAnimationDuration; animationElapsedTime += Time.unscaledDeltaTime)
         {
-            if (isChargingStart != null) return;
-            isChargingStart = GetUnscaledTime();
+            cueStrikeAnimationCueCentreWorldPosition = Vector2.Lerp(
+                cueStrikeStartCueCentreWorldPosition,
+                cueStrikeEndCueCentreWorldPosition,
+                Mathf.Clamp01(animationElapsedTime / cueStrikeAnimationDuration)
+            );
+
+            yield return null;
         }
-        else
+
+        cueStrikeAnimationCueCentreWorldPosition = cueStrikeEndCueCentreWorldPosition;
+
+        ShootTargetBall(finalShotStrength);
+        FinishCueStrikeAnimation();
+    }
+
+    private void ShootTargetBall(float finalShotStrength)
+    {
+        if (targetBall != null)
         {
-            if (isChargingStart == null) return;
-
-            // Shoot the ball when release space
-            if (targetBall != null)
-            {
-                float finalStrength = Mathf.Lerp(0.2f, shotStrength, chargeTime);
-                targetBall.Shoot(aimingAngle, finalStrength);
-            }
-
-            EventBus.Publish(new BallHasBeenShotEvent { Sender = this, Target = target });
-            isChargingStart = null;
+            targetBall.Shoot(aimingAngle, finalShotStrength);
         }
+
+        EventBus.Publish(new BallHasBeenShotEvent
+        {
+            Sender = this,
+            Target = target
+        });
+    }
+
+    private void FinishCueStrikeAnimation()
+    {
+        isCueStrikeAnimationPlaying = false;
+        cueStrikeAnimationCoroutine = null;
+        currentShotPower = 0f;
+        activePrimaryTouchFingerId = -1;
+
+        if (target != null)
+        {
+            currentCueCentreWorldPosition = GetMinimumPowerCueCentreWorldPosition(target.transform.position);
+        }
+
+        SetCueVisible(false);
+    }
+
+    private void ResetCueState()
+    {
+        StopCueStrikeAnimation();
+
+        isDraggingCue = false;
+        isCueStrikeAnimationPlaying = false;
+        shouldIgnorePrimaryInputUntilReleased = false;
+        currentShotPower = 0f;
+        activePrimaryTouchFingerId = -1;
+
+        if (target != null)
+        {
+            currentCueCentreWorldPosition = GetMinimumPowerCueCentreWorldPosition(target.transform.position);
+            cueStrikeAnimationCueCentreWorldPosition = currentCueCentreWorldPosition;
+        }
+
+        SetCueVisible(false);
     }
 
     private void SetPosition()
     {
         if (target == null) return;
 
-        Vector2 targetWorld = target.transform.position;
-        var offset = getOffset(distanceFromTarget - (chargeTime * 3f), aimingAngle);
-        Vector2 cuePos = targetWorld + offset;
-        transform.position = cuePos;
+        if (!isDraggingCue && !isCueStrikeAnimationPlaying)
+        {
+            currentCueCentreWorldPosition = GetMinimumPowerCueCentreWorldPosition(target.transform.position);
+        }
 
-        // Rotate the cue to face the aim direction
-        transform.rotation = Quaternion.Euler(0, 0, aimingAngle * Mathf.Rad2Deg);
+        transform.position = isCueStrikeAnimationPlaying
+            ? cueStrikeAnimationCueCentreWorldPosition
+            : currentCueCentreWorldPosition;
+
+        transform.rotation = Quaternion.Euler(0f, 0f, aimingAngle * Mathf.Rad2Deg);
     }
 
-    public Vector2 getOffset(float distance, float angle)
+    private void ShowAimingLineIfNeeded()
     {
-        float x = distance * Mathf.Cos(angle);
-        float y = distance * Mathf.Sin(angle);
-        return new Vector2(x, y);
+        if (target == null || !isDraggingCue || isCueStrikeAnimationPlaying) return;
+        if (GameStateManager.Instance.CurrentGameState != GameState.Aiming) return;
+
+        if (lineController == null) return;
+
+        lineController.ShowTrajectory(target.transform.position, GetCurrentShotDirection());
     }
 
-    // helper that returns unscaled time (split out so it's clear and easy to change)
-    private static float GetUnscaledTime() => Time.unscaledTime;
+    private Vector2 GetMinimumPowerCueCentreWorldPosition(Vector2 cueBallWorldPosition)
+    {
+        return cueBallWorldPosition - GetCurrentShotDirection() * cueCentreDistanceFromCueBallAtMinimumPower;
+    }
+
+    private Vector2 GetCurrentShotDirection()
+    {
+        return new Vector2(Mathf.Cos(aimingAngle), Mathf.Sin(aimingAngle));
+    }
+
+    private void SetCueVisible(bool shouldBeVisible)
+    {
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.enabled = shouldBeVisible;
+        }
+    }
+
+    private bool IsValidNumber(float number)
+    {
+        return !float.IsNaN(number) &&
+               !float.IsInfinity(number);
+    }
+
 }

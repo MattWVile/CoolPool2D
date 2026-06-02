@@ -26,9 +26,9 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
         }
         else if (@event.NewGameState == GameState.PrepareNextTurn)
         {
-            var balkLine = GameObject.Find("BalkLine");
-            Vector3 directionToBalkLine = (balkLine.transform.position - gameObject.transform.position).normalized;
-            if (directionToBalkLine.x >= 0)
+            Vector3 directionToBalkLine = GetDirectionToBalkLine();
+
+            if (directionToBalkLine.y <= 0)
             {
                 BallHasStoppedBeyondBalkLine();
                 return;
@@ -41,21 +41,31 @@ public class AdvanceToBalkLineOnBallStop : BaseBallEffect<BallStoppedEvent>
         if (!hasEffectTriggeredThisShot && TurnManager.Instance.shouldBallsAdvance)
         {
             DeterministicBall deterministicBall = gameObject.GetComponent<DeterministicBall>();
-            var balkLine = GameObject.Find("BalkLine");
-            Vector3 directionToBalkLine = (balkLine.transform.position - gameObject.transform.position).normalized;
+            Vector3 directionToBalkLine = GetDirectionToBalkLine();
 
-            if (balkLine != null && deterministicBall != null)
+            if (deterministicBall != null)
             {
-                if(directionToBalkLine.x >= 0)
+                if(directionToBalkLine.y <= 0)
                 {
                     BallHasStoppedBeyondBalkLine();
                     return;
                 }
-                directionToBalkLine.y = 0; 
-                deterministicBall.velocity = directionToBalkLine.normalized * advanceForceMagnitude;
+                directionToBalkLine.x = 0; 
+                deterministicBall.velocity = -(directionToBalkLine.normalized * advanceForceMagnitude);
             }
         }
     }
+
+    private Vector3 GetDirectionToBalkLine()
+    {
+        var balkLine = GameObject.Find("BalkLine");
+        if (balkLine == null)
+        {
+            Debug.LogError("BalkLine object not found in the scene.");
+            return Vector3.zero;
+        }
+        return (gameObject.transform.position - balkLine.transform.position).normalized;
+    }    
 
     public void BallHasStoppedBeyondBalkLine()
     {

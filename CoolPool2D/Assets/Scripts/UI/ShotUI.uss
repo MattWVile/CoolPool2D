@@ -1,8 +1,8 @@
 /* ShotsUI.uss */
 
 .shot-ball {
-    width: 35px;
-    height: 35px;
+    width: 15px;
+    height: 15px;
     /* border-radius: 50% tends to work; use high px value to make a circle */
     border-radius: 999px;
     background-color: white;
