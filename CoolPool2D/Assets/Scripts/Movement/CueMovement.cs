@@ -28,36 +28,34 @@ public class CueMovement : MonoBehaviour
     public float shotStrength = 1f;
     public float aimingSpeed = 1f;
 
+    private BallAimingLineController lineController;
+
     [Header("Drag Shot")]
-    [SerializeField] private float maxDragDistance = 3f;
+    [SerializeField] private float maxDragDistance = 1f;
     [SerializeField] private float minimumShotStrength = 0.2f;
 
     [Tooltip("Closest cue centre/pivot distance from the cue ball while aiming. 3.8 is the confirmed good minimum-power position.")]
     [SerializeField] private float cueCentreDistanceFromCueBallAtMinimumPower = 3.8f;
 
     [Tooltip("The player must press this close to the cue ball to start aiming.")]
-    [SerializeField] private float dragStartMaximumDistanceFromCueBall = 1f;
+    [SerializeField] private float dragStartMaximumDistanceFromCueBall = 3f;
 
     [Header("Cue Strike Animation")]
-    [SerializeField] private float cueStrikeAnimationDuration = 0.08f;
-
-    private float? isChargingStart = null;
-
-    // Kept so other code that references chargeTime still compiles.
-    // The drag-shot system does not use time-based charging.
-    private float chargeTime => 0f;
+    [SerializeField] private float cueStrikeAnimationDuration = 0.58f;
 
     private float currentShotPower = 0f;
     private bool isDraggingCue = false;
     private bool isCueStrikeAnimationPlaying = false;
     private bool shouldIgnorePrimaryInputUntilReleased = false;
-
     private int activePrimaryTouchFingerId = -1;
-
     private Vector2 currentCueCentreWorldPosition;
     private Vector2 cueStrikeAnimationCueCentreWorldPosition;
-
     private Coroutine cueStrikeAnimationCoroutine;
+
+    private void Start()
+    {
+        lineController = target.GetComponent<BallAimingLineController>();
+    }
 
     private void Update()
     {
@@ -65,6 +63,7 @@ public class CueMovement : MonoBehaviour
         {
             CancelAimedShot();
             SetPosition();
+            lineController.HideTrajectory();
             return;
         }
 
@@ -119,16 +118,18 @@ public class CueMovement : MonoBehaviour
             return;
         }
 
-        Vector2 inputWorldPosition = GetPrimaryInputWorldPosition(camera);
         Vector2 cueBallWorldPosition = target.transform.position;
 
         if (!isDraggingCue)
         {
-            if (WasPrimaryInputPressedThisFrame())
+            if (!WasPrimaryInputPressedThisFrame()) return;
+
+            if (!TryGetPrimaryInputWorldPosition(camera, out Vector2 startInputWorldPosition))
             {
-                TryStartCueDrag(inputWorldPosition, cueBallWorldPosition);
+                return;
             }
 
+            TryStartCueDrag(startInputWorldPosition, cueBallWorldPosition);
             return;
         }
 
@@ -144,10 +145,14 @@ public class CueMovement : MonoBehaviour
             return;
         }
 
-        if (IsPrimaryInputHeld())
+        if (!IsPrimaryInputHeld()) return;
+
+        if (!TryGetPrimaryInputWorldPosition(camera, out Vector2 dragInputWorldPosition))
         {
-            UpdateAimAndPowerFromInputWorldPosition(inputWorldPosition, cueBallWorldPosition);
+            return;
         }
+
+        UpdateAimAndPowerFromInputWorldPosition(dragInputWorldPosition, cueBallWorldPosition);
     }
 
     private void TryStartCueDrag(Vector2 inputWorldPosition, Vector2 cueBallWorldPosition)
@@ -156,7 +161,6 @@ public class CueMovement : MonoBehaviour
 
         activePrimaryTouchFingerId = GetPrimaryTouchFingerId();
         isDraggingCue = true;
-        isChargingStart = GetUnscaledTime();
         currentShotPower = 0f;
 
         SetCueVisible(true);
@@ -170,7 +174,6 @@ public class CueMovement : MonoBehaviour
         isDraggingCue = false;
         isCueStrikeAnimationPlaying = false;
         shouldIgnorePrimaryInputUntilReleased = true;
-        isChargingStart = null;
         currentShotPower = 0f;
 
         if (target != null)
@@ -191,7 +194,6 @@ public class CueMovement : MonoBehaviour
         );
 
         isDraggingCue = false;
-        isChargingStart = null;
 
         StartCueStrikeAnimation(finalShotStrength);
     }
@@ -363,13 +365,23 @@ public class CueMovement : MonoBehaviour
         return true;
     }
 
-    private Vector2 GetPrimaryInputWorldPosition(Camera camera)
+    private bool TryGetPrimaryInputWorldPosition(Camera camera, out Vector2 inputWorldPosition)
     {
-        Vector3 inputScreenPosition = GetPrimaryInputScreenPosition();
+        inputWorldPosition = currentCueCentreWorldPosition;
+
+        if (!TryGetPrimaryInputScreenPosition(out Vector3 inputScreenPosition))
+        {
+            return false;
+        }
 
         float distanceFromCameraToTarget = Mathf.Abs(
             camera.transform.position.z - target.transform.position.z
         );
+
+        if (!IsValidNumber(distanceFromCameraToTarget))
+        {
+            return false;
+        }
 
         Vector3 inputWorldPosition3D = camera.ScreenToWorldPoint(
             new Vector3(
@@ -379,11 +391,32 @@ public class CueMovement : MonoBehaviour
             )
         );
 
-        return new Vector2(inputWorldPosition3D.x, inputWorldPosition3D.y);
+        if (!IsValidNumber(inputWorldPosition3D.x) ||
+            !IsValidNumber(inputWorldPosition3D.y))
+        {
+            return false;
+        }
+
+        inputWorldPosition = new Vector2(
+            inputWorldPosition3D.x,
+            inputWorldPosition3D.y
+        );
+
+        return true;
     }
 
-    private Vector3 GetPrimaryInputScreenPosition()
+    private bool IsValidScreenPosition(Vector3 screenPosition)
     {
+        return !float.IsNaN(screenPosition.x) &&
+               !float.IsNaN(screenPosition.y) &&
+               !float.IsInfinity(screenPosition.x) &&
+               !float.IsInfinity(screenPosition.y);
+    }
+
+    private bool TryGetPrimaryInputScreenPosition(out Vector3 inputScreenPosition)
+    {
+        inputScreenPosition = Vector3.zero;
+
         if (activePrimaryTouchFingerId != -1)
         {
             for (int touchIndex = 0; touchIndex < Input.touchCount; touchIndex++)
@@ -392,25 +425,43 @@ public class CueMovement : MonoBehaviour
 
                 if (touch.fingerId == activePrimaryTouchFingerId)
                 {
-                    return touch.position;
+                    inputScreenPosition = touch.position;
+                    return IsValidScreenPosition(inputScreenPosition);
                 }
             }
+
+            return false;
         }
 
         if (Input.touchCount > 0)
         {
-            return Input.GetTouch(0).position;
+            inputScreenPosition = Input.GetTouch(0).position;
+            return IsValidScreenPosition(inputScreenPosition);
+        }
+
+        inputScreenPosition = Input.mousePosition;
+
+        if (IsValidScreenPosition(inputScreenPosition))
+        {
+            return true;
         }
 
 #if ENABLE_INPUT_SYSTEM
-        if (Mouse.current != null)
-        {
-            Vector2 mouseScreenPosition = Mouse.current.position.ReadValue();
-            return new Vector3(mouseScreenPosition.x, mouseScreenPosition.y, 0f);
-        }
+    if (Mouse.current != null)
+    {
+        Vector2 newInputSystemMouseScreenPosition = Mouse.current.position.ReadValue();
+
+        inputScreenPosition = new Vector3(
+            newInputSystemMouseScreenPosition.x,
+            newInputSystemMouseScreenPosition.y,
+            0f
+        );
+
+        return IsValidScreenPosition(inputScreenPosition);
+    }
 #endif
 
-        return Input.mousePosition;
+        return false;
     }
 
     private bool IsInputCloseEnoughToCueBallToStartDrag(Vector2 inputWorldPosition, Vector2 cueBallWorldPosition)
@@ -501,7 +552,6 @@ public class CueMovement : MonoBehaviour
         isDraggingCue = false;
         isCueStrikeAnimationPlaying = false;
         shouldIgnorePrimaryInputUntilReleased = false;
-        isChargingStart = null;
         currentShotPower = 0f;
         activePrimaryTouchFingerId = -1;
 
@@ -535,7 +585,6 @@ public class CueMovement : MonoBehaviour
         if (target == null || !isDraggingCue || isCueStrikeAnimationPlaying) return;
         if (GameStateManager.Instance.CurrentGameState != GameState.Aiming) return;
 
-        BallAimingLineController lineController = target.GetComponent<BallAimingLineController>();
         if (lineController == null) return;
 
         lineController.ShowTrajectory(target.transform.position, GetCurrentShotDirection());
@@ -559,21 +608,10 @@ public class CueMovement : MonoBehaviour
         }
     }
 
-    public Vector2 getOffset(float distance, float angle)
+    private bool IsValidNumber(float number)
     {
-        return GetOffset(distance, angle);
+        return !float.IsNaN(number) &&
+               !float.IsInfinity(number);
     }
 
-    public Vector2 GetOffset(float distance, float angle)
-    {
-        return new Vector2(
-            distance * Mathf.Cos(angle),
-            distance * Mathf.Sin(angle)
-        );
-    }
-
-    private static float GetUnscaledTime()
-    {
-        return Time.unscaledTime;
-    }
 }
